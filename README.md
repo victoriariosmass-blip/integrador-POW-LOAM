@@ -10,9 +10,9 @@ Sistema para administrar convenios marco y específicos de colaboración y de pa
 
 | Integrante | Responsabilidad principal |
 | --- | --- |
-| Vick | Backend (API REST) y base de datos |
-| Marti | Plataforma web |
-| Ale | Aplicación móvil |
+| Victoria | Backend (API REST) y base de datos |
+| Martina | Plataforma web |
+| Alejo | Aplicación móvil |
 
 ## Estructura del repositorio
 
