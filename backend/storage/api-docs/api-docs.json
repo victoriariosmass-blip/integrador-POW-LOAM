@@ -1,0 +1,152 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Gestión de Convenios UNLPam",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Iniciar sesión",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "responses": {
+                    "200": {
+                        "description": "Logueado"
+                    },
+                    "422": {
+                        "description": "Credenciales incorrectas"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Cerrar sesión",
+                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "responses": {
+                    "204": {
+                        "description": "Sesión cerrada"
+                    }
+                }
+            }
+        },
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Usuario logueado",
+                "operationId": "961ad57987905b44ae2e2f40b82e76de",
+                "responses": {
+                    "200": {
+                        "description": "Usuario"
+                    }
+                }
+            }
+        },
+        "/api/convenios": {
+            "get": {
+                "tags": [
+                    "Convenios"
+                ],
+                "summary": "Listado de convenios",
+                "operationId": "7c7b33a8b882ddab303b8586a35c0608",
+                "parameters": [
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tipo",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Convenios"
+                ],
+                "summary": "Alta de convenio",
+                "operationId": "407b6781f1be945a0d993b8e84cb916e",
+                "responses": {
+                    "201": {
+                        "description": "Creado en borrador"
+                    },
+                    "422": {
+                        "description": "Datos inválidos"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}": {
+            "get": {
+                "tags": [
+                    "Convenios"
+                ],
+                "summary": "Ficha de un convenio",
+                "operationId": "edb2ec181b68df5cdf8041a316aadddf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ficha"
+                    },
+                    "403": {
+                        "description": "Sin permiso"
+                    },
+                    "404": {
+                        "description": "No existe"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Convenios",
+            "description": "Convenios"
+        }
+    ]
+}
