@@ -78,7 +78,7 @@ export default function PantallaPerfil({ navigation }) {
 }
 
 const estilos = StyleSheet.create({
-  contenedor: { flex: 1, paddingHorizontal: 20, paddingTop: 36, paddingBottom: 20 },
+  contenedor: { flex: 1, paddingHorizontal: 20, paddingTop: 56, paddingBottom: 20 },
   titulo: { fontWeight: 'bold', marginBottom: 20 },
   etiqueta: { marginBottom: 8 },
   filaBotones: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
