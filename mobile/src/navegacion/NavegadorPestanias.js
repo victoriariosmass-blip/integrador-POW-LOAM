@@ -1,5 +1,6 @@
 //configuracion de las pestañas fijas (inicio, buscar, escanear, pendientes, perfil)
 import React from 'react';
+import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import PantallaInicio from '../pantallas/PantallaInicio';
@@ -17,9 +18,21 @@ export const NavegadorPestanias = () => {
         tabBarInactiveTintColor: '#A0AEC0',
       }}
     >
-      <Pestanias.Screen name="Inicio" component={PantallaInicio} />
-      <Pestanias.Screen name="Pendientes" component={PantallaPendientes} />
-      <Pestanias.Screen name="Perfil" component={PantallaPerfil} />
+      <Pestanias.Screen
+        name="Inicio"
+        component={PantallaInicio}
+        options={{ tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🏠</Text> }}
+      />
+      <Pestanias.Screen
+        name="Pendientes"
+        component={PantallaPendientes}
+        options={{ tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>📋</Text> }}
+      />
+      <Pestanias.Screen
+        name="Perfil"
+        component={PantallaPerfil}
+        options={{ tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>👤</Text> }}
+      />
     </Pestanias.Navigator>
   );
 };

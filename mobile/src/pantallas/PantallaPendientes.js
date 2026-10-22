@@ -52,6 +52,6 @@ const estilos = StyleSheet.create({
   },
   lista: {
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 26,
   },
 });

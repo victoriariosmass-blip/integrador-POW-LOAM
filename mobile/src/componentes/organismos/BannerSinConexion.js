@@ -1,14 +1,19 @@
 //Aviso que bloquea o notifica la perdida de conexion a internet
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { usarPreferencias } from '../../contexto/ContextoPreferencias';
 
 export const BannerSinConexion = ({ 
   mensaje = 'Sin conexión • Mostrando solo convenios pendientes' 
-}) => (
-  <View style={estilos.banner}>
-    <Text style={estilos.texto}>{mensaje}</Text>
-  </View>
-);
+}) => {
+  const { factorActual } = usarPreferencias();
+
+  return (
+    <View style={estilos.banner}>
+      <Text style={[estilos.texto, { fontSize: 13 * factorActual }]}>{mensaje}</Text>
+    </View>
+  );
+};
 
 const estilos = StyleSheet.create({
   banner: {
@@ -20,7 +25,6 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
   },
   texto: {
-    fontSize: 13,
     color: '#4A5568',
     fontWeight: '500',
   },

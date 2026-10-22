@@ -1,8 +1,10 @@
 //Para indicar el estado: Vigente, Por firmar, En trámite
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { usarPreferencias } from '../../contexto/ContextoPreferencias';
 
 export const EtiquetaEstado = ({ texto, variante = 'por_defecto' }) => {
+  const { factorActual } = usarPreferencias();
   const obtenerColorDeFondo = () => {
     switch (variante) {
       case 'vigente':
@@ -20,7 +22,7 @@ export const EtiquetaEstado = ({ texto, variante = 'por_defecto' }) => {
 
   return (
     <View style={[estilos.etiqueta, { backgroundColor: obtenerColorDeFondo() }]}>
-      <Text style={estilos.texto}>{texto}</Text>
+      <Text style={[estilos.texto, { fontSize: 12 * factorActual }]}>{texto}</Text>
     </View>
   );
 };
@@ -33,7 +35,6 @@ const estilos = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   texto: {
-    fontSize: 12,
     fontWeight: '600',
     color: '#333333',
   },

@@ -2,17 +2,19 @@
 import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { EtiquetaEstado } from '../atomos/EtiquetaEstado';
+import { usarPreferencias } from '../../contexto/ContextoPreferencias';
 
 export const ElementoConvenio = ({ codigo, descripcion, estado, alPresionar }) => {
+  const { factorActual } = usarPreferencias();
   const varianteEstado = estado.toLowerCase().replace(/\s+/g, '_');
 
   return (
     <TouchableOpacity style={estilos.contenedor} onPress={alPresionar}>
       <View style={estilos.filaSuperior}>
-        <Text style={estilos.codigo}>{codigo}</Text>
+        <Text style={[estilos.codigo, { fontSize: 16 * factorActual }]}>{codigo}</Text>
         <EtiquetaEstado texto={estado} variante={varianteEstado} />
       </View>
-      <Text style={estilos.descripcion} numberOfLines={2}>
+      <Text style={[estilos.descripcion, { fontSize: 14 * factorActual }]} numberOfLines={2}>
         {descripcion}
       </Text>
     </TouchableOpacity>
@@ -35,12 +37,10 @@ const estilos = StyleSheet.create({
   },
   codigo: {
     fontWeight: 'bold',
-    fontSize: 15,
     color: '#2D3748',
   },
   descripcion: {
     marginTop: 6,
-    fontSize: 13,
     color: '#718096',
   },
 });

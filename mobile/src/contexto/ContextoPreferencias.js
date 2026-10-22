@@ -9,7 +9,7 @@ export const ProveedorPreferencias = ({ children }) => {
 
   const factoresEscala = {
     chica: 0.85,
-    mediana: 1,
+    mediana: 1.1,
     grande: 1.25,
   };
 

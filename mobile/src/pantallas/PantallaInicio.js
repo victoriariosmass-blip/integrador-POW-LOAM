@@ -3,8 +3,10 @@ import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { TarjetaMetrica } from '../componentes/moleculas/TarjetaMetrica';
 import { ElementoConvenio } from '../componentes/moleculas/ElementoConvenio';
+import { usarPreferencias } from '../contexto/ContextoPreferencias';
 
 export default function PantallaInicio({ navigation }) {
+  const { factorActual } = usarPreferencias();
   const conveniosRecientes = [
     {
       id: '1',
@@ -28,7 +30,7 @@ export default function PantallaInicio({ navigation }) {
 
   return (
     <ScrollView style={estilos.contenedor}>
-      <Text style={estilos.saludo}>Hola, Autoridad</Text>
+      <Text style={[estilos.saludo, { fontSize: 24 * factorActual }]}>Hola, Laura</Text>
 
       {/* Cajas de resumen de métricas */}
       <View style={estilos.grillaMetricas}>
@@ -40,7 +42,9 @@ export default function PantallaInicio({ navigation }) {
 
       {/* Listado de movimientos */}
       <View style={estilos.cabeceraSeccion}>
-        <Text style={estilos.tituloSeccion}>Últimos 10 movimientos</Text>
+        <Text style={[estilos.tituloSeccion, { fontSize: 17 * factorActual }]}>
+          Últimos 10 movimientos
+        </Text>
       </View>
 
       {conveniosRecientes.map((convenio) => (
@@ -63,10 +67,9 @@ const estilos = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 36,
   },
   saludo: {
-    fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 16,
     color: '#1A202C',
@@ -80,7 +83,6 @@ const estilos = StyleSheet.create({
     marginVertical: 14,
   },
   tituloSeccion: {
-    fontSize: 16,
     fontWeight: 'bold',
     color: '#2D3748',
   },

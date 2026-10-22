@@ -1,13 +1,18 @@
 //tarjetas para el home: resumen numerico 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { usarPreferencias } from '../../contexto/ContextoPreferencias';
 
-export const TarjetaMetrica = ({ titulo, valor }) => (
-  <View style={estilos.tarjeta}>
-    <Text style={estilos.titulo}>{titulo}</Text>
-    <Text style={estilos.valor}>{valor}</Text>
-  </View>
-);
+export const TarjetaMetrica = ({ titulo, valor }) => {
+  const { factorActual } = usarPreferencias();
+
+  return (
+    <View style={estilos.tarjeta}>
+      <Text style={[estilos.titulo, { fontSize: 13 * factorActual }]}>{titulo}</Text>
+      <Text style={[estilos.valor, { fontSize: 22 * factorActual }]}>{valor}</Text>
+    </View>
+  );
+};
 
 const estilos = StyleSheet.create({
   tarjeta: {
@@ -21,12 +26,10 @@ const estilos = StyleSheet.create({
     margin: 6,
   },
   titulo: {
-    fontSize: 12,
     color: '#718096',
     marginBottom: 6,
   },
   valor: {
-    fontSize: 20,
     fontWeight: 'bold',
     color: '#1A202C',
   },
