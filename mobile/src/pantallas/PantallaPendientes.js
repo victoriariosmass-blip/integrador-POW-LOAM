@@ -49,6 +49,7 @@ const estilos = StyleSheet.create({
   contenedor: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    paddingTop: 28,
   },
   lista: {
     paddingHorizontal: 16,
