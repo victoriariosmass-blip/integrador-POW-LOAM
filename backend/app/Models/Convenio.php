@@ -103,6 +103,11 @@ class Convenio extends Model
         return $this->hasMany(Firma::class, 'convenio_id');
     }
 
+    public function asignaciones(): HasMany
+    {
+        return $this->hasMany(AsignacionRevision::class, 'convenio_id');
+    }
+
     /** Instrumentos de los que este depende (su marco, el convenio que modifica, etc.) */
     public function antecedentes(): BelongsToMany
     {
@@ -142,11 +147,21 @@ class Convenio extends Model
     }
 
     // ---------------------------------------------------------------
-    // Alcance por unidad: Convenio::visiblesPara($user)->get()
+    // Qué convenios puede ver cada rol: Convenio::visiblesPara($user)->get()
+    // (ver la matriz de permisos en el documento del proyecto)
     // ---------------------------------------------------------------
 
     public function scopeVisiblesPara(Builder $query, User $user): Builder
     {
-        return $user->esGlobal() ? $query : $query->where('unidad_id', $user->unidad_id);
+        // Sin unidad = alcance global; con unidad = solo la suya
+        $porUnidad = fn (Builder $q) => $user->esGlobal() ? $q : $q->where('unidad_id', $user->unidad_id);
+
+        return match ($user->rol) {
+            'admin' => $query,
+            'gestor', 'autoridad' => $porUnidad($query),
+            'revisor' => $query->whereHas('asignaciones', fn ($q) => $q->where('revisor_id', $user->id)),
+            'consulta' => $porUnidad($query)->where('confidencial', false),
+            default => $query->whereRaw('1 = 0'),
+        };
     }
 }

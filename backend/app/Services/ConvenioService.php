@@ -4,6 +4,7 @@
   use App\Models\Convenio;
   use App\Models\User;
   use App\Repositories\ConvenioRepository;
+  use Illuminate\Support\Facades\Gate;
 
   class ConvenioService
   {
@@ -11,32 +12,48 @@
 
       public function listar(User $usuario, array $filtros)
       {
-          // Alcance por unidad: si el usuario tiene unidad, solo ve la suya
-          if ($usuario->unidad_id) {
-              $filtros['unidad_id'] = $usuario->unidad_id;
-          }
-          return $this->repo->listar($filtros);
+          return $this->repo->listar($usuario, $filtros);
       }
 
       public function ver(User $usuario, int $id): Convenio
       {
           $convenio = $this->repo->buscar($id);
-          if ($usuario->unidad_id && $convenio->unidad_id !== $usuario->unidad_id) {
-              abort(403, 'No tenés permiso para ver este convenio');
-          }
+          Gate::forUser($usuario)->authorize('view', $convenio); // 403 si no lo puede ver
           return $convenio;
       }
 
       public function crear(User $usuario, array $datos): Convenio
       {
-          if (! in_array($usuario->rol, ['gestion', 'administracion'])) {
-              abort(403, 'Tu rol no puede cargar convenios');
+          Gate::forUser($usuario)->authorize('create', Convenio::class); // solo gestor y admin
+
+          // Un gestor carga en su unidad; un usuario global tiene que elegirla
+          $datos['unidad_id'] = $usuario->unidad_id ?? ($datos['unidad_id'] ?? null);
+          if (! $datos['unidad_id']) {
+              abort(422, 'Indicá la unidad del convenio');
           }
+
           $datos['estado'] = 'borrador';
-          $datos['unidad_id'] = $usuario->unidad_id ?? $datos['unidad_id'];
-          // Acá también va la generación del código (MC-2026-0001, etc.)
+          $datos['creado_por'] = $usuario->id;
+          $datos['codigo'] = $this->siguienteCodigo($datos['tipo']);
+
           return $this->repo->crear($datos);
       }
-  }
 
-  
+      // Código legible: PREFIJO-AÑO-NÚMERO, por ejemplo MC-2026-0001
+      private function siguienteCodigo(string $tipo): string
+      {
+          $prefijos = [
+              'marco_colaboracion' => 'MC',
+              'especifico_colaboracion' => 'EC',
+              'marco_pasantia' => 'MP',
+              'especifico_pasantia' => 'EP',
+              'adenda' => 'AD',
+          ];
+          $base = $prefijos[$tipo] . '-' . now()->year . '-';
+
+          $ultimo = Convenio::where('codigo', 'like', $base . '%')->max('codigo');
+          $numero = $ultimo ? ((int) substr($ultimo, -4)) + 1 : 1;
+
+          return $base . str_pad($numero, 4, '0', STR_PAD_LEFT);
+      }
+  }

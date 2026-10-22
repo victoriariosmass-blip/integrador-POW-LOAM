@@ -19,7 +19,8 @@ class UserSeeder extends Seeder
 
         $usuarios = [
             ['name' => 'Ana Admin', 'email' => 'admin@convenios.test', 'rol' => 'admin', 'unidad_id' => null],
-            ['name' => 'Rita Rectora', 'email' => 'autoridad@convenios.test', 'rol' => 'consulta', 'unidad_id' => null, 'puede_firmar' => true],
+            ['name' => 'Rita Rectora', 'email' => 'autoridad@convenios.test', 'rol' => 'autoridad', 'unidad_id' => null],
+            ['name' => 'Diego Decano', 'email' => 'decano.fi@convenios.test', 'rol' => 'autoridad', 'unidad_id' => $fi],
             ['name' => 'Gabriel Gestor', 'email' => 'gestor.fi@convenios.test', 'rol' => 'gestor', 'unidad_id' => $fi],
             ['name' => 'Gisela Gestora', 'email' => 'gestor.fceyn@convenios.test', 'rol' => 'gestor', 'unidad_id' => $fceyn],
             ['name' => 'Raúl Revisor', 'email' => 'revisor@convenios.test', 'rol' => 'revisor', 'unidad_id' => null],

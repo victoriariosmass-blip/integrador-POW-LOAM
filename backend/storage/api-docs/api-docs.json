@@ -10,11 +10,80 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Iniciar sesión",
+                "summary": "Iniciar sesión (web, por cookie)",
                 "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "gestor.fi@convenios.test"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Logueado"
+                    },
+                    "422": {
+                        "description": "Credenciales incorrectas"
+                    }
+                }
+            }
+        },
+        "/api/token": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Obtener token (app y Swagger)",
+                "operationId": "7f9d971a531be31da6c059ca33920634",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "gestor.fi@convenios.test"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    },
+                                    "dispositivo": {
+                                        "type": "string",
+                                        "example": "swagger"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token y usuario"
                     },
                     "422": {
                         "description": "Credenciales incorrectas"
@@ -46,6 +115,9 @@
                 "responses": {
                     "200": {
                         "description": "Usuario"
+                    },
+                    "401": {
+                        "description": "No autenticado"
                     }
                 }
             }
@@ -98,9 +170,53 @@
                 ],
                 "summary": "Alta de convenio",
                 "operationId": "407b6781f1be945a0d993b8e84cb916e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "titulo",
+                                    "tipo",
+                                    "objeto"
+                                ],
+                                "properties": {
+                                    "titulo": {
+                                        "type": "string",
+                                        "example": "Convenio de prueba"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "marco_colaboracion"
+                                    },
+                                    "objeto": {
+                                        "type": "string",
+                                        "example": "Colaboración académica"
+                                    },
+                                    "unidad_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fecha_firma": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "fecha_vencimiento": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
                         "description": "Creado en borrador"
+                    },
+                    "403": {
+                        "description": "Tu rol no puede cargar convenios"
                     },
                     "422": {
                         "description": "Datos inválidos"
@@ -139,6 +255,20 @@
             }
         }
     },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Token de POST /api/token",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "security": [
+        {
+            "sanctum": []
+        }
+    ],
     "tags": [
         {
             "name": "Auth",
