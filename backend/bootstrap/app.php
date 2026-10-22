@@ -13,7 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
       $middleware->statefulApi();
+      // Sin sesión en /api: responder 401 en lugar de redirigir a una ruta "login" que no existe
+      $middleware->redirectGuestsTo(fn ($request) => $request->is('api/*') ? null : '/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // En /api siempre responder JSON (401, 403, 404, 422...) y no redirigir a un login web
+        $exceptions->shouldRenderJsonWhen(fn ($request) => $request->is('api/*'));
     })->create();

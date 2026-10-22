@@ -20,7 +20,6 @@ class User extends Authenticatable
         'password',
         'rol',
         'unidad_id',
-        'puede_firmar',
         'tamano_letra',
         'tema',
         'foto_ruta',
@@ -37,7 +36,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'puede_firmar' => 'boolean',
             'activo' => 'boolean',
         ];
     }
@@ -78,5 +76,16 @@ class User extends Authenticatable
     public function esAdmin(): bool
     {
         return $this->rol === 'admin';
+    }
+
+    public function esAutoridad(): bool
+    {
+        return $this->rol === 'autoridad';
+    }
+
+    /** true si el usuario tiene alguno de los roles indicados: $user->tieneRol('gestor', 'admin') */
+    public function tieneRol(string ...$roles): bool
+    {
+        return in_array($this->rol, $roles, true);
     }
 }

@@ -15,7 +15,8 @@ class StoreConvenioRequest extends FormRequest
     {
         return [
             'titulo' => ['required', 'string', 'max:255'],
-            'tipo' => ['required', 'string'],
+            'tipo' => ['required', 'in:' . implode(',', \App\Models\Convenio::TIPOS)],
+            'objeto' => ['required', 'string'],
             'unidad_id' => ['nullable', 'exists:unidades,id'],
             'fecha_firma' => ['nullable', 'date'],
             'fecha_vencimiento' => ['nullable', 'date', 'after:fecha_firma'],

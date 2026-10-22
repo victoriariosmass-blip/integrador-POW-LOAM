@@ -41,8 +41,19 @@
       }
 
       #[OA\Post(path: '/api/convenios', summary: 'Alta de convenio', tags: ['Convenios'],
+          requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+              required: ['titulo', 'tipo', 'objeto'],
+              properties: [
+                  new OA\Property(property: 'titulo', type: 'string', example: 'Convenio de prueba'),
+                  new OA\Property(property: 'tipo', type: 'string', example: 'marco_colaboracion'),
+                  new OA\Property(property: 'objeto', type: 'string', example: 'Colaboración académica'),
+                  new OA\Property(property: 'unidad_id', type: 'integer', example: 1),
+                  new OA\Property(property: 'fecha_firma', type: 'string', format: 'date'),
+                  new OA\Property(property: 'fecha_vencimiento', type: 'string', format: 'date'),
+              ])),
           responses: [
               new OA\Response(response: 201, description: 'Creado en borrador'),
+              new OA\Response(response: 403, description: 'Tu rol no puede cargar convenios'),
               new OA\Response(response: 422, description: 'Datos inválidos'),
           ])]
       public function store(StoreConvenioRequest $request)
