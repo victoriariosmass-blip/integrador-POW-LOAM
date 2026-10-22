@@ -1,4 +1,9 @@
-export default function Topbar({ usuario = 'Usuario · Rol · Unidad' }) {
+'use client';
+import { useUsuario } from '../../lib/UsuarioContext';
+import { NOMBRE_ROL } from '../../lib/permisos';
+
+export default function Topbar() {
+  const usuario = useUsuario();
   return (
     <header className="navbar bg-light border-bottom px-3">
       <div className="d-flex align-items-center gap-2">
@@ -19,7 +24,7 @@ export default function Topbar({ usuario = 'Usuario · Rol · Unidad' }) {
           <i className="bi bi-bell fs-5" aria-hidden="true" />
         </button>
         <i className="bi bi-person-circle fs-3 text-secondary" aria-hidden="true" />
-        <span className="small text-secondary d-none d-sm-inline">{usuario}</span>
+        <span className="small text-secondary d-none d-sm-inline">{usuario.name} · {NOMBRE_ROL[usuario.rol]}</span>
       </div>
     </header>
   );

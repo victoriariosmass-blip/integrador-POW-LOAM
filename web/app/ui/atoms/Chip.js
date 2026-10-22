@@ -1,17 +1,21 @@
+// estados del circuito (los mismos que la API) y los de vigencia, que se calculan por fecha
 const styles = {
   borrador: 'text-bg-secondary',
-  en_revision: 'text-bg-warning',
-  observado: 'text-bg-warning',
+  revision: 'text-bg-warning',
   aprobado: 'text-bg-info',
+  firmado: 'text-bg-primary',
+  rescindido: 'text-bg-danger',
+  archivado: 'text-bg-dark',
   vigente: 'text-bg-success',
   por_vencer: 'text-bg-warning',
   vencido: 'text-bg-danger',
 };
 const labels = {
-  borrador: 'Borrador', en_revision: 'En revisión', observado: 'Observado',
-  aprobado: 'Aprobado', vigente: 'Vigente', por_vencer: 'Por vencer', vencido: 'Vencido',
+  borrador: 'Borrador', revision: 'En revisión', aprobado: 'Aprobado', firmado: 'Firmado',
+  rescindido: 'Rescindido', archivado: 'Archivado',
+  vigente: 'Vigente', por_vencer: 'Por vencer', vencido: 'Vencido',
 };
-
+ 
 export default function Chip({ estado, children }) {
   return <span className={`badge rounded-pill ${styles[estado] ?? 'text-bg-light'}`}>{children ?? labels[estado] ?? estado}</span>;
 }
