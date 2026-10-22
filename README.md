@@ -112,7 +112,8 @@ Se crean automáticamente con `php artisan migrate --seed`. La contraseña de to
 | Email | Rol | Alcance | Para probar |
 | --- | --- | --- | --- |
 | admin@convenios.test | Administración | Global | Gestión de usuarios y unidades, rescindir y archivar |
-| autoridad@convenios.test | Consulta + puede firmar | Global | Firma de convenios aprobados (app) |
+| autoridad@convenios.test | Autoridad | Global | Firma de convenios aprobados de todas las unidades (app) |
+| decano.fi@convenios.test | Autoridad | Facultad de Ingeniería | Firma solo de convenios de su facultad (app) |
 | gestor.fi@convenios.test | Gestión | Facultad de Ingeniería | Alta y edición de convenios, respuesta a observaciones |
 | gestor.fceyn@convenios.test | Gestión | Facultad de Ciencias Exactas y Naturales | Verificar que solo ve los convenios de su unidad |
 | revisor@convenios.test | Revisión | Global | Panel de revisión, aprobar o devolver con observaciones |
