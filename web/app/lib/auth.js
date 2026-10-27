@@ -1,7 +1,6 @@
 import { api } from './api';
 
-// true = datos de prueba / false = API real de vick
-const USAR_MOCK = true;
+import { USAR_MOCK } from './config';
  
 // codigo que acepta el modo de prueba
 const CODIGO_MOCK = '123456';
