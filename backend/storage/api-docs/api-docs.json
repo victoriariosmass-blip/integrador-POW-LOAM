@@ -252,6 +252,342 @@
                         "description": "No existe"
                     }
                 }
+            },
+            "put": {
+                "tags": [
+                    "Convenios"
+                ],
+                "summary": "Editar borrador",
+                "operationId": "d02cb97d139a19d680610200932a976b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "version"
+                                ],
+                                "properties": {
+                                    "version": {
+                                        "description": "La que tenía el convenio al abrirlo",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "titulo": {
+                                        "type": "string",
+                                        "example": "Convenio editado"
+                                    },
+                                    "objeto": {
+                                        "type": "string",
+                                        "example": "Nuevo objeto"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Convenio editado"
+                    },
+                    "403": {
+                        "description": "Sin permiso o no está en borrador"
+                    },
+                    "409": {
+                        "description": "Otro usuario lo cambió mientras se editaba"
+                    },
+                    "422": {
+                        "description": "Datos inválidos"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/enviar-revision": {
+            "post": {
+                "tags": [
+                    "Circuito"
+                ],
+                "summary": "Enviar a revisión (borrador -> revision)",
+                "operationId": "d315de4c93ba9d6ab940241f51b7d323",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Convenio en revisión"
+                    },
+                    "403": {
+                        "description": "Sin permiso o estado incorrecto"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/aprobar": {
+            "post": {
+                "tags": [
+                    "Circuito"
+                ],
+                "summary": "Aprobar (revision -> aprobado)",
+                "operationId": "a6d013af433647fef97c64f579f3a460",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "fundamento": {
+                                        "type": "string",
+                                        "example": "Cumple con lo requerido"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Convenio aprobado"
+                    },
+                    "403": {
+                        "description": "Sin permiso o estado incorrecto"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/devolver": {
+            "post": {
+                "tags": [
+                    "Circuito"
+                ],
+                "summary": "Devolver con observaciones (revision -> borrador)",
+                "operationId": "60e8dd90e0cbdcefef0116532e7c77ee",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "observaciones"
+                                ],
+                                "properties": {
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Falta la resolución del Consejo"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Convenio devuelto a borrador"
+                    },
+                    "403": {
+                        "description": "Sin permiso o estado incorrecto"
+                    },
+                    "422": {
+                        "description": "Faltan las observaciones"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/rescindir": {
+            "post": {
+                "tags": [
+                    "Circuito"
+                ],
+                "summary": "Rescindir (firmado -> rescindido)",
+                "operationId": "295197b855305ac2329f803df0dfccee",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fundamento"
+                                ],
+                                "properties": {
+                                    "fundamento": {
+                                        "type": "string",
+                                        "example": "Rescisión de común acuerdo"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Convenio rescindido"
+                    },
+                    "403": {
+                        "description": "Sin permiso o estado incorrecto"
+                    },
+                    "422": {
+                        "description": "Falta el fundamento"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/archivar": {
+            "post": {
+                "tags": [
+                    "Circuito"
+                ],
+                "summary": "Archivar (firmado o rescindido -> archivado)",
+                "operationId": "18b64e1ed0b65ed2d7c4279f17f35225",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "fundamento": {
+                                        "type": "string",
+                                        "example": "Vencido sin renovación"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Convenio archivado"
+                    },
+                    "403": {
+                        "description": "Sin permiso o estado incorrecto"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/asignar-revisor": {
+            "post": {
+                "tags": [
+                    "Circuito"
+                ],
+                "summary": "Asignar revisor (solo admin)",
+                "operationId": "98eac89a01ec0a2392700e85967aac1f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "revisor_id"
+                                ],
+                                "properties": {
+                                    "revisor_id": {
+                                        "type": "integer",
+                                        "example": 6
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Revisor asignado"
+                    },
+                    "403": {
+                        "description": "Sin permiso"
+                    },
+                    "422": {
+                        "description": "El usuario no es revisor"
+                    }
+                }
+            }
+        },
+        "/api/resumen": {
+            "get": {
+                "tags": [
+                    "Convenios"
+                ],
+                "summary": "Métricas de inicio y últimos 10 movimientos",
+                "operationId": "9862aeab79898bf62a4985ccfaa71715",
+                "responses": {
+                    "200": {
+                        "description": "Métricas"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                }
             }
         }
     },
@@ -277,6 +613,10 @@
         {
             "name": "Convenios",
             "description": "Convenios"
+        },
+        {
+            "name": "Circuito",
+            "description": "Circuito"
         }
     ]
 }

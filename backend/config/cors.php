@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000'],
+    'allowed_origins' => ['http://localhost:3000', 'http://localhost:8081'], // 8081: la app de Expo abierta en el navegador
 
     'allowed_origins_patterns' => [],
 

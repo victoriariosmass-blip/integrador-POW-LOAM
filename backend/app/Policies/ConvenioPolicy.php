@@ -51,6 +51,12 @@ class ConvenioPolicy
             && $convenio->asignaciones()->where('revisor_id', $user->id)->exists();
     }
 
+    /** Asignar un revisor (solo admin, antes de que se apruebe) */
+    public function asignarRevisor(User $user, Convenio $convenio): bool
+    {
+        return $user->esAdmin() && in_array($convenio->estado, ['borrador', 'revision'], true);
+    }
+
     /** Firmar (solo autoridad, solo aprobados, solo los que puede ver) */
     public function firmar(User $user, Convenio $convenio): bool
     {

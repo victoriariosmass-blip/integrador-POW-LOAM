@@ -98,6 +98,12 @@ class Convenio extends Model
         return $this->hasMany(Comentario::class, 'convenio_id');
     }
 
+    /** Solo las observaciones de revisión (las que deja el revisor al devolver) */
+    public function observaciones(): HasMany
+    {
+        return $this->hasMany(Comentario::class, 'convenio_id')->where('tipo', 'observacion');
+    }
+
     public function firmas(): HasMany
     {
         return $this->hasMany(Firma::class, 'convenio_id');

@@ -2,6 +2,7 @@
   namespace App\Services;
 
   use App\Models\Convenio;
+  use App\Models\TransicionEstado;
   use App\Models\User;
   use App\Repositories\ConvenioRepository;
   use Illuminate\Support\Facades\Gate;
@@ -36,7 +37,35 @@
           $datos['creado_por'] = $usuario->id;
           $datos['codigo'] = $this->siguienteCodigo($datos['tipo']);
 
-          return $this->repo->crear($datos);
+          $convenio = $this->repo->crear($datos);
+
+          // Primer registro del historial de estados
+          TransicionEstado::create([
+              'convenio_id' => $convenio->id,
+              'estado_desde' => null,
+              'estado_hasta' => 'borrador',
+              'fundamento' => 'Alta del convenio',
+              'user_id' => $usuario->id,
+          ]);
+
+          return $convenio;
+      }
+
+      // Edita un borrador. "version" es la que tenía cuando el usuario lo abrió:
+      // si alguien lo guardó en el medio, responde 409 y no pisa esos cambios.
+      public function editar(User $usuario, int $id, array $datos): Convenio
+      {
+          $convenio = $this->repo->buscar($id);
+          Gate::forUser($usuario)->authorize('update', $convenio);
+
+          if ((int) $datos['version'] !== $convenio->version) {
+              abort(409, 'El convenio cambió mientras lo editabas. Recargalo para ver los cambios.');
+          }
+
+          unset($datos['version']);
+          $convenio->update($datos + ['version' => $convenio->version + 1]);
+
+          return $this->repo->buscar($id);
       }
 
       // Código legible: PREFIJO-AÑO-NÚMERO, por ejemplo MC-2026-0001
