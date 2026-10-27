@@ -6,7 +6,9 @@ import { usarPreferencias } from '../../contexto/ContextoPreferencias';
 
 export const ElementoConvenio = ({ codigo, descripcion, estado, alPresionar }) => {
   const { factorActual } = usarPreferencias();
-  const varianteEstado = estado.toLowerCase().replace(/\s+/g, '_');
+  
+  // "En tramite" -> "en_tramite"
+  const varianteEstado = estado.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '_');
 
   return (
     <TouchableOpacity style={estilos.contenedor} onPress={alPresionar}>
