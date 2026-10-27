@@ -3,6 +3,7 @@
 
   use App\Http\Controllers\Controller;
   use App\Http\Requests\StoreConvenioRequest;
+  use App\Http\Requests\UpdateConvenioRequest;
   use App\Http\Resources\ConvenioResource;
   use App\Services\ConvenioService;
   use Illuminate\Http\Request;
@@ -60,5 +61,25 @@
       {
           $convenio = $this->service->crear($request->user(), $request->validated());
           return (new ConvenioResource($convenio))->response()->setStatusCode(201);
+      }
+
+      #[OA\Put(path: '/api/convenios/{id}', summary: 'Editar borrador', tags: ['Convenios'],
+          parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+          requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+              required: ['version'],
+              properties: [
+                  new OA\Property(property: 'version', type: 'integer', example: 1, description: 'La que tenía el convenio al abrirlo'),
+                  new OA\Property(property: 'titulo', type: 'string', example: 'Convenio editado'),
+                  new OA\Property(property: 'objeto', type: 'string', example: 'Nuevo objeto'),
+              ])),
+          responses: [
+              new OA\Response(response: 200, description: 'Convenio editado'),
+              new OA\Response(response: 403, description: 'Sin permiso o no está en borrador'),
+              new OA\Response(response: 409, description: 'Otro usuario lo cambió mientras se editaba'),
+              new OA\Response(response: 422, description: 'Datos inválidos'),
+          ])]
+      public function update(UpdateConvenioRequest $request, int $id)
+      {
+          return new ConvenioResource($this->service->editar($request->user(), $id, $request->validated()));
       }
   }
