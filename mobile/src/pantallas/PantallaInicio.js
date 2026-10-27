@@ -1,89 +1,82 @@
-//pantalla principal y 10 ultimos movimientos
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+//pantalla principal: metricas y 10 ultimos movimientos (trae los datos de la API)
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
 import { TarjetaMetrica } from '../componentes/moleculas/TarjetaMetrica';
 import { ElementoConvenio } from '../componentes/moleculas/ElementoConvenio';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
+import { usarSesion } from '../contexto/ContextoSesion';
+import { obtenerResumen, textoEstado } from '../servicios/convenios';
 
 export default function PantallaInicio({ navigation }) {
-  const { factorActual } = usarPreferencias();
-  const conveniosRecientes = [
-    {
-      id: '1',
-      codigo: 'MC-2026-0001',
-      descripcion: 'Convenio Marco de Colaboración Académica e Investigación',
-      estado: 'Vigente',
-    },
-    {
-      id: '2',
-      codigo: 'EC-2026-0002',
-      descripcion: 'Convenio Específico de Pasantía Profesional - Facultad de Ingeniería',
-      estado: 'Por firmar',
-    },
-    {
-      id: '3',
-      codigo: 'AD-2026-0001',
-      descripcion: 'Adenda modificatoria de plazos y cronograma de actividades',
-      estado: 'En trámite',
-    },
-  ];
+  const { factorActual, colores } = usarPreferencias();
+  const { usuario } = usarSesion();
+  const [resumen, setResumen] = useState(null);
+  const [error, setError] = useState('');
+  const [refrescando, setRefrescando] = useState(false);
+
+  const cargar = useCallback(async () => {
+    setError('');
+    try {
+      setResumen(await obtenerResumen());
+    } catch (e) {
+      setError(e.message || 'No se pudo cargar el inicio');
+    } finally {
+      setRefrescando(false);
+    }
+  }, []);
+
+  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => navigation.addListener('focus', cargar), [navigation, cargar]);
+
+  const nombre = usuario?.name?.split(' ')[0] ?? '';
 
   return (
-    <ScrollView style={estilos.contenedor}>
-      <Text style={[estilos.saludo, { fontSize: 24 * factorActual }]}>Hola, Laura</Text>
+    <ScrollView
+      style={[estilos.contenedor, { backgroundColor: colores.fondo }]}
+      refreshControl={<RefreshControl refreshing={refrescando} onRefresh={() => { setRefrescando(true); cargar(); }} />}
+    >
+      <Text style={[estilos.saludo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>Hola, {nombre}</Text>
 
-      {/* Cajas de resumen de métricas */}
-      <View style={estilos.grillaMetricas}>
-        <TarjetaMetrica titulo="Firmados (último año)" valor="24" />
-        <TarjetaMetrica titulo="Vigentes" valor="58" />
-        <TarjetaMetrica titulo="En trámite" valor="12" />
-        <TarjetaMetrica titulo="Por firmar" valor="3" />
-      </View>
+      {error ? (
+        <Text style={{ color: '#B71C1C', fontSize: 15 * factorActual, marginBottom: 12 }}>{error}</Text>
+      ) : null}
 
-      {/* Listado de movimientos */}
-      <View style={estilos.cabeceraSeccion}>
-        <Text style={[estilos.tituloSeccion, { fontSize: 17 * factorActual }]}>
-          Últimos 10 movimientos
-        </Text>
-      </View>
+      {!resumen && !error ? <ActivityIndicator size="large" style={{ marginTop: 24 }} /> : null}
 
-      {conveniosRecientes.map((convenio) => (
-        <ElementoConvenio
-          key={convenio.id}
-          codigo={convenio.codigo}
-          descripcion={convenio.descripcion}
-          estado={convenio.estado}
-          alPresionar={() =>
-            navigation.navigate('DetalleConvenio', { idConvenio: convenio.codigo })
-          }
-        />
-      ))}
+      {resumen ? (
+        <>
+          <View style={estilos.grillaMetricas}>
+            <TarjetaMetrica titulo="Firmados (último año)" valor={String(resumen.firmados_ultimo_anio)} />
+            <TarjetaMetrica titulo="Vigentes" valor={String(resumen.vigentes)} />
+            <TarjetaMetrica titulo="En trámite" valor={String(resumen.en_tramite)} />
+            <TarjetaMetrica titulo="Por firmar" valor={String(resumen.por_firmar)} />
+          </View>
+
+          <View style={estilos.cabeceraSeccion}>
+            <Text style={[estilos.tituloSeccion, { color: colores.textoPrincipal, fontSize: 17 * factorActual }]}>
+              Últimos 10 movimientos
+            </Text>
+          </View>
+
+          {resumen.ultimos_movimientos.map((mov) => (
+            <ElementoConvenio
+              key={mov.id}
+              codigo={mov.convenio.codigo}
+              descripcion={`${mov.convenio.titulo} · ${mov.usuario?.name ?? ''}`}
+              estado={textoEstado(mov.convenio)}
+              alPresionar={() => navigation.navigate('DetalleConvenio', { idConvenio: mov.convenio.codigo, id: mov.convenio.id })}
+            />
+          ))}
+        </>
+      ) : null}
     </ScrollView>
   );
 }
 
 const estilos = StyleSheet.create({
-  contenedor: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingTop: 36,
-  },
-  saludo: {
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#1A202C',
-  },
-  grillaMetricas: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  cabeceraSeccion: {
-    marginVertical: 14,
-  },
-  tituloSeccion: {
-    fontWeight: 'bold',
-    color: '#2D3748',
-  },
+  contenedor: { flex: 1, paddingHorizontal: 16, paddingTop: 36 },
+  saludo: { fontWeight: 'bold', marginBottom: 16 },
+  grillaMetricas: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  cabeceraSeccion: { marginVertical: 14 },
+  tituloSeccion: { fontWeight: 'bold' },
 });

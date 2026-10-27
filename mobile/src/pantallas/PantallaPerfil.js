@@ -2,6 +2,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
+import { usarSesion } from '../contexto/ContextoSesion';
+
 
 export default function PantallaPerfil({ navigation }) {
   const {
@@ -13,6 +15,8 @@ export default function PantallaPerfil({ navigation }) {
     colores,
   } = usarPreferencias();
 
+  const { usuario, salir } = usarSesion();
+
   return (
     <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
       <Text
@@ -22,6 +26,10 @@ export default function PantallaPerfil({ navigation }) {
         ]}
       >
         Mi Perfil
+      </Text>
+      
+      <Text style={{ color: colores.textoSecundario, fontSize: 15 * factorActual, marginBottom: 16 }}>
+        {usuario?.name} · {usuario?.email}
       </Text>
 
       {/* Control de tamaño de letra */}
@@ -73,6 +81,11 @@ export default function PantallaPerfil({ navigation }) {
           🌱 Sostenibilidad Institucional
         </Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={estilos.filaEnlace} onPress={salir} accessibilityRole="button">
+        <Text style={{ color: '#C53030', fontSize: 16 * factorActual }}>Cerrar sesión</Text>
+      </TouchableOpacity>
+      
     </View>
   );
 }

@@ -1,5 +1,6 @@
 //navegador general tipo pila que contiene a NavegadorPestanias y permite abrir las pantallas que se superponen
 import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -8,15 +9,42 @@ import PantallaDetalleConvenio from '../pantallas/PantallaDetalleConvenio';
 import PantallaFirmaConvenio from '../pantallas/PantallaFirmaConvenio';
 import PantallaSubirAnexo from '../pantallas/PantallaSubirAnexo';
 import PantallaSostenibilidad from '../pantallas/PantallaSostenibilidad';
+import PantallaLogin from '../pantallas/PantallaLogin';
 import { ProveedorPreferencias } from '../contexto/ContextoPreferencias';
+import { ProveedorSesion, usarSesion } from '../contexto/ContextoSesion';
 
 const Pila = createNativeStackNavigator();
 
 export default function NavegadorPrincipal() {
   return (
     <ProveedorPreferencias>
-      <NavigationContainer>
-        <Pila.Navigator screenOptions={{ headerShown: true }}>
+      <ProveedorSesion>
+        <NavigationContainer>
+          <Pantallas />
+        </NavigationContainer>
+      </ProveedorSesion>
+    </ProveedorPreferencias>
+  );
+}
+
+// Sin sesión solo existe el login; con sesión, el resto de la app
+function Pantallas() {
+  const { usuario, cargando } = usarSesion();
+
+  if (cargando) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <Pila.Navigator screenOptions={{ headerShown: true }}>
+      {!usuario ? (
+        <Pila.Screen name="Login" component={PantallaLogin} options={{ headerShown: false }} />
+      ) : (
+        <>
           <Pila.Screen
             name="Principal"
             component={NavegadorPestanias}
@@ -42,8 +70,8 @@ export default function NavegadorPrincipal() {
             component={PantallaSostenibilidad}
             options={{ title: 'Impacto y Sostenibilidad' }}
           />
-        </Pila.Navigator>
-      </NavigationContainer>
-    </ProveedorPreferencias>
+        </>
+      )}
+    </Pila.Navigator>
   );
 }
