@@ -7,7 +7,7 @@ import { usarPreferencias } from '../contexto/ContextoPreferencias';
 const PALABRAS_OFENSIVAS = ['inoperante', 'estafa', 'fraude', 'odio', 'corrupto'];
 
 export default function PantallaComentarios({ idConvenio }) {
-  const { colores } = usarPreferencias();
+  const { colores, esModoOscuro } = usarPreferencias();
   const [comentarios, setComentarios] = useState([
     { id: '1', autor: 'Rectorado', texto: 'Revisión técnica aprobada.', hora: '1h' },
   ]);
@@ -35,8 +35,13 @@ export default function PantallaComentarios({ idConvenio }) {
     setNuevoTexto('');
   };
 
+  const obtenerFondoComentario = (esBloqueado) => {
+    if (!esBloqueado) return colores.tarjeta;
+    return esModoOscuro ? '#451A1A' : '#FED7D7';
+  };
+
   return (
-    <View style={estilos.contenedor}>
+    <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
       <FlatList
         data={comentarios}
         keyExtractor={(item) => item.id}
@@ -45,11 +50,14 @@ export default function PantallaComentarios({ idConvenio }) {
             style={[
               estilos.burbuja,
               item.esBloqueado && estilos.burbujaOfensiva,
-              { backgroundColor: item.esBloqueado ? '#FED7D7' : colores.tarjeta },
+              {
+                backgroundColor: obtenerFondoComentario(item.esBloqueado),
+                borderColor: item.esBloqueado ? colores.error : colores.borde,
+              },
             ]}
           >
-            <Text style={estilos.autor}>{item.autor} • {item.hora}</Text>
-            <Text style={{ color: item.esBloqueado ? '#C53030' : colores.textoPrincipal }}>
+            <Text style={[estilos.autor, { color: colores.textoSecundario }]}>{item.autor} • {item.hora}</Text>
+            <Text style={{ color: item.esBloqueado ? colores.error : colores.textoPrincipal }}>
               {item.texto}
             </Text>
           </View>
@@ -58,9 +66,12 @@ export default function PantallaComentarios({ idConvenio }) {
 
       <View style={estilos.filaEntrada}>
         <TextInput
-          style={[estilos.input, { color: colores.textoPrincipal }]}
+          style={[
+            estilos.input,
+            { backgroundColor: colores.tarjeta, borderColor: colores.borde, color: colores.textoPrincipal },
+          ]}
           placeholder="Escribí un comentario interno..."
-          placeholderTextColor="#A0AEC0"
+          placeholderTextColor={colores.textoSecundario}
           value={nuevoTexto}
           onChangeText={setNuevoTexto}
         />
@@ -72,9 +83,9 @@ export default function PantallaComentarios({ idConvenio }) {
 
 const estilos = StyleSheet.create({
   contenedor: { flex: 1, paddingVertical: 10 },
-  burbuja: { padding: 12, borderRadius: 8, marginVertical: 4 },
-  burbujaOfensiva: { borderWidth: 1, borderColor: '#E53E3E' },
-  autor: { fontSize: 11, color: '#718096', marginBottom: 4, fontWeight: 'bold' },
+  burbuja: { padding: 12, borderRadius: 8, marginVertical: 4, borderWidth: 1 },
+  burbujaOfensiva: { borderWidth: 1 },
+  autor: { fontSize: 11, marginBottom: 4, fontWeight: 'bold' },
   filaEntrada: { marginTop: 10 },
-  input: { borderWidth: 1, borderColor: '#CBD5E0', borderRadius: 8, padding: 10, marginBottom: 6 },
+  input: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 6 },
 });

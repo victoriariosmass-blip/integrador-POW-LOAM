@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
+import { usarPreferencias } from '../contexto/ContextoPreferencias';
 
 export default function PantallaEscanear({ navigation }) {
+  const { colores } = usarPreferencias();
   const [permiso, solicitarPermiso] = useCameraPermissions();
   const [escaneado, setEscaneado] = useState(false);
 
@@ -22,13 +24,13 @@ export default function PantallaEscanear({ navigation }) {
   }, [escaneado]);
 
   if (!permiso) {
-    return <View />;
+    return <View style={[estilos.contenedorCentrado, { backgroundColor: colores.fondo }]} />;
   }
 
   if (!permiso.granted) {
     return (
-      <View style={estilos.contenedorCentrado}>
-        <Text style={estilos.textoPermiso}>Necesitamos acceso a la cámara para escanear el QR del convenio.</Text>
+      <View style={[estilos.contenedorCentrado, { backgroundColor: colores.fondo }]}>
+        <Text style={[estilos.textoPermiso, { color: colores.textoPrincipal }]}>Necesitamos acceso a la cámara para escanear el QR del convenio.</Text>
         <BotonPersonalizado titulo="Conceder permiso" alPresionar={solicitarPermiso} />
       </View>
     );

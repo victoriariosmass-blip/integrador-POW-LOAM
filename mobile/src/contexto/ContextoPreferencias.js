@@ -16,12 +16,20 @@ export const ProveedorPreferencias = ({ children }) => {
   const factorActual = factoresEscala[tamanioLetra] || 1;
 
   const colores = {
-    fondo: esModoOscuro ? '#121212' : '#FFFFFF',
-    tarjeta: esModoOscuro ? '#1E1E1E' : '#F7FAFC',
+    fondo: esModoOscuro ? '#080B12' : '#FFFFFF',
+    tarjeta: esModoOscuro ? '#111827' : '#F7FAFC',
+    tarjetaElevada: esModoOscuro ? '#172033' : '#FFFFFF',
     textoPrincipal: esModoOscuro ? '#FFFFFF' : '#1A202C',
-    textoSecundario: esModoOscuro ? '#A0AEC0' : '#718096',
-    borde: esModoOscuro ? '#2D3748' : '#E2E8F0',
-    botonPrimario: esModoOscuro ? '#2B6CB0' : '#4A5568',
+    textoSecundario: esModoOscuro ? '#CBD5E1' : '#718096',
+    borde: '#E2E8F0',
+    acento: esModoOscuro ? '#60A5FA' : '#2B6CB0',
+    botonPrimario: esModoOscuro ? '#2563EB' : '#4A5568',
+    botonSecundario: esModoOscuro ? '#172033' : '#FFFFFF',
+    error: esModoOscuro ? '#FCA5A5' : '#B71C1C',
+    errorFondo: esModoOscuro ? '#451A1A' : '#FFEBEE',
+    exito: esModoOscuro ? '#86EFAC' : '#276749',
+    exitoFondo: esModoOscuro ? '#123322' : '#F0FFF4',
+    exitoBorde: esModoOscuro ? '#4ADE80' : '#68D391',
   };
 
   return (

@@ -47,14 +47,15 @@ export default function PantallaPerfil({ navigation }) {
             key={tamanio}
             style={[
               estilos.opcionTamanio,
-              tamanioLetra === tamanio && estilos.opcionTamanioActiva,
+              { borderColor: colores.borde },
+              tamanioLetra === tamanio && { backgroundColor: colores.acento, borderColor: colores.acento },
             ]}
             onPress={() => setTamanioLetra(tamanio)}
           >
             <Text
               style={[
                 estilos.textoTamanio,
-                { fontSize: 14 * factorActual },
+                { color: colores.textoPrincipal, fontSize: 14 * factorActual },
                 tamanioLetra === tamanio && estilos.textoActivo,
               ]}
             >
@@ -69,12 +70,17 @@ export default function PantallaPerfil({ navigation }) {
         <Text style={[estilos.etiqueta, { color: colores.textoPrincipal, fontSize: 15 * factorActual }]}>
           Modo oscuro
         </Text>
-        <Switch value={esModoOscuro} onValueChange={setEsModoOscuro} />
+        <Switch
+          value={esModoOscuro}
+          onValueChange={setEsModoOscuro}
+          trackColor={{ false: '#CBD5E0', true: colores.acento }}
+          thumbColor={esModoOscuro ? '#FFFFFF' : undefined}
+        />
       </View>
 
       {/* Accesos a funciones adicionales */}
       <TouchableOpacity
-        style={estilos.filaEnlace}
+        style={[estilos.filaEnlace, { borderBottomColor: colores.borde }]}
         onPress={() => navigation.navigate('Sostenibilidad')}
       >
         <Text style={{ color: colores.textoPrincipal, fontSize: 16 * factorActual }}>
@@ -82,8 +88,12 @@ export default function PantallaPerfil({ navigation }) {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={estilos.filaEnlace} onPress={salir} accessibilityRole="button">
-        <Text style={{ color: '#C53030', fontSize: 16 * factorActual }}>Cerrar sesión</Text>
+      <TouchableOpacity
+        style={[estilos.filaEnlace, { borderBottomColor: colores.borde }]}
+        onPress={salir}
+        accessibilityRole="button"
+      >
+        <Text style={{ color: colores.error, fontSize: 16 * factorActual }}>Cerrar sesión</Text>
       </TouchableOpacity>
       
     </View>
@@ -95,10 +105,9 @@ const estilos = StyleSheet.create({
   titulo: { fontWeight: 'bold', marginBottom: 20 },
   etiqueta: { marginBottom: 8 },
   filaBotones: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  opcionTamanio: { flex: 1, paddingVertical: 8, marginHorizontal: 4, alignItems: 'center', borderWidth: 1, borderColor: '#CBD5E0', borderRadius: 6 },
-  opcionTamanioActiva: { backgroundColor: '#4A5568', borderColor: '#4A5568' },
-  textoTamanio: { color: '#2D3748', fontWeight: '500' },
+  opcionTamanio: { flex: 1, paddingVertical: 8, marginHorizontal: 4, alignItems: 'center', borderWidth: 1, borderRadius: 6 },
+  textoTamanio: { fontWeight: '500' },
   textoActivo: { color: '#FFF' },
   filaInterruptor: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 12 },
-  filaEnlace: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#E2E8F0', marginTop: 10 },
+  filaEnlace: { paddingVertical: 14, borderBottomWidth: 1, marginTop: 10 },
 });

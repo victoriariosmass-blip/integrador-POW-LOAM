@@ -1,6 +1,7 @@
 //Botón reutilizable para ingresos y firmas
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { usarPreferencias } from '../../contexto/ContextoPreferencias';
 
 export const BotonPersonalizado = ({ 
   titulo, 
@@ -9,18 +10,29 @@ export const BotonPersonalizado = ({
   variante = 'primario' 
 }) => {
   const esPrimario = variante === 'primario';
+  const { colores } = usarPreferencias();
 
   return (
     <TouchableOpacity
       style={[
         estilos.boton,
-        esPrimario ? estilos.primario : estilos.secundario,
+        esPrimario
+          ? { backgroundColor: colores.botonPrimario }
+          : [
+              estilos.secundario,
+              { backgroundColor: colores.botonSecundario, borderColor: colores.borde },
+            ],
         deshabilitado && estilos.deshabilitado,
       ]}
       onPress={alPresionar}
       disabled={deshabilitado}
     >
-      <Text style={[estilos.texto, !esPrimario && estilos.textoSecundario]}>
+      <Text
+        style={[
+          estilos.texto,
+          !esPrimario && { color: colores.textoPrincipal },
+        ]}
+      >
         {titulo}
       </Text>
     </TouchableOpacity>
@@ -34,13 +46,8 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 6,
   },
-  primario: {
-    backgroundColor: '#4A5568',
-  },
   secundario: {
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#CBD5E0',
   },
   deshabilitado: {
     opacity: 0.5,
@@ -49,8 +56,5 @@ const estilos = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
-  },
-  textoSecundario: {
-    color: '#2D3748',
   },
 });
