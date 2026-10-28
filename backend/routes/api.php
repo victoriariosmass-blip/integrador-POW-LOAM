@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ConvenioController;
 use App\Http\Controllers\Api\EstadoConvenioController;
 use App\Http\Controllers\Api\ResumenController;
 use Illuminate\Support\Facades\Route;
+ use App\Http\Controllers\Api\UnidadController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/token', [AuthController::class, 'token']);
@@ -14,6 +15,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::get('/resumen', ResumenController::class);
+    Route::get('/unidades', UnidadController::class);
     Route::get('/convenios', [ConvenioController::class, 'index']);
     Route::get('/convenios/{id}', [ConvenioController::class, 'show']);
     Route::post('/convenios', [ConvenioController::class, 'store']);

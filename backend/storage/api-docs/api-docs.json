@@ -589,6 +589,20 @@
                     }
                 }
             }
+        },
+        "/api/unidades": {
+            "get": {
+                "tags": [
+                    "Convenios"
+                ],
+                "summary": "Unidades (para elegir en el alta de convenio)",
+                "operationId": "6a3f83442bf5553e050e66760a81b0cd",
+                "responses": {
+                    "200": {
+                        "description": "Lista de unidades"
+                    }
+                }
+            }
         }
     },
     "components": {
