@@ -3,12 +3,16 @@
  * https://docs.expo.dev/guides/color-schemes/
  */
 
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { usarPreferencias } from '../contexto/ContextoPreferencias';
 
 export function useTheme() {
-  const scheme = useColorScheme();
-  const theme = scheme === 'unspecified' ? 'light' : scheme;
+  const { colores } = usarPreferencias();
 
-  return Colors[theme];
+  return {
+    text: colores.textoPrincipal,
+    background: colores.fondo,
+    backgroundElement: colores.tarjeta,
+    backgroundSelected: colores.tarjetaElevada,
+    textSecondary: colores.textoSecundario,
+  };
 }

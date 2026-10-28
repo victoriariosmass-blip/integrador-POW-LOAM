@@ -6,18 +6,18 @@ import { usarPreferencias } from '../../contexto/ContextoPreferencias';
 export const BannerSinConexion = ({ 
   mensaje = 'Sin conexión • Mostrando solo convenios pendientes' 
 }) => {
-  const { factorActual } = usarPreferencias();
+  const { factorActual, colores } = usarPreferencias();
 
   return (
-    <View style={estilos.banner}>
-      <Text style={[estilos.texto, { fontSize: 13 * factorActual }]}>{mensaje}</Text>
+    <View style={[estilos.banner, { backgroundColor: colores.tarjetaElevada, borderColor: colores.borde }]}>
+      <Text style={[estilos.texto, { color: colores.textoPrincipal, fontSize: 13 * factorActual }]}>{mensaje}</Text>
     </View>
   );
 };
 
 const estilos = StyleSheet.create({
   banner: {
-    backgroundColor: '#E2E8F0',
+    borderWidth: 1,
     padding: 10,
     borderRadius: 6,
     marginHorizontal: 16,
@@ -25,7 +25,6 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
   },
   texto: {
-    color: '#4A5568',
     fontWeight: '500',
   },
 });
