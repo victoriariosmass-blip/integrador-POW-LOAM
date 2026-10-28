@@ -33,15 +33,22 @@ export default function PantallaInicio({ navigation }) {
   return (
     <ScrollView
       style={[estilos.contenedor, { backgroundColor: colores.fondo }]}
-      refreshControl={<RefreshControl refreshing={refrescando} onRefresh={() => { setRefrescando(true); cargar(); }} />}
+      refreshControl={
+        <RefreshControl
+          refreshing={refrescando}
+          onRefresh={() => { setRefrescando(true); cargar(); }}
+          tintColor={colores.acento}
+          colors={[colores.acento]}
+        />
+      }
     >
       <Text style={[estilos.saludo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>Hola, {nombre}</Text>
 
       {error ? (
-        <Text style={{ color: '#B71C1C', fontSize: 15 * factorActual, marginBottom: 12 }}>{error}</Text>
+        <Text style={{ color: colores.error, fontSize: 15 * factorActual, marginBottom: 12 }}>{error}</Text>
       ) : null}
 
-      {!resumen && !error ? <ActivityIndicator size="large" style={{ marginTop: 24 }} /> : null}
+      {!resumen && !error ? <ActivityIndicator size="large" color={colores.acento} style={{ marginTop: 24 }} /> : null}
 
       {resumen ? (
         <>

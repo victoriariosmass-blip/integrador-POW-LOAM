@@ -69,7 +69,7 @@ export default function PantallaFirmaConvenio({ route, navigation }) {
           </Text>
           <LienzoFirma alCambiarTrazo={(trazo) => setTrazoCapturado(trazo)} />
 
-          <Text style={estilos.notaGps}>📍 Ubicación: se registrará fecha, latitud y longitud al confirmar.</Text>
+          <Text style={[estilos.notaGps, { color: colores.textoSecundario }]}>📍 Ubicación: se registrará fecha, latitud y longitud al confirmar.</Text>
 
           <BotonPersonalizado
             titulo="CONFIRMAR CON HUELLA"
@@ -77,12 +77,12 @@ export default function PantallaFirmaConvenio({ route, navigation }) {
           />
         </View>
       ) : (
-        <View style={estilos.tarjetaExito}>
-          <Text style={estilos.textoExito}>✓ Convenio Firmado Exitosamente</Text>
-          <Text style={estilos.lineaDato}>Fecha y Hora: {datosFirma.fechaHora}</Text>
-          <Text style={estilos.lineaDato}>Latitud: {datosFirma.latitud}</Text>
-          <Text style={estilos.lineaDato}>Longitud: {datosFirma.longitud}</Text>
-          <Text style={estilos.lineaDato}>Hash: {datosFirma.hashIntegridad}</Text>
+        <View style={[estilos.tarjetaExito, { backgroundColor: colores.exitoFondo, borderColor: colores.exitoBorde }]}>
+          <Text style={[estilos.textoExito, { color: colores.exito }]}>✓ Convenio Firmado Exitosamente</Text>
+          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Fecha y Hora: {datosFirma.fechaHora}</Text>
+          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Latitud: {datosFirma.latitud}</Text>
+          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Longitud: {datosFirma.longitud}</Text>
+          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Hash: {datosFirma.hashIntegridad}</Text>
 
           <BotonPersonalizado
             titulo="VOLVER AL INICIO"
@@ -98,8 +98,8 @@ const estilos = StyleSheet.create({
   contenedor: { flex: 1, padding: 16 },
   titulo: { fontWeight: 'bold', marginBottom: 8 },
   subtitulo: { fontSize: 13, marginBottom: 4 },
-  notaGps: { fontSize: 12, color: '#718096', marginVertical: 8 },
-  tarjetaExito: { padding: 16, borderRadius: 8, backgroundColor: '#F0FFF4', borderWidth: 1, borderColor: '#68D391', marginTop: 20 },
-  textoExito: { fontSize: 16, fontWeight: 'bold', color: '#276749', marginBottom: 12 },
-  lineaDato: { fontSize: 13, color: '#2D3748', marginVertical: 3 },
+  notaGps: { fontSize: 12, marginVertical: 8 },
+  tarjetaExito: { padding: 16, borderRadius: 12, borderWidth: 1, marginTop: 20 },
+  textoExito: { fontSize: 16, fontWeight: 'bold', marginBottom: 12 },
+  lineaDato: { fontSize: 13, marginVertical: 3 },
 });

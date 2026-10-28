@@ -3,6 +3,7 @@ import React from 'react';
 import { Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Svg, { Path } from 'react-native-svg';
+import { usarPreferencias } from '../contexto/ContextoPreferencias';
 
 import PantallaInicio from '../pantallas/PantallaInicio';
 import PantallaPendientes from '../pantallas/PantallaPendientes';
@@ -32,12 +33,20 @@ const IconoImagen = ({ source, color }) => (
 );
 
 export const NavegadorPestanias = () => {
+  const { colores } = usarPreferencias();
+
   return (
     <Pestanias.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#2D3748',
-        tabBarInactiveTintColor: '#A0AEC0',
+        tabBarActiveTintColor: colores.acento,
+        tabBarInactiveTintColor: colores.textoSecundario,
+        tabBarStyle: {
+          backgroundColor: colores.tarjeta,
+          borderTopColor: colores.borde,
+          borderTopWidth: 1,
+        },
+        tabBarLabelStyle: { fontWeight: '600' },
       }}
     >
       <Pestanias.Screen

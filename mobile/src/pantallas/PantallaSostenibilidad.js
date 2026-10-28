@@ -5,12 +5,12 @@ import { TarjetaMetrica } from '../componentes/moleculas/TarjetaMetrica';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 
 export default function PantallaSostenibilidad() {
-  const { colores } = usarPreferencias();
+  const { colores, factorActual } = usarPreferencias();
 
   return (
     <ScrollView style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
-      <Text style={[estilos.titulo, { color: colores.textoPrincipal }]}>Sostenibilidad Institucional</Text>
-      <Text style={estilos.aclaracion}>
+      <Text style={[estilos.titulo, { color: colores.textoPrincipal, fontSize: 20 * factorActual }]}>Sostenibilidad Institucional</Text>
+      <Text style={[estilos.aclaracion, { color: colores.textoSecundario, fontSize: 12 * factorActual }]}>
         Módulo simulado con estimaciones de ahorro administrativo por uso digital del sistema de convenios de la UNLPam.
       </Text>
 
@@ -26,7 +26,7 @@ export default function PantallaSostenibilidad() {
 
 const estilos = StyleSheet.create({
   contenedor: { flex: 1, padding: 16 },
-  titulo: { fontSize: 20, fontWeight: 'bold', marginBottom: 6 },
-  aclaracion: { fontSize: 12, color: '#718096', marginBottom: 16 },
+  titulo: { fontWeight: 'bold', marginBottom: 6 },
+  aclaracion: { marginBottom: 16 },
   grilla: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
 });

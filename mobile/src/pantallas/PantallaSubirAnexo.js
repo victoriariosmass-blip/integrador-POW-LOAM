@@ -7,7 +7,7 @@ import { usarPreferencias } from '../contexto/ContextoPreferencias';
 
 export default function PantallaSubirAnexo({ route, navigation }) {
   const { idConvenio } = route.params || { idConvenio: 'MC-2026-0001' };
-  const { colores } = usarPreferencias();
+  const { colores, factorActual } = usarPreferencias();
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
 
   const seleccionarPDF = async () => {
@@ -50,15 +50,15 @@ export default function PantallaSubirAnexo({ route, navigation }) {
 
   return (
     <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
-      <Text style={[estilos.titulo, { color: colores.textoPrincipal }]}>Subir anexo al convenio: {idConvenio}</Text>
-      <Text style={estilos.nota}>Solo se admiten documentos en formato PDF de hasta 20 MB.</Text>
+      <Text style={[estilos.titulo, { color: colores.textoPrincipal, fontSize: 16 * factorActual }]}>Subir anexo al convenio: {idConvenio}</Text>
+      <Text style={[estilos.nota, { color: colores.textoSecundario, fontSize: 12 * factorActual }]}>Solo se admiten documentos en formato PDF de hasta 20 MB.</Text>
 
       <BotonPersonalizado titulo="Seleccionar PDF" variante="secundario" alPresionar={seleccionarPDF} />
 
       {archivoSeleccionado && (
-        <View style={estilos.tarjetaArchivo}>
-          <Text style={estilos.nombreArchivo}>📄 {archivoSeleccionado.name}</Text>
-          <Text style={estilos.tamanio}>{(archivoSeleccionado.size / 1024 / 1024).toFixed(2)} MB</Text>
+        <View style={[estilos.tarjetaArchivo, { backgroundColor: colores.tarjeta, borderColor: colores.borde }]}>
+          <Text style={[estilos.nombreArchivo, { color: colores.textoPrincipal }]}>📄 {archivoSeleccionado.name}</Text>
+          <Text style={[estilos.tamanio, { color: colores.textoSecundario }]}>{(archivoSeleccionado.size / 1024 / 1024).toFixed(2)} MB</Text>
         </View>
       )}
 
@@ -74,8 +74,8 @@ export default function PantallaSubirAnexo({ route, navigation }) {
 const estilos = StyleSheet.create({
   contenedor: { flex: 1, padding: 20 },
   titulo: { fontSize: 16, fontWeight: 'bold', marginBottom: 6 },
-  nota: { fontSize: 12, color: '#718096', marginBottom: 16 },
-  tarjetaArchivo: { padding: 12, borderWidth: 1, borderColor: '#CBD5E0', borderRadius: 8, marginVertical: 12 },
-  nombreArchivo: { fontWeight: 'bold', color: '#2D3748' },
-  tamanio: { fontSize: 11, color: '#718096', marginTop: 4 },
+  nota: { marginBottom: 16 },
+  tarjetaArchivo: { padding: 12, borderWidth: 1, borderRadius: 8, marginVertical: 12 },
+  nombreArchivo: { fontWeight: 'bold' },
+  tamanio: { fontSize: 11, marginTop: 4 },
 });

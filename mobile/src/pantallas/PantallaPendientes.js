@@ -47,7 +47,7 @@ export default function PantallaPendientes({ navigation }) {
   if (cargando) {
     return (
       <View style={[estilos.centro, { backgroundColor: colores.fondo }]}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={colores.acento} />
       </View>
     );
   }
@@ -59,8 +59,11 @@ export default function PantallaPendientes({ navigation }) {
       {error ? (
         <View style={estilos.centro}>
           <Text style={{ color: colores.textoPrincipal, fontSize: 15 * factorActual, marginBottom: 12 }}>{error}</Text>
-          <TouchableOpacity onPress={cargar} style={estilos.botonReintentar}>
-            <Text style={{ fontSize: 15 * factorActual }}>Reintentar</Text>
+          <TouchableOpacity
+            onPress={cargar}
+            style={[estilos.botonReintentar, { borderColor: colores.borde, backgroundColor: colores.tarjeta }]}
+          >
+            <Text style={{ color: colores.textoPrincipal, fontSize: 15 * factorActual }}>Reintentar</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -68,7 +71,14 @@ export default function PantallaPendientes({ navigation }) {
           data={pendientes}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={estilos.lista}
-          refreshControl={<RefreshControl refreshing={refrescando} onRefresh={() => { setRefrescando(true); cargar(); }} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refrescando}
+              onRefresh={() => { setRefrescando(true); cargar(); }}
+              tintColor={colores.acento}
+              colors={[colores.acento]}
+            />
+          }
           ListEmptyComponent={
             <Text style={[estilos.vacio, { color: colores.textoSecundario, fontSize: 15 * factorActual }]}>
               No tenés convenios pendientes de firma.
@@ -93,5 +103,5 @@ const estilos = StyleSheet.create({
   centro: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   lista: { paddingHorizontal: 16, paddingTop: 26, flexGrow: 1 },
   vacio: { textAlign: 'center', marginTop: 40 },
-  botonReintentar: { borderWidth: 1, borderColor: '#A0AEC0', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8 },
+  botonReintentar: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8 },
 });

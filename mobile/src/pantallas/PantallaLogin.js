@@ -44,8 +44,8 @@ export default function PantallaLogin() {
       </Text>
 
       {error ? (
-        <View style={estilos.error} accessibilityRole="alert">
-          <Text style={[estilos.textoError, { fontSize: 14 * factorActual }]}>{error}</Text>
+        <View style={[estilos.error, { backgroundColor: colores.errorFondo, borderColor: colores.error }]} accessibilityRole="alert">
+          <Text style={[estilos.textoError, { color: colores.error, fontSize: 14 * factorActual }]}>{error}</Text>
         </View>
       ) : null}
 
@@ -99,6 +99,5 @@ const estilos = StyleSheet.create({
   boton: { borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
   botonDeshabilitado: { opacity: 0.7 },
   textoBoton: { color: '#FFFFFF', fontWeight: 'bold' },
-  error: { backgroundColor: '#FFEBEE', borderRadius: 8, padding: 12, marginBottom: 16 },
-  textoError: { color: '#B71C1C' },
+  error: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 16 },
 });

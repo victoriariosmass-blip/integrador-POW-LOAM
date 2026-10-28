@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { View, PanResponder, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { usarPreferencias } from '../../contexto/ContextoPreferencias';
 
 export const LienzoFirma = ({ alCambiarTrazo, limpiarTrigger }) => {
+  const { colores, esModoOscuro } = usarPreferencias();
   const [caminos, setCaminos] = useState([]);
   const [caminoActual, setCaminoActual] = useState('');
 
@@ -28,13 +30,22 @@ export const LienzoFirma = ({ alCambiarTrazo, limpiarTrigger }) => {
   });
 
   return (
-    <View style={estilos.contenedorLienzo} {...panResponder.panHandlers}>
+    <View
+      style={[
+        estilos.contenedorLienzo,
+        {
+          backgroundColor: colores.tarjeta,
+          borderColor: colores.borde,
+        },
+      ]}
+      {...panResponder.panHandlers}
+    >
       <Svg style={StyleSheet.absoluteFill}>
         {caminos.map((camino, indice) => (
-          <Path key={indice} d={camino} stroke="#1A202C" strokeWidth={3} fill="none" />
+          <Path key={indice} d={camino} stroke={esModoOscuro ? '#FFFFFF' : '#1A202C'} strokeWidth={3} fill="none" />
         ))}
         {caminoActual ? (
-          <Path d={caminoActual} stroke="#1A202C" strokeWidth={3} fill="none" />
+          <Path d={caminoActual} stroke={esModoOscuro ? '#FFFFFF' : '#1A202C'} strokeWidth={3} fill="none" />
         ) : null}
       </Svg>
     </View>
@@ -44,9 +55,7 @@ export const LienzoFirma = ({ alCambiarTrazo, limpiarTrigger }) => {
 const estilos = StyleSheet.create({
   contenedorLienzo: {
     height: 220,
-    backgroundColor: '#F8F9FA',
     borderWidth: 1,
-    borderColor: '#CBD5E0',
     borderRadius: 8,
     marginVertical: 12,
   },

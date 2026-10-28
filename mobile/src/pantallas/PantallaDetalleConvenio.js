@@ -22,20 +22,22 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
       </View>
 
       {/* Selector de Pestañas */}
-      <View style={estilos.filaPestanias}>
+      <View style={[estilos.filaPestanias, { borderBottomColor: colores.borde }]}>
         {['datos', 'documentos', 'arbol', 'comentarios'].map((pestania) => (
           <TouchableOpacity
             key={pestania}
             onPress={() => setPestaniaActiva(pestania)}
             style={[
               estilos.pestaniaBoton,
+              { borderColor: colores.borde },
               pestaniaActiva === pestania && estilos.pestaniaActivaBoton,
+              pestaniaActiva === pestania && { borderColor: colores.acento },
             ]}
           >
             <Text
               style={[
                 estilos.textoPestania,
-                { color: pestaniaActiva === pestania ? '#2B6CB0' : colores.textoSecundario },
+                { color: pestaniaActiva === pestania ? colores.acento : colores.textoSecundario },
               ]}
             >
               {pestania.toUpperCase()}
@@ -45,9 +47,9 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
       </View>
 
       {/* Contenido según pestaña */}
-      <ScrollView style={estilos.cuerpo}>
+      <ScrollView style={estilos.cuerpo} contentContainerStyle={estilos.contenidoCuerpo}>
         {pestaniaActiva === 'datos' && (
-          <View>
+          <View style={[estilos.tarjetaContenido, { backgroundColor: colores.tarjeta, borderColor: colores.borde }]}>
             <Text style={[estilos.etiquetaCampo, { color: colores.textoSecundario }]}>Contraparte:</Text>
             <Text style={[estilos.valorCampo, { color: colores.textoPrincipal }]}>Ministerio de Ciencia y Tecnología</Text>
 
@@ -70,14 +72,14 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
         )}
 
         {pestaniaActiva === 'documentos' && (
-          <View style={estilos.vistaVacia}>
+          <View style={[estilos.tarjetaContenido, estilos.vistaVacia, { backgroundColor: colores.tarjeta, borderColor: colores.borde }]}>
             <Text style={{ color: colores.textoSecundario }}>Convenio_Principal.pdf (1.8 MB)</Text>
             <BotonPersonalizado titulo="Ver PDF y Zoom" variante="secundario" alPresionar={() => {}} />
           </View>
         )}
 
         {pestaniaActiva === 'arbol' && (
-          <View style={estilos.vistaVacia}>
+          <View style={[estilos.tarjetaContenido, estilos.vistaVacia, { backgroundColor: colores.tarjeta, borderColor: colores.borde }]}>
             <Text style={{ color: colores.textoPrincipal, fontWeight: 'bold' }}>🌳 Estructura Jerárquica</Text>
             <Text style={{ color: colores.textoSecundario }}>• {idConvenio} (Convenio Marco)</Text>
             <Text style={{ color: colores.textoSecundario }}>   └── EC-2026-0002 (Convenio Específico)</Text>
@@ -95,12 +97,14 @@ const estilos = StyleSheet.create({
   contenedor: { flex: 1, padding: 16 },
   encabezado: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   codigo: { fontWeight: 'bold' },
-  filaPestanias: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E2E8F0', marginBottom: 16 },
+  filaPestanias: { flexDirection: 'row', borderBottomWidth: 1, marginBottom: 16 },
   pestaniaBoton: { flex: 1, paddingVertical: 10, alignItems: 'center' },
-  pestaniaActivaBoton: { borderBottomWidth: 2, borderBottomColor: '#2B6CB0' },
+  pestaniaActivaBoton: { borderBottomWidth: 2 },
   textoPestania: { fontWeight: 'bold', fontSize: 12 },
   cuerpo: { flex: 1 },
+  contenidoCuerpo: { flexGrow: 1 },
   etiquetaCampo: { fontSize: 12, marginTop: 10 },
   valorCampo: { fontSize: 15, fontWeight: '500', marginBottom: 6 },
-  vistaVacia: { padding: 12 },
+  tarjetaContenido: { borderWidth: 1, borderRadius: 12, padding: 16 },
+  vistaVacia: { padding: 16 },
 });
