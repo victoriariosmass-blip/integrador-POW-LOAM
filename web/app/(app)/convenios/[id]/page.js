@@ -1,4 +1,3 @@
-
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -41,6 +40,13 @@ export default function FichaConvenio() {
   }, [id]);
  
   useEffect(() => { cargar(); }, [cargar]);
+
+  // aviso al volver del alta o de la edición (?creado=1 / ?editado=1)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('creado')) setAviso('El convenio se guardó como borrador.');
+    if (params.has('editado')) setAviso('Los cambios se guardaron.');
+  }, []);
  
   async function hacer(accion, datos) {
     setProcesando(true);

@@ -103,3 +103,86 @@ export function accionMock(usuario, id, accion, datos = {}) {
   c.version += 1;
   return verMock(usuario, id);
 }
+
+
+// ---- alta, edición y panel (modo de prueba) ----
+ 
+const UNIDADES = [
+  { id: 4, nombre: 'Facultad de Ciencias Exactas y Naturales', sigla: 'FCEyN' },
+  { id: 7, nombre: 'Facultad de Ingeniería', sigla: 'FI' },
+];
+ 
+const PREFIJOS = { marco_colaboracion: 'MC', especifico_colaboracion: 'EC', marco_pasantia: 'MP', especifico_pasantia: 'EP', adenda: 'AD' };
+ 
+function errorValidacion(errors) {
+  const e = error(422, Object.values(errors)[0][0]);
+  e.errors = errors;
+  return e;
+}
+ 
+// mismas reglas básicas que StoreConvenioRequest / UpdateConvenioRequest
+function validar(datos, alta) {
+  const errors = {};
+  if (alta || 'titulo' in datos) if (!datos.titulo?.trim()) errors.titulo = ['El título es obligatorio.'];
+  if (alta || 'objeto' in datos) if (!datos.objeto?.trim()) errors.objeto = ['El objeto es obligatorio.'];
+  if (alta && !datos.tipo) errors.tipo = ['Elegí el tipo de convenio.'];
+  const desde = alta ? datos.fecha_firma : datos.fecha_inicio;
+  if (datos.fecha_vencimiento && desde && datos.fecha_vencimiento <= desde) {
+    errors.fecha_vencimiento = [alta ? 'El vencimiento tiene que ser posterior a la firma.' : 'El vencimiento tiene que ser posterior al inicio.'];
+  }
+  if (Object.keys(errors).length) throw errorValidacion(errors);
+}
+ 
+export function unidadesMock() {
+  return { data: UNIDADES };
+}
+ 
+export function crearMock(usuario, datos) {
+  if (!['admin', 'gestor'].includes(usuario.rol)) throw error(403, 'Tu rol no puede cargar convenios');
+  validar(datos, true);
+  const unidadId = usuario.unidad_id ?? Number(datos.unidad_id || 0);
+  if (!unidadId) throw errorValidacion({ unidad_id: ['Indicá la unidad del convenio'] });
+  const unidad = UNIDADES.find((u) => u.id === unidadId) ?? { id: unidadId, nombre: 'Unidad', sigla: '' };
+  const base = `${PREFIJOS[datos.tipo]}-${new Date().getFullYear()}-`;
+  const numero = convenios.filter((c) => c.codigo.startsWith(base)).length + 1;
+  const nuevo = {
+    id: Math.max(...convenios.map((c) => c.id)) + 1,
+    codigo: base + String(numero).padStart(4, '0'),
+    titulo: datos.titulo, tipo: datos.tipo, objeto: datos.objeto, unidad,
+    estado: 'borrador', confidencial: false,
+    fecha_firma: datos.fecha_firma || null, fecha_vencimiento: datos.fecha_vencimiento || null,
+    version: 1, revisor_id: null,
+  };
+  convenios = [nuevo, ...convenios];
+  return { data: conPermisos(usuario, nuevo) };
+}
+ 
+export function editarMock(usuario, id, datos) {
+  const c = convenios.find((x) => x.id === Number(id));
+  if (!c) throw error(404, 'El convenio no existe');
+  if (!permisos(usuario, c).editar) throw error(403, 'No tenés permiso para editar este convenio.');
+  if (Number(datos.version) !== c.version) throw error(409, 'El convenio cambió mientras lo editabas. Recargalo para ver los cambios.');
+  validar(datos, false);
+  const cambios = { ...datos };
+  delete cambios.version;
+  Object.assign(c, cambios, { version: c.version + 1 });
+  return { data: conPermisos(usuario, c) };
+}
+ 
+export function resumenMock(usuario) {
+  const visibles = convenios.filter((c) => puedeVer(usuario, c));
+  const hoy = new Date().toISOString().slice(0, 10);
+  const haceUnAnio = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
+  const movimientos = Object.entries(historial)
+    .flatMap(([cid, lista]) => lista.map((t) => ({ ...t, convenio: convenios.find((c) => c.id === Number(cid)) })))
+    .filter((t) => puedeVer(usuario, t.convenio))
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 10);
+  return {
+    firmados_ultimo_anio: visibles.filter((c) => c.estado === 'firmado' && c.fecha_firma >= haceUnAnio).length,
+    vigentes: visibles.filter((c) => c.estado === 'firmado' && (!c.fecha_vencimiento || c.fecha_vencimiento >= hoy)).length,
+    en_tramite: visibles.filter((c) => ['borrador', 'revision'].includes(c.estado)).length,
+    por_firmar: visibles.filter((c) => c.estado === 'aprobado').length,
+    ultimos_movimientos: movimientos,
+  };
+}
