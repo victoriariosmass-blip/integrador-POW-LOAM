@@ -7,6 +7,7 @@ return [
     'palabras' => [
         'idiota', 'imbecil', 'estupido', 'estupida', 'boludo', 'boluda', 'pelotudo', 'pelotuda',
         'tarado', 'tarada', 'inutil', 'forro', 'forra', 'mierda', 'carajo', 'puta', 'puto',
-        'pajero', 'pajera', 'gil', 'salame', 'ignorante', 'basura', 'mogolico', 'mogolica',
+        'pajero', 'pajera', 'gil', 'salame', 'ignorante', 'basura', 'mogolico', 'mogolica', 'tonto',
+        'tonta'
     ],
 ];
