@@ -12,24 +12,38 @@ export async function csrf() {
 }
 
 export async function api(path, { method = 'GET', body, headers = {} } = {}) {
-  if (method !== 'GET') await csrf();
+  let res;
+  try {
+    if (method !== 'GET') await csrf();
 
-  const res = await fetch(`${API_URL}/api${path}`, {
-    method,
-    credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
-      'X-XSRF-TOKEN': getCookie('XSRF-TOKEN') ?? '',
-      ...headers,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+    res = await fetch(`${API_URL}/api${path}`, {
+      method,
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        ...(body ? { 'Content-Type': 'application/json' } : {}),
+        'X-XSRF-TOKEN': getCookie('XSRF-TOKEN') ?? '',
+        ...headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) {
+    // la API no responde (apagada, sin conexión...): el detalle queda en la consola
+    console.error('No se pudo conectar con la API:', e);
+    const error = new Error('No se pudo conectar con el servidor. Probá de nuevo en unos minutos.');
+    error.status = 0;
+    throw error;
+  }
 
   const data = res.status === 204 ? null : await res.json().catch(() => null);
   if (!res.ok) {
-    const error = new Error(data?.message ?? `Error ${res.status}`);
-    error.status = res.status;   // 401, 403, 404, 409, 422...
+    // errores del servidor (500...): al usuario un mensaje común, el detalle a la consola
+    if (res.status >= 500) console.error(`Error ${res.status} en ${path}:`, data?.message ?? data);
+    const mensaje = res.status >= 500
+      ? 'Hubo un problema en el servidor. Probá de nuevo en unos minutos.'
+      : (data?.message ?? `Error ${res.status}`);
+    const error = new Error(mensaje);
+    error.status = res.status;   // 0, 401, 403, 404, 409, 422, 500...
     error.errors = data?.errors; // errores de validación por campo
     throw error;
   }
