@@ -1,4 +1,3 @@
-
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -17,6 +16,12 @@ export default function Convenios() {
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(true);
+
+  // Si se llega desde el panel con ?estado=..., arranca con ese filtro
+  useEffect(() => {
+    const estado = new URLSearchParams(window.location.search).get('estado');
+    if (estado) setFiltros((f) => ({ ...f, estado }));
+  }, []);
  
   // Cada vez que cambian los filtros, se pide la página a la API
   useEffect(() => {
