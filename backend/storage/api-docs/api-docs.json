@@ -38,7 +38,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Logueado"
+                        "description": "Contraseña correcta: pide el código (requiere_mfa)"
                     },
                     "422": {
                         "description": "Credenciales incorrectas"
@@ -118,6 +118,80 @@
                     },
                     "401": {
                         "description": "No autenticado"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/comentarios": {
+            "get": {
+                "tags": [
+                    "Comentarios"
+                ],
+                "summary": "Comentarios del convenio",
+                "operationId": "1366ddd24c71c09af1790e11364e2689",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de comentarios (los ofensivos dicen \"Comentario ofensivo\")"
+                    },
+                    "403": {
+                        "description": "No puede ver el convenio"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Comentarios"
+                ],
+                "summary": "Comentar (todos menos consulta)",
+                "operationId": "5527d3b62f35a6b7ef8f81aaf8710427",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "contenido"
+                                ],
+                                "properties": {
+                                    "contenido": {
+                                        "type": "string",
+                                        "example": "Revisemos la cláusula de rescisión"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Comentario creado"
+                    },
+                    "403": {
+                        "description": "Sin permiso (consulta no comenta)"
+                    },
+                    "422": {
+                        "description": "Comentario vacío o muy largo"
                     }
                 }
             }
@@ -573,6 +647,146 @@
                 }
             }
         },
+        "/api/convenios/{id}/firmar": {
+            "post": {
+                "tags": [
+                    "Circuito"
+                ],
+                "summary": "Firmar (aprobado -> firmado). Solo autoridad, desde la app",
+                "operationId": "b71e2c1211ef11f317c32bec82e8507b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "firma_imagen"
+                                ],
+                                "properties": {
+                                    "firma_imagen": {
+                                        "description": "PNG del trazo en base64 (data:image/png;base64,...)",
+                                        "type": "string"
+                                    },
+                                    "latitud": {
+                                        "type": "number",
+                                        "example": -35.656599999999997407940099947154521942138671875
+                                    },
+                                    "longitud": {
+                                        "type": "number",
+                                        "example": -63.7567999999999983629095368087291717529296875
+                                    },
+                                    "biometria_ok": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Convenio firmado"
+                    },
+                    "403": {
+                        "description": "No es autoridad, no lo puede ver o no está aprobado"
+                    },
+                    "422": {
+                        "description": "Falta la firma o no es un PNG"
+                    }
+                }
+            }
+        },
+        "/api/mfa/verificar": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verificar el código de 6 dígitos (web)",
+                "operationId": "ba9c8e602efff968d666d97b3385156a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codigo"
+                                ],
+                                "properties": {
+                                    "codigo": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sesión iniciada; devuelve el usuario"
+                    },
+                    "401": {
+                        "description": "No hay un inicio de sesión pendiente o se agotaron los intentos"
+                    },
+                    "422": {
+                        "description": "Código incorrecto o vencido"
+                    }
+                }
+            }
+        },
+        "/api/mfa/reenviar": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Reenviar el código (simulado: queda en el log)",
+                "operationId": "f3c89e850dbc37667aa4074bd0175b3b",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "canal": {
+                                        "type": "string",
+                                        "example": "sms",
+                                        "enum": [
+                                            "mail",
+                                            "sms"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Código reenviado"
+                    },
+                    "401": {
+                        "description": "No hay un inicio de sesión pendiente"
+                    },
+                    "429": {
+                        "description": "Hay que esperar 30 segundos entre envíos"
+                    }
+                }
+            }
+        },
         "/api/resumen": {
             "get": {
                 "tags": [
@@ -623,6 +837,10 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Comentarios",
+            "description": "Comentarios"
         },
         {
             "name": "Convenios",

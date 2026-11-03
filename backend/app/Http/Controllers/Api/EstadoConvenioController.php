@@ -110,4 +110,29 @@
           $convenio = $this->convenios->ver($request->user(), $id);
           return new ConvenioResource($this->estados->asignarRevisor($request->user(), $convenio, $datos['revisor_id']));
       }
+
+      #[OA\Post(path: '/api/convenios/{id}/firmar', summary: 'Firmar (aprobado -> firmado). Solo autoridad, desde la app', tags: ['Circuito'],
+          parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+          requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['firma_imagen'], properties: [
+              new OA\Property(property: 'firma_imagen', type: 'string', description: 'PNG del trazo en base64 (data:image/png;base64,...)'),
+              new OA\Property(property: 'latitud', type: 'number', example: -35.6566),
+              new OA\Property(property: 'longitud', type: 'number', example: -63.7568),
+              new OA\Property(property: 'biometria_ok', type: 'boolean', example: true),
+          ])),
+          responses: [
+              new OA\Response(response: 200, description: 'Convenio firmado'),
+              new OA\Response(response: 403, description: 'No es autoridad, no lo puede ver o no está aprobado'),
+              new OA\Response(response: 422, description: 'Falta la firma o no es un PNG'),
+          ])]
+      public function firmar(Request $request, int $id)
+      {
+          $datos = $request->validate([
+              'firma_imagen' => ['required', 'string', 'max:2000000'],
+              'latitud' => ['nullable', 'numeric', 'between:-90,90'],
+              'longitud' => ['nullable', 'numeric', 'between:-180,180'],
+              'biometria_ok' => ['nullable', 'boolean'],
+          ]);
+          $convenio = $this->convenios->ver($request->user(), $id);
+          return new ConvenioResource($this->estados->firmar($request->user(), $convenio, $datos));
+      }
   }
