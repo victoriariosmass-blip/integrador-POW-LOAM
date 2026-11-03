@@ -38,11 +38,11 @@ export default function PantallaEscanear({ navigation }) {
 
   const manejarLecturaQR = ({ data }) => {
     setEscaneado(true);
-    // El QR contiene una referencia segura (ej. ID o código único)
-    Alert.alert('Código reconocido', `Referencia de convenio: ${data}`, [
+    // El QR tiene el número (id) del convenio
+    Alert.alert('Código reconocido', `Convenio N° ${data}`, [
       {
         text: 'Abrir ficha',
-        onPress: () => navigation.navigate('DetalleConvenio', { idConvenio: data }),
+        onPress: () => navigation.navigate('DetalleConvenio', { id: Number(data) || null }),
       },
     ]);
   };

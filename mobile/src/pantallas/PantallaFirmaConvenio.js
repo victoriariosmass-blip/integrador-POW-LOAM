@@ -1,105 +1,146 @@
-//realiza el flujo entero de firma: Trazo manual + biometria + captura de latitud/longitud, fecha y hora
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, Modal } from 'react-native';
+//realiza el flujo entero de firma: trazo manual + biometria + ubicacion, y lo manda a la API
+//(POST /api/convenios/{id}/firmar). NO es firma digital: queda registrada la imagen, fecha, hora y lugar.
+import React, { useRef, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Location from 'expo-location';
 import { LienzoFirma } from '../componentes/atomos/LienzoFirma';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
+import { firmarConvenio } from '../servicios/convenios';
+
+// Pide huella o rostro. Devuelve true si se validó, false si el celular no tiene
+// biometría configurada, y tira error si la persona cancela o falla.
+async function validarBiometria() {
+  const tieneHardware = await LocalAuthentication.hasHardwareAsync();
+  const tieneRegistrada = tieneHardware && (await LocalAuthentication.isEnrolledAsync());
+  if (!tieneRegistrada) return false;
+
+  const resultado = await LocalAuthentication.authenticateAsync({
+    promptMessage: 'Confirmá tu identidad para firmar',
+    cancelLabel: 'Cancelar',
+  });
+  if (!resultado.success) throw new Error('No se pudo validar tu identidad. La firma no se registró.');
+  return true;
+}
+
+// Ubicación actual, o null si la persona no da permiso o no se puede obtener
+async function obtenerUbicacion() {
+  try {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') return null;
+    const posicion = await Location.getCurrentPositionAsync({});
+    return { latitud: posicion.coords.latitude, longitud: posicion.coords.longitude };
+  } catch {
+    return null;
+  }
+}
 
 export default function PantallaFirmaConvenio({ route, navigation }) {
-  const { idConvenio } = route.params || { idConvenio: 'MC-2026-0001' };
+  const { id, idConvenio } = route.params || {};
   const { colores, factorActual } = usarPreferencias();
-  const [trazoCapturado, setTrazoCapturado] = useState('');
-  const [datosFirma, setDatosFirma] = useState(null);
-  const [pasoExitoso, setPasoExitoso] = useState(false);
+  const lienzoRef = useRef(null);
+  const [trazo, setTrazo] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState('');
+  const [resultado, setResultado] = useState(null);
 
-  const ejecutarFirmaBiometricaYGeolocalizada = async () => {
-    if (!trazoCapturado) {
-      Alert.alert('Firma requerida', 'Por favor realiza tu trazo a mano alzada en el recuadro antes de continuar.');
+  const firmar = async () => {
+    setError('');
+    if (!trazo) {
+      setError('Hacé tu firma con el dedo dentro del recuadro antes de confirmar.');
       return;
     }
 
+    setEnviando(true);
     try {
-      // 1. Verificación Biométrica
-      const soportaBiometria = await LocalAuthentication.hasHardwareAsync();
-      if (soportaBiometria) {
-        const resultadoAut = await LocalAuthentication.authenticateAsync({
-          promptMessage: 'Confirmá tu identidad con huella dactilar o rostro',
-          cancelLabel: 'Cancelar',
-        });
-        if (!resultadoAut.success) {
-          Alert.alert('Error', 'No se pudo validar la biometría.');
-          return;
-        }
-      }
+      const biometriaOk = await validarBiometria();
+      const ubicacion = await obtenerUbicacion();
+      const png = await lienzoRef.current.obtenerPNG();
 
-      // 2. Obtener Ubicación (Latitud y Longitud)
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      let ubicacionActual = { coords: { latitude: -35.6566, longitude: -63.7568 } }; // Coordenadas UNLPam por defecto
-      if (status === 'granted') {
-        ubicacionActual = await Location.getCurrentPositionAsync({});
-      }
-
-      // 3. Consolidar Metadata de la Firma
-      const ahora = new Date();
-      setDatosFirma({
-        fechaHora: ahora.toLocaleString('es-AR'),
-        latitud: ubicacionActual.coords.latitude.toFixed(5),
-        longitud: ubicacionActual.coords.longitude.toFixed(5),
-        hashIntegridad: 'SHA256-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+      const convenio = await firmarConvenio(id, {
+        firma_imagen: `data:image/png;base64,${png}`,
+        latitud: ubicacion?.latitud ?? null,
+        longitud: ubicacion?.longitud ?? null,
+        biometria_ok: biometriaOk,
       });
 
-      setPasoExitoso(true);
-    } catch (error) {
-      Alert.alert('Error al firmar', error.message);
+      setResultado({
+        codigo: convenio.codigo,
+        fechaHora: new Date().toLocaleString('es-AR'),
+        ubicacion,
+        biometriaOk,
+      });
+    } catch (e) {
+      if (e.status === 403) setError('No podés firmar este convenio. Puede que ya esté firmado o no te corresponda.');
+      else setError(e.message || 'No se pudo registrar la firma.');
+    } finally {
+      setEnviando(false);
     }
   };
 
+  if (resultado) {
+    return (
+      <ScrollView style={{ backgroundColor: colores.fondo }} contentContainerStyle={estilos.contenedor}>
+        <View style={[estilos.tarjetaExito, { backgroundColor: colores.exitoFondo, borderColor: colores.exitoBorde }]}>
+          <Text style={[estilos.textoExito, { color: colores.exito, fontSize: 16 * factorActual }]}>✓ Convenio firmado</Text>
+          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Convenio: {resultado.codigo}</Text>
+          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Fecha y hora: {resultado.fechaHora}</Text>
+          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>
+            Ubicación: {resultado.ubicacion
+              ? `${resultado.ubicacion.latitud.toFixed(5)}, ${resultado.ubicacion.longitud.toFixed(5)}`
+              : 'no se pudo registrar'}
+          </Text>
+          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>
+            Identidad validada con huella o rostro: {resultado.biometriaOk ? 'sí' : 'no (el celular no la tiene configurada)'}
+          </Text>
+          <BotonPersonalizado titulo="VOLVER A LA FICHA" alPresionar={() => navigation.goBack()} />
+        </View>
+      </ScrollView>
+    );
+  }
+
   return (
-    <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
+    // View y no ScrollView: si no, al firmar el scroll se "come" el trazo
+    <View style={[estilos.contenedor, { flex: 1, backgroundColor: colores.fondo }]}>
       <Text style={[estilos.titulo, { color: colores.textoPrincipal, fontSize: 18 * factorActual }]}>
         Firmar: {idConvenio}
       </Text>
+      <Text style={[estilos.subtitulo, { color: colores.textoSecundario, fontSize: 13 * factorActual }]}>
+        Firmá con el dedo dentro del recuadro:
+      </Text>
 
-      {!pasoExitoso ? (
-        <View>
-          <Text style={[estilos.subtitulo, { color: colores.textoSecundario }]}>
-            Firma con el dedo dentro del recuadro:
-          </Text>
-          <LienzoFirma alCambiarTrazo={(trazo) => setTrazoCapturado(trazo)} />
+      <LienzoFirma ref={lienzoRef} alCambiarTrazo={(t) => { setTrazo(t); setError(''); }} />
 
-          <Text style={[estilos.notaGps, { color: colores.textoSecundario }]}>📍 Ubicación: se registrará fecha, latitud y longitud al confirmar.</Text>
+      <Text style={[estilos.nota, { color: colores.textoSecundario, fontSize: 12 * factorActual }]}>
+        📍 Al confirmar se registran la fecha, la hora y tu ubicación, y se pide tu huella o rostro.
+      </Text>
 
-          <BotonPersonalizado
-            titulo="CONFIRMAR CON HUELLA"
-            alPresionar={ejecutarFirmaBiometricaYGeolocalizada}
-          />
-        </View>
+      {error ? (
+        <Text accessibilityRole="alert" style={[estilos.error, { color: colores.error, backgroundColor: colores.errorFondo }]}>
+          {error}
+        </Text>
+      ) : null}
+
+      {enviando ? (
+        <ActivityIndicator size="large" color={colores.acento} style={{ marginVertical: 16 }} />
       ) : (
-        <View style={[estilos.tarjetaExito, { backgroundColor: colores.exitoFondo, borderColor: colores.exitoBorde }]}>
-          <Text style={[estilos.textoExito, { color: colores.exito }]}>✓ Convenio Firmado Exitosamente</Text>
-          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Fecha y Hora: {datosFirma.fechaHora}</Text>
-          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Latitud: {datosFirma.latitud}</Text>
-          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Longitud: {datosFirma.longitud}</Text>
-          <Text style={[estilos.lineaDato, { color: colores.textoPrincipal }]}>Hash: {datosFirma.hashIntegridad}</Text>
-
-          <BotonPersonalizado
-            titulo="VOLVER AL INICIO"
-            alPresionar={() => navigation.navigate('Inicio')}
-          />
-        </View>
+        <>
+          <BotonPersonalizado titulo="CONFIRMAR CON HUELLA" alPresionar={firmar} />
+          <BotonPersonalizado titulo="Borrar firma" variante="secundario" alPresionar={() => lienzoRef.current.limpiar()} />
+        </>
       )}
     </View>
   );
 }
 
 const estilos = StyleSheet.create({
-  contenedor: { flex: 1, padding: 16 },
+  contenedor: { padding: 16, flexGrow: 1 },
   titulo: { fontWeight: 'bold', marginBottom: 8 },
-  subtitulo: { fontSize: 13, marginBottom: 4 },
-  notaGps: { fontSize: 12, marginVertical: 8 },
+  subtitulo: { marginBottom: 4 },
+  nota: { marginVertical: 8 },
+  error: { padding: 10, borderRadius: 8, marginVertical: 8 },
   tarjetaExito: { padding: 16, borderRadius: 12, borderWidth: 1, marginTop: 20 },
-  textoExito: { fontSize: 16, fontWeight: 'bold', marginBottom: 12 },
+  textoExito: { fontWeight: 'bold', marginBottom: 12 },
   lineaDato: { fontSize: 13, marginVertical: 3 },
 });
