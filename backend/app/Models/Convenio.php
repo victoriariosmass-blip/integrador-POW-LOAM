@@ -75,7 +75,7 @@ class Convenio extends Model
     public function partes(): BelongsToMany
     {
         return $this->belongsToMany(Parte::class, 'convenio_parte', 'convenio_id', 'parte_id')
-            ->withPivot(['representante_nombre', 'representante_cargo', 'es_firmante']);
+            ->withPivot(['representante_nombre', 'representante_cargo', 'es_firmante', 'firmo_en']);
     }
 
     public function personas(): HasMany

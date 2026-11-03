@@ -3,6 +3,7 @@
 
   use App\Http\Controllers\Controller;
   use App\Models\User;
+  use App\Services\MfaService;
   use Illuminate\Http\Request;
   use Illuminate\Support\Facades\Auth;
   use Illuminate\Support\Facades\Hash;
@@ -20,9 +21,10 @@
                   new OA\Property(property: 'password', type: 'string', example: 'password'),
               ])),
           responses: [
-              new OA\Response(response: 200, description: 'Logueado'),
+              new OA\Response(response: 200, description: 'Contraseña correcta: pide el código (requiere_mfa)'),
               new OA\Response(response: 422, description: 'Credenciales incorrectas'),
           ])]
+          
       public function login(Request $request)
       {
           $datos = $request->validate([
@@ -30,15 +32,21 @@
               'password' => ['required'],
           ]);
 
-          if (! Auth::guard('web')->attempt($datos)) {
+          // Primer paso: solo se comprueba la contraseña, todavía no se inicia la sesión
+          if (! Auth::guard('web')->validate($datos)) {
               return response()->json(['message' => 'Email o contraseña incorrectos'], 422);
           }
 
-          $request->session()->regenerate();
+          $usuario = User::where('email', $datos['email'])->first();
+
+          // Segundo paso: código de verificación (simulado, ver MfaService)
+          $request->session()->put('mfa_user_id', $usuario->id);
+          $request->session()->forget('mfa_intentos');
+          app(MfaService::class)->enviarCodigo($usuario, 'mail');
 
           return response()->json([
-              'requiere_mfa' => false, // cuando esté el MFA, pasa a true
-              'usuario' => $request->user(),
+              'requiere_mfa' => true,
+              'canal' => 'mail',
           ]);
       }
 

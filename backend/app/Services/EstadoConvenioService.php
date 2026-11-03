@@ -8,6 +8,10 @@
   use App\Models\User;
   use Illuminate\Support\Facades\DB;
   use Illuminate\Support\Facades\Gate;
+  use App\Models\Documento;
+  use App\Models\Firma;
+  use Illuminate\Support\Facades\Storage;
+
 
   /**
    * Circuito de estados del convenio:
@@ -62,6 +66,49 @@
           return $this->cambiar($usuario, $convenio, 'archivado', $fundamento ?: 'Archivado');
       }
 
+      /**
+       * Firma registrada desde la app (NO es firma digital): guarda la imagen del
+       * trazo, la ubicación, la fecha y hora, si se validó con huella o rostro y
+       * el hash del PDF principal. El convenio pasa de aprobado a firmado.
+       */
+      public function firmar(User $usuario, Convenio $convenio, array $datos): Convenio
+      {
+          Gate::forUser($usuario)->authorize('firmar', $convenio);
+
+          // "data:image/png;base64,AAAA..." -> bytes del PNG
+          $base64 = preg_replace('#^data:image/png;base64,#', '', $datos['firma_imagen']);
+          $png = base64_decode($base64, true);
+          if ($png === false || substr($png, 0, 8) !== "\x89PNG\r\n\x1a\n") {
+              abort(422, 'La imagen de la firma no es un PNG válido');
+          }
+
+          $ruta = "firmas/convenio-{$convenio->id}-usuario-{$usuario->id}-" . now()->format('YmdHis') . '.png';
+          Storage::disk('local')->put($ruta, $png);
+
+          $principal = Documento::where('convenio_id', $convenio->id)
+              ->where('categoria', 'principal')
+              ->orderByDesc('numero_version')
+              ->first();
+
+          return DB::transaction(function () use ($usuario, $convenio, $datos, $ruta, $principal) {
+              Firma::create([
+                  'convenio_id' => $convenio->id,
+                  'user_id' => $usuario->id,
+                  'firma_ruta' => $ruta,
+                  'firmado_en' => now(),
+                  'latitud' => $datos['latitud'] ?? null,
+                  'longitud' => $datos['longitud'] ?? null,
+                  'biometria_ok' => (bool) ($datos['biometria_ok'] ?? false),
+                  'sha256_documento' => $principal?->sha256,
+              ]);
+
+              if (! $convenio->fecha_firma) {
+                  $convenio->update(['fecha_firma' => now()->toDateString()]);
+              }
+
+              return $this->cambiar($usuario, $convenio, 'firmado', "Firmado por {$usuario->name}");
+          });
+      }
       // El admin le asigna el convenio a un revisor (el revisor solo ve lo asignado)
       public function asignarRevisor(User $usuario, Convenio $convenio, int $revisorId): Convenio
       {
