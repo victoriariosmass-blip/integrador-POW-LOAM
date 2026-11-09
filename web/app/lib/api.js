@@ -1,31 +1,36 @@
-import { API_URL } from './config';
 
+import { API_URL } from './config';
+ 
 function getCookie(name) {
   if (typeof document === 'undefined') return null;
   const m = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'));
   return m ? decodeURIComponent(m[2]) : null;
 }
-
+ 
 // Pide la cookie CSRF a Laravel antes de login/POST/PUT/DELETE
 export async function csrf() {
   await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: 'include' });
 }
-
-export async function api(path, { method = 'GET', body, headers = {} } = {}) {
+ 
+// body: un objeto (va como JSON) o un FormData (para subir archivos)
+// comoArchivo: true devuelve el archivo (Blob) en lugar de JSON, para descargar PDF
+export async function api(path, { method = 'GET', body, headers = {}, comoArchivo = false } = {}) {
+  const esFormData = typeof FormData !== 'undefined' && body instanceof FormData;
   let res;
   try {
     if (method !== 'GET') await csrf();
-
+ 
     res = await fetch(`${API_URL}/api${path}`, {
       method,
       credentials: 'include',
       headers: {
         Accept: 'application/json',
-        ...(body ? { 'Content-Type': 'application/json' } : {}),
+        // con FormData el navegador pone solo el Content-Type (multipart con su separador)
+        ...(body && !esFormData ? { 'Content-Type': 'application/json' } : {}),
         'X-XSRF-TOKEN': getCookie('XSRF-TOKEN') ?? '',
         ...headers,
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: esFormData ? body : body ? JSON.stringify(body) : undefined,
     });
   } catch (e) {
     // la API no responde (apagada, sin conexión...): el detalle queda en la consola
@@ -34,7 +39,9 @@ export async function api(path, { method = 'GET', body, headers = {} } = {}) {
     error.status = 0;
     throw error;
   }
-
+ 
+  if (res.ok && comoArchivo) return res.blob();
+ 
   const data = res.status === 204 ? null : await res.json().catch(() => null);
   if (!res.ok) {
     // errores del servidor (500...): al usuario un mensaje común, el detalle a la consola

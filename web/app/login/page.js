@@ -1,5 +1,5 @@
 'use client';
- 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Field from '../ui/molecules/Field';
@@ -77,6 +77,9 @@ export default function LoginPage() {
  
       <p className="text-center mt-3 mb-0">
         <a href="#" className="small">¿Olvidaste tu contraseña?</a>
+      </p>
+       <p className="text-center mt-2 mb-0">
+        <Link href="/publico" className="small">Ver los convenios firmados sin iniciar sesión</Link>
       </p>
     </AuthLayout>
   );
