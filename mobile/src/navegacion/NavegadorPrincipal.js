@@ -10,6 +10,7 @@ import PantallaFirmaConvenio from '../pantallas/PantallaFirmaConvenio';
 import PantallaSubirAnexo from '../pantallas/PantallaSubirAnexo';
 import PantallaSostenibilidad from '../pantallas/PantallaSostenibilidad';
 import PantallaLogin from '../pantallas/PantallaLogin';
+import PantallaEscanear from '../pantallas/PantallaEscanear';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { ProveedorSesion, usarSesion } from '../contexto/ContextoSesion';
 
@@ -88,6 +89,11 @@ function Pantallas() {
             name="FirmaConvenio"
             component={PantallaFirmaConvenio}
             options={{ title: 'Firmar Convenio' }}
+          />
+          <Pila.Screen
+            name="Escanear"
+            component={PantallaEscanear}
+            options={{ title: 'Escanear QR' }}
           />
           <Pila.Screen
             name="SubirAnexo"

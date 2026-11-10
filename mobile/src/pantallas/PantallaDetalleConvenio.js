@@ -149,6 +149,23 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
         </View>
       )}
 
+      {/* Árbol: el marco del que depende y los específicos o adendas que dependen de este */}
+      {pestaniaActiva === 'datos' && (c.antecedentes?.length > 0 || c.derivados?.length > 0) && (
+        <View style={[tarjeta, { marginTop: 12 }]}>
+          <Text style={[texto(15), { fontWeight: 'bold', marginBottom: 8 }]}>Convenios relacionados</Text>
+          {c.antecedentes?.length > 0 && <Text style={[secundario(12), { marginBottom: 4 }]}>Depende de:</Text>}
+          {c.antecedentes?.map((r) => (
+            <Relacionado key={`a${r.id}`} convenio={r} texto={texto} secundario={secundario}
+              alPresionar={() => navigation.push('DetalleConvenio', { id: r.id, idConvenio: r.codigo })} />
+          ))}
+          {c.derivados?.length > 0 && <Text style={[secundario(12), { marginVertical: 4 }]}>Dependen de este:</Text>}
+          {c.derivados?.map((r) => (
+            <Relacionado key={`d${r.id}`} convenio={r} texto={texto} secundario={secundario}
+              alPresionar={() => navigation.push('DetalleConvenio', { id: r.id, idConvenio: r.codigo })} />
+          ))}
+        </View>
+      )}
+
       {pestaniaActiva === 'documentos' && (
         <View style={tarjeta}>
           {(c.documentos ?? []).length === 0 ? (
@@ -184,6 +201,18 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
 
       {pestaniaActiva === 'comentarios' && <PantallaComentarios id={c.id} puedeComentar={c.permisos?.comentar} />}
     </ScrollView>
+  );
+}
+
+function Relacionado({ convenio, texto, secundario, alPresionar }) {
+  return (
+    <TouchableOpacity onPress={alPresionar} accessibilityRole="link" style={{ paddingVertical: 6 }}
+      accessibilityLabel={`${convenio.codigo}, ${convenio.titulo}`}>
+      <Text style={[texto(14), { fontWeight: '600' }]}>
+        {convenio.codigo} · {TIPOS[convenio.tipo] ?? convenio.tipo} · {ESTADOS[convenio.estado] ?? convenio.estado} ›
+      </Text>
+      <Text style={secundario(13)}>{convenio.titulo}</Text>
+    </TouchableOpacity>
   );
 }
 

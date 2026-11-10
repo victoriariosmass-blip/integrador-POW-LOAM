@@ -80,6 +80,14 @@ const COMENTARIOS_MOCK = {
 };
 const OFENSIVAS_MOCK = ['idiota', 'estupido', 'inutil', 'basura']; // el filtro de verdad lo hace la API
 
+// origen = el convenio nuevo (específico, adenda); destino = su antecedente (el marco)
+const VINCULOS_MOCK = [{ origen: 9, destino: 1, tipo: 'especifico_de' }];
+
+function relacionadoMock(id, tipo) {
+  const c = FICHAS_MOCK[id];
+  return { id: c.id, codigo: c.codigo, titulo: c.titulo, tipo: c.tipo, estado: c.estado, pivot: { tipo } };
+}
+
 function fichaMock(id, usuario) {
   const c = FICHAS_MOCK[id];
   if (!c) {
@@ -99,6 +107,9 @@ function fichaMock(id, usuario) {
     ],
     // misma regla que la API: firma la autoridad si está aprobado; consulta no comenta
     permisos: { firmar: usuario?.rol === 'autoridad' && c.estado === 'aprobado', comentar: usuario?.rol !== 'consulta', editar: false },
+     // árbol: de qué depende y qué depende de él
+    antecedentes: VINCULOS_MOCK.filter((v) => v.origen === c.id).map((v) => relacionadoMock(v.destino, v.tipo)),
+    derivados: VINCULOS_MOCK.filter((v) => v.destino === c.id).map((v) => relacionadoMock(v.origen, v.tipo)),
   };
 }
 
@@ -176,3 +187,25 @@ export const ESTADOS = {
   rescindido: 'Rescindido',
   archivado: 'Archivado',
 };
+
+// ---- QR ----
+// El QR de la web tiene la dirección de la página pública del convenio:
+//   http://.../publico/2f6c...-uuid   (o solo el uuid, o el número de convenio)
+// Devuelve el id del convenio para abrir la ficha completa.
+export async function buscarPorQR(texto) {
+  const contenido = String(texto).trim();
+  if (/^\d+$/.test(contenido)) return Number(contenido); // QR viejo: solo el número
+
+  const ref = contenido.split('/publico/').pop().split(/[?#/]/)[0];
+  if (!ref) throw new Error('Este código QR no es de un convenio.');
+
+  if (USAR_MOCK) {
+    await esperar(400);
+    const c = Object.values(FICHAS_MOCK).find((f) => `mock-${f.id}` === ref && f.estado === 'firmado');
+    if (!c) throw Object.assign(new Error('No encontramos ese convenio'), { status: 404 });
+    return c.id;
+  }
+  // GET /api/publico/convenios/{ref}: solo responde si el convenio es público (firmado y no confidencial)
+  const respuesta = await api(`/publico/convenios/${encodeURIComponent(ref)}`);
+  return respuesta.data.id;
+}
