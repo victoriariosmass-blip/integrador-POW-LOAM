@@ -1,14 +1,16 @@
 //lector de codigos QR para abrir convenios con un timeout de 60seg de inactividad, cierra la pantalla si no se lee nada
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
+import { buscarPorQR } from '../servicios/convenios';
 
 export default function PantallaEscanear({ navigation }) {
   const { colores } = usarPreferencias();
   const [permiso, solicitarPermiso] = useCameraPermissions();
   const [escaneado, setEscaneado] = useState(false);
+  const [buscando, setBuscando] = useState(false);
 
   useEffect(() => {
     // Requisito: Si no se reconoce un código en 1 minuto, cerrar la pantalla
@@ -36,15 +38,25 @@ export default function PantallaEscanear({ navigation }) {
     );
   }
 
-  const manejarLecturaQR = ({ data }) => {
+  // El QR de la web lleva a la página pública del convenio. Con esa referencia
+  // se busca el convenio en la API y se abre su ficha completa.
+  const manejarLecturaQR = async ({ data }) => {
     setEscaneado(true);
-    // El QR tiene el número (id) del convenio
-    Alert.alert('Código reconocido', `Convenio N° ${data}`, [
-      {
-        text: 'Abrir ficha',
-        onPress: () => navigation.navigate('DetalleConvenio', { id: Number(data) || null }),
-      },
-    ]);
+    setBuscando(true);
+    try {
+      const id = await buscarPorQR(data);
+      navigation.replace('DetalleConvenio', { id });
+    } catch (e) {
+      const mensaje = e.status === 404
+        ? 'Este QR no corresponde a un convenio firmado. Solo los convenios firmados y no confidenciales tienen QR.'
+        : e.message || 'No se pudo leer el código.';
+      Alert.alert('No se pudo abrir el convenio', mensaje, [
+        { text: 'Escanear otro', onPress: () => setEscaneado(false) },
+        { text: 'Salir', style: 'cancel', onPress: () => navigation.goBack() },
+      ]);
+    } finally {
+      setBuscando(false);
+    }
   };
 
   return (
@@ -55,7 +67,11 @@ export default function PantallaEscanear({ navigation }) {
         barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
       />
       <View style={estilos.cuadroEnfoque} />
-      <Text style={estilos.instruccion}>Apuntá al código QR del convenio</Text>
+      {buscando ? (
+        <ActivityIndicator size="large" color="#FFF" style={{ marginTop: 20 }} />
+      ) : (
+        <Text style={estilos.instruccion}>Apuntá al código QR del convenio (está en su ficha de la web)</Text>
+      )}
     </View>
   );
 }

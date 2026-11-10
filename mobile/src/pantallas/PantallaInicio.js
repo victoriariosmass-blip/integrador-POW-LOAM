@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
 import { TarjetaMetrica } from '../componentes/moleculas/TarjetaMetrica';
+import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
 import { ElementoConvenio } from '../componentes/moleculas/ElementoConvenio';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { usarSesion } from '../contexto/ContextoSesion';
@@ -43,7 +44,7 @@ export default function PantallaInicio({ navigation }) {
       }
     >
       <Text style={[estilos.saludo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>Hola, {nombre}</Text>
-
+      <BotonPersonalizado titulo="📷 Escanear QR de un convenio" variante="secundario" alPresionar={() => navigation.navigate('Escanear')} />
       {error ? (
         <Text style={{ color: colores.error, fontSize: 15 * factorActual, marginBottom: 12 }}>{error}</Text>
       ) : null}
