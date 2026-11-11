@@ -15,7 +15,7 @@ export default function Topbar() {
       .catch(() => setUrgentes(0)); // si falla, la campanita queda sin número
   }, [usuario]);
   return (
-    <header className="navbar bg-light border-bottom px-3">
+    <header className="navbar app-topbar border-bottom px-3">
       <div className="d-flex align-items-center gap-2">
         <button className="btn btn-outline-secondary d-md-none" type="button"
           data-bs-toggle="offcanvas" data-bs-target="#menuMovil" aria-controls="menuMovil" aria-label="Abrir menú">
