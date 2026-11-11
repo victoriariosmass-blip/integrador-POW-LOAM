@@ -17,7 +17,7 @@ export const BotonPersonalizado = ({
       style={[
         estilos.boton,
         esPrimario
-          ? { backgroundColor: colores.botonPrimario }
+          ? [estilos.primario, { backgroundColor: colores.botonPrimario, shadowColor: colores.botonPrimario }]
           : [
               estilos.secundario,
               { backgroundColor: colores.botonSecundario, borderColor: colores.borde },
@@ -30,7 +30,7 @@ export const BotonPersonalizado = ({
       <Text
         style={[
           estilos.texto,
-          !esPrimario && { color: colores.textoPrincipal },
+          !esPrimario && { color: colores.acento },
         ]}
       >
         {titulo}
@@ -42,9 +42,16 @@ export const BotonPersonalizado = ({
 const estilos = StyleSheet.create({
   boton: {
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
     marginVertical: 6,
+  },
+  // sombra índigo suave, como los botones de la web
+  primario: {
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
   },
   secundario: {
     borderWidth: 1,
@@ -54,7 +61,7 @@ const estilos = StyleSheet.create({
   },
   texto: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 15,
   },
 });

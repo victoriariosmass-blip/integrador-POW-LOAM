@@ -59,7 +59,7 @@ export default function PantallaBloqueo({ navigation }) {
         <Switch
           value={activo || mostrarForm}
           onValueChange={cambiarInterruptor}
-          trackColor={{ false: '#CBD5E0', true: colores.acento }}
+          trackColor={{ false: colores.borde, true: colores.acento }}
           accessibilityLabel="Bloqueo de la app"
         />
       </View>
