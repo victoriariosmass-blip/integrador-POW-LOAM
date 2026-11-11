@@ -8,7 +8,7 @@ import { usarSesion } from '../contexto/ContextoSesion';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 
 export default function PantallaLogin() {
-  const { entrar } = usarSesion();
+  const { entrar, avisoLogin } = usarSesion();
   const { factorActual, colores } = usarPreferencias();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,9 +43,9 @@ export default function PantallaLogin() {
         Ingresá con tu cuenta institucional.
       </Text>
 
-      {error ? (
+      {error || avisoLogin ? (
         <View style={[estilos.error, { backgroundColor: colores.errorFondo, borderColor: colores.error }]} accessibilityRole="alert">
-          <Text style={[estilos.textoError, { color: colores.error, fontSize: 14 * factorActual }]}>{error}</Text>
+          <Text style={[estilos.textoError, { color: colores.error, fontSize: 14 * factorActual }]}>{error || avisoLogin}</Text>
         </View>
       ) : null}
 

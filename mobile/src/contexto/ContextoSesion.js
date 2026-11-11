@@ -3,7 +3,7 @@
 // a bloquear cuando queda más de 1 minuto en segundo plano.
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
-import { iniciarSesion, usuarioGuardado, cerrarSesion } from '../servicios/autenticacion';
+import { iniciarSesion, verificarCodigo, reenviarCodigo, usuarioGuardado, cerrarSesion } from '../servicios/autenticacion';
 import { bloqueoActivo, desactivarBloqueo } from '../servicios/desbloqueo';
 import { olvidarAvisos } from '../servicios/avisos';
 
@@ -15,6 +15,8 @@ export const ProveedorSesion = ({ children }) => {
   const [usuario, setUsuario] = useState(null);
   const [cargando, setCargando] = useState(true); // mientras revisa si había sesión guardada
   const [bloqueada, setBloqueada] = useState(false);
+  const [pendienteMfa, setPendienteMfa] = useState(null); // { mfaToken, canal, email } entre el paso 1 y el 2
+  const [avisoLogin, setAvisoLogin] = useState(''); // por qué se volvió al login (ej. "el ingreso venció")
   const enSegundoPlanoDesde = useRef(null);
 
   useEffect(() => {
@@ -40,9 +42,30 @@ export const ProveedorSesion = ({ children }) => {
     return () => sub.remove();
   }, []);
 
+  // Paso 1: email y contraseña. Si la API pide código, se pasa a la pantalla del código.
   const entrar = async (email, password) => {
-    const u = await iniciarSesion(email, password);
-    setUsuario(u); // recién se identificó con la contraseña: no hace falta desbloquear
+    setAvisoLogin('');
+    const r = await iniciarSesion(email, password);
+    if (r.requiereMfa) {
+      setPendienteMfa(r);
+      return;
+    }
+    setUsuario(r); // la API todavía no pide código
+  };
+
+  // Paso 2: el código de 6 números. Recién acá queda iniciada la sesión.
+  const confirmarCodigo = async (codigo) => {
+    const u = await verificarCodigo(pendienteMfa.mfaToken, codigo);
+    setPendienteMfa(null);
+    setUsuario(u); // recién se identificó con contraseña + código: no hace falta desbloquear
+  };
+
+  const pedirOtroCodigo = (canal) => reenviarCodigo(pendienteMfa.mfaToken, canal);
+
+  // "Volver" desde la pantalla del código: otra vez email y contraseña (con el motivo, si hay)
+  const cancelarCodigo = (motivo = '') => {
+    setPendienteMfa(null);
+    setAvisoLogin(motivo);
   };
 
   const salir = async () => {
@@ -56,7 +79,7 @@ export const ProveedorSesion = ({ children }) => {
   const desbloquear = () => setBloqueada(false);
 
   return (
-    <ContextoSesion.Provider value={{ usuario, cargando, bloqueada, entrar, salir, desbloquear }}>
+    <ContextoSesion.Provider value={{ usuario, cargando, bloqueada, pendienteMfa, avisoLogin, entrar, confirmarCodigo, pedirOtroCodigo, cancelarCodigo, salir, desbloquear }}>
       {children}
     </ContextoSesion.Provider>
   );
