@@ -1,30 +1,79 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUsuario } from '../../lib/UsuarioContext';
 import { puede } from '../../lib/permisos';
-import { listarConvenios } from '../../lib/convenios';
+import { listarConvenios, listarUnidades } from '../../lib/convenios';
+import { listarTodos } from '../../lib/listados';
+import { armarCsv, descargarCsv } from '../../lib/csv';
 import { TIPOS, ESTADOS, fecha } from '../../lib/formato';
 import Chip from '../../ui/atoms/Chip';
  
-export default function Convenios() {
+// Filtros vacíos (también sirve para "Limpiar filtros")
+const SIN_FILTROS = { q: '', estado: '', tipo: '', unidad_id: '', firma_desde: '', firma_hasta: '', vigentes: '' };
+ 
+// Columnas del CSV exportado
+const COLUMNAS_CSV = [
+  { titulo: 'Código', valor: (c) => c.codigo },
+  { titulo: 'Título', valor: (c) => c.titulo },
+  { titulo: 'Tipo', valor: (c) => TIPOS[c.tipo] ?? c.tipo },
+  { titulo: 'Unidad', valor: (c) => c.unidad?.nombre ?? '' },
+  { titulo: 'Estado', valor: (c) => ESTADOS[c.estado] ?? c.estado },
+  { titulo: 'Fecha de firma', valor: (c) => fecha(c.fecha_firma) ?? '' },
+  { titulo: 'Vencimiento', valor: (c) => fecha(c.fecha_vencimiento) ?? 'Sin vencimiento registrado' },
+  { titulo: 'Confidencial', valor: (c) => (c.confidencial ? 'Sí' : 'No') },
+];
+ 
+
+// useSearchParams necesita estar dentro de un <Suspense>
+export default function PaginaConvenios() {
+  return (
+    <Suspense fallback={null}>
+      <Convenios />
+    </Suspense>
+  );
+}
+ 
+function Convenios() {
   const usuario = useUsuario();
   const router = useRouter();
-  const [filtros, setFiltros] = useState({ q: '', estado: '', tipo: '', page: 1 });
+  const searchParams = useSearchParams();
+  const [filtros, setFiltros] = useState({ ...SIN_FILTROS, page: 1 });
+  const [unidades, setUnidades] = useState([]);
+  const [exportando, setExportando] = useState(false);
+  const [errorExportar, setErrorExportar] = useState('');
   const [texto, setTexto] = useState('');
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(true);
+  const [listo, setListo] = useState(false); // ya se leyeron los filtros de la dirección
+ 
 
-  // Si se llega desde el panel con ?estado=..., arranca con ese filtro
+  // Si se llega desde el panel (ej. /convenios?estado=borrador,revision), arranca SOLO con esos filtros.
+  // Next guarda la pantalla abierta en memoria al cambiar de página, así que esto se repite
+  // cada vez que cambia la dirección y REEMPLAZA los filtros anteriores (no los suma).
+  const direccion = searchParams.toString();
   useEffect(() => {
-    const estado = new URLSearchParams(window.location.search).get('estado');
-    if (estado) setFiltros((f) => ({ ...f, estado }));
-  }, []);
+    const params = new URLSearchParams(direccion);
+    const desdeUrl = {};
+    Object.keys(SIN_FILTROS).forEach((clave) => {
+      if (params.get(clave)) desdeUrl[clave] = params.get(clave);
+    });
+    setFiltros({ ...SIN_FILTROS, ...desdeUrl, page: 1 });
+    setTexto(desdeUrl.q ?? '');
+    setListo(true);
+  }, [direccion]);
+ 
+  // La lista de unidades solo hace falta para los usuarios globales (los demás ven solo la suya)
+  const esGlobal = usuario.unidad_id === null;
+  useEffect(() => {
+    if (esGlobal) listarUnidades().then((r) => setUnidades(r.data)).catch(() => setUnidades([]));
+  }, [esGlobal]);
  
   // Cada vez que cambian los filtros, se pide la página a la API
   useEffect(() => {
+    if (!listo) return; // primero se leen los filtros de la dirección (así no se pide dos veces)
     let vigente = true;
     setCargando(true);
     setError('');
@@ -33,7 +82,7 @@ export default function Convenios() {
       .catch((e) => vigente && setError(e.message || 'No se pudo cargar el listado'))
       .finally(() => vigente && setCargando(false));
     return () => { vigente = false; };
-  }, [filtros]);
+  }, [filtros, listo]);
  
   function cambiar(campo, valor) {
     setFiltros((f) => ({ ...f, [campo]: valor, page: 1 }));
@@ -44,19 +93,54 @@ export default function Convenios() {
     cambiar('q', texto.trim());
   }
  
+  function limpiarFiltros() {
+    setTexto('');
+    setFiltros({ ...SIN_FILTROS, page: 1 });
+  }
+ 
+  // Exporta TODOS los resultados del filtro actual (no solo la página que se ve).
+  // Salen de la API, así que son solo los convenios que el usuario puede ver.
+  async function exportar() {
+    setExportando(true);
+    setErrorExportar('');
+    try {
+      const { page, ...sinPagina } = filtros;
+      const todos = await listarTodos(sinPagina);
+      const csv = armarCsv(COLUMNAS_CSV, todos);
+      descargarCsv(`convenios-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+    } catch (e) {
+      setErrorExportar(e.message || 'No se pudo exportar el listado');
+    } finally {
+      setExportando(false);
+    }
+  }
+ 
+  const hayFiltros = Object.entries(SIN_FILTROS).some(([clave]) => filtros[clave]);
+ 
   const convenios = resultado?.data ?? [];
   const meta = resultado?.meta;
  
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <h1 className="h3 mb-0">Convenios</h1>
-        {puede(usuario, 'crearConvenio') && (
-          <Link href="/convenios/nuevo" className="btn btn-primary">
-            <i className="bi bi-plus-lg me-2" aria-hidden="true" />Nuevo convenio
-          </Link>
-        )}
+        <div className="d-flex gap-2">
+          <button type="button" className="btn btn-outline-secondary text-nowrap" onClick={exportar}
+                  disabled={exportando || cargando || !resultado?.meta?.total}>
+            {exportando
+              ? <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />
+              : <i className="bi bi-download me-2" aria-hidden="true" />}
+            Exportar CSV
+          </button>
+          {puede(usuario, 'crearConvenio') && (
+            <Link href="/convenios/nuevo" className="btn btn-primary text-nowrap">
+              <i className="bi bi-plus-lg me-2" aria-hidden="true" />Nuevo convenio
+            </Link>
+          )}
+        </div>
       </div>
+ 
+      {errorExportar && <div className="alert alert-danger" role="alert">{errorExportar}</div>}
  
       {/* Filtros */}
       <form className="row g-2 mb-3" onSubmit={buscar} role="search">
@@ -74,6 +158,7 @@ export default function Convenios() {
           <label htmlFor="estado" className="visually-hidden">Estado</label>
           <select id="estado" className="form-select" value={filtros.estado} onChange={(e) => cambiar('estado', e.target.value)}>
             <option value="">Todos los estados</option>
+            <option value="borrador,revision">En trámite (borrador o revisión)</option>
             {Object.entries(ESTADOS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </div>
@@ -84,6 +169,39 @@ export default function Convenios() {
             {Object.entries(TIPOS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </div>
+        {esGlobal && (
+          <div className="col-12 col-md-4">
+            <label htmlFor="unidad" className="form-label small mb-1">Unidad</label>
+            <select id="unidad" className="form-select" value={filtros.unidad_id} onChange={(e) => cambiar('unidad_id', e.target.value)}>
+              <option value="">Todas las unidades</option>
+              {unidades.map((u) => <option key={u.id} value={u.id}>{u.nombre}</option>)}
+            </select>
+          </div>
+        )}
+        <div className="col-6 col-md-3">
+          <label htmlFor="firma_desde" className="form-label small mb-1">Firmado desde</label>
+          <input id="firma_desde" type="date" className="form-control" value={filtros.firma_desde}
+                 max={filtros.firma_hasta || undefined} onChange={(e) => cambiar('firma_desde', e.target.value)} />
+        </div>
+        <div className="col-6 col-md-3">
+          <label htmlFor="firma_hasta" className="form-label small mb-1">Firmado hasta</label>
+          <input id="firma_hasta" type="date" className="form-control" value={filtros.firma_hasta}
+                 min={filtros.firma_desde || undefined} onChange={(e) => cambiar('firma_hasta', e.target.value)} />
+        </div>
+        {filtros.vigentes && (
+          <div className="col-12 col-md-auto d-flex align-items-end">
+            <span className="badge rounded-pill text-bg-success d-inline-flex align-items-center gap-2 py-2 px-3">
+              Solo vigentes
+              <button type="button" className="btn-close btn-close-white" style={{ fontSize: '.6rem' }}
+                      aria-label="Quitar el filtro de vigentes" onClick={() => cambiar('vigentes', '')} />
+            </span>
+          </div>
+        )}
+        {hayFiltros && (
+          <div className="col-12 col-md-2 d-flex align-items-end">
+            <button type="button" className="btn btn-link px-0" onClick={limpiarFiltros}>Limpiar filtros</button>
+          </div>
+        )}
       </form>
  
       {/* Estados de la pantalla */}
