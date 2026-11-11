@@ -157,6 +157,12 @@ class Convenio extends Model
     // (ver la matriz de permisos en el documento del proyecto)
     // ---------------------------------------------------------------
 
+    /** Lo que se muestra en la vista pública del sitio: firmados y no confidenciales */
+    public function scopePublicos(Builder $query): Builder
+    {
+        return $query->where('estado', 'firmado')->where('confidencial', false);
+    }
+    
     public function scopeVisiblesPara(Builder $query, User $user): Builder
     {
         // Sin unidad = alcance global; con unidad = solo la suya

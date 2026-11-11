@@ -3,16 +3,24 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ComentarioController;
 use App\Http\Controllers\Api\ConvenioController;
+use App\Http\Controllers\Api\DocumentoController;
 use App\Http\Controllers\Api\EstadoConvenioController;
 use App\Http\Controllers\Api\MfaController;
+use App\Http\Controllers\Api\PublicoController;
 use App\Http\Controllers\Api\ResumenController;
 use App\Http\Controllers\Api\UnidadController;
 use Illuminate\Support\Facades\Route;
+
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/token', [AuthController::class, 'token']);
 Route::post('/mfa/verificar', [MfaController::class, 'verificar']);
 Route::post('/mfa/reenviar', [MfaController::class, 'reenviar']);
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/publico/convenios', [PublicoController::class, 'index']);
+    Route::get('/publico/convenios/{ref}', [PublicoController::class, 'show']);
+});
+
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -37,4 +45,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Comentarios
     Route::get('/convenios/{id}/comentarios', [ComentarioController::class, 'index']);
     Route::post('/convenios/{id}/comentarios', [ComentarioController::class, 'store']);
+
+    // Documentos (PDF y anexos)
+    Route::post('/convenios/{id}/documentos', [DocumentoController::class, 'store']);
+    Route::get('/convenios/{id}/documentos/{documento}', [DocumentoController::class, 'descargar']);
 });

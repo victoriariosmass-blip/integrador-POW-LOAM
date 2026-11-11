@@ -12,6 +12,9 @@ class Documento extends Model
 
     protected $guarded = ['id'];
 
+    // la ruta en el disco no sale en el JSON
+    protected $hidden = ['ruta'];
+
     const UPDATED_AT = null;
 
     protected function casts(): array

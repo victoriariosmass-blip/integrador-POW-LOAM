@@ -387,6 +387,100 @@
                 }
             }
         },
+        "/api/convenios/{id}/documentos": {
+            "post": {
+                "tags": [
+                    "Documentos"
+                ],
+                "summary": "Subir un PDF (borrador; admin o gestor de la unidad)",
+                "operationId": "37fa701bcc989fe373a59ae261715a41",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "archivo",
+                                    "categoria"
+                                ],
+                                "properties": {
+                                    "archivo": {
+                                        "description": "PDF de hasta 20 MB",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "categoria": {
+                                        "description": "principal, anexo, dictamen, resolucion u otro",
+                                        "type": "string",
+                                        "example": "principal"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Documento guardado (versión nueva)"
+                    },
+                    "403": {
+                        "description": "Sin permiso o el convenio no está en borrador"
+                    },
+                    "422": {
+                        "description": "No es un PDF, pesa más de 20 MB o falta la categoría"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/documentos/{documento}": {
+            "get": {
+                "tags": [
+                    "Documentos"
+                ],
+                "summary": "Descargar un PDF",
+                "operationId": "5c6cba83a8e988ef108ac839ace3baae",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "documento",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "El PDF"
+                    },
+                    "403": {
+                        "description": "No puede ver el convenio"
+                    },
+                    "404": {
+                        "description": "No existe"
+                    }
+                }
+            }
+        },
         "/api/convenios/{id}/enviar-revision": {
             "post": {
                 "tags": [
@@ -787,6 +881,75 @@
                 }
             }
         },
+        "/api/publico/convenios": {
+            "get": {
+                "tags": [
+                    "Público"
+                ],
+                "summary": "Listado público (sin login)",
+                "operationId": "e0fec3142d6dfd13d723554ffdb7584e",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Busca en título, código y contraparte",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tipo",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Convenios firmados y no confidenciales, paginados"
+                    }
+                }
+            }
+        },
+        "/api/publico/convenios/{ref}": {
+            "get": {
+                "tags": [
+                    "Público"
+                ],
+                "summary": "Detalle público por referencia (la del QR)",
+                "operationId": "7ead7fd1cfe3012fcf2b8ac849baefa1",
+                "parameters": [
+                    {
+                        "name": "ref",
+                        "in": "path",
+                        "description": "ref_publica (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalle público"
+                    },
+                    "404": {
+                        "description": "No existe o no es público"
+                    }
+                }
+            }
+        },
         "/api/resumen": {
             "get": {
                 "tags": [
@@ -847,8 +1010,16 @@
             "description": "Convenios"
         },
         {
+            "name": "Documentos",
+            "description": "Documentos"
+        },
+        {
             "name": "Circuito",
             "description": "Circuito"
+        },
+        {
+            "name": "Público",
+            "description": "Público"
         }
     ]
 }
