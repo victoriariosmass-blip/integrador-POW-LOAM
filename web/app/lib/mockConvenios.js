@@ -79,6 +79,10 @@ export function verMock(usuario, id) {
       ...conPermisos(usuario, c),
       transiciones: historial[c.id] ?? [],
       observaciones: c.observaciones ?? [],
+      ref_publica: refDe(c),
+      documentos: documentos[c.id] ?? [],
+      antecedentes: VINCULOS.filter((v) => v.origen === c.id).map((v) => relacionado(v.destino, v.tipo)),
+      derivados: VINCULOS.filter((v) => v.destino === c.id).map((v) => relacionado(v.origen, v.tipo)),
     },
   };
 }
@@ -185,4 +189,106 @@ export function resumenMock(usuario) {
     por_firmar: visibles.filter((c) => c.estado === 'aprobado').length,
     ultimos_movimientos: movimientos,
   };
+}
+
+
+// ---- árbol, vista pública, comentarios y documentos (modo de prueba) ----
+ 
+// origen = el convenio nuevo (específico, adenda); destino = su antecedente (el marco)
+const VINCULOS = [
+  { origen: 2, destino: 1, tipo: 'especifico_de' },
+  { origen: 6, destino: 1, tipo: 'adenda_de' },
+];
+ 
+function relacionado(id, tipo) {
+  const c = convenios.find((x) => x.id === id);
+  return { id: c.id, codigo: c.codigo, titulo: c.titulo, tipo: c.tipo, estado: c.estado, pivot: { tipo } };
+}
+ 
+const refDe = (c) => `mock-${c.id}`; // en la API es un UUID
+ 
+const esPublico = (c) => c.estado === 'firmado' && !c.confidencial;
+ 
+function aPublico(c) {
+  return {
+    id: c.id, ref: refDe(c), codigo: c.codigo, titulo: c.titulo, tipo: c.tipo, objeto: c.objeto,
+    unidad: c.unidad.nombre, contrapartes: [c.contraparte ?? 'Contraparte de prueba'],
+    fecha_firma: c.fecha_firma, fecha_vencimiento: c.fecha_vencimiento,
+    vigente: !c.fecha_vencimiento || c.fecha_vencimiento >= new Date().toISOString().slice(0, 10),
+  };
+}
+ 
+export function publicosMock({ q, tipo, page = 1 }) {
+  const texto = (q ?? '').toLowerCase();
+  const lista = convenios
+    .filter(esPublico)
+    .filter((c) => !tipo || c.tipo === tipo)
+    .filter((c) => !texto || c.titulo.toLowerCase().includes(texto) || c.codigo.toLowerCase().includes(texto))
+    .map(aPublico);
+  const porPagina = 12;
+  return {
+    data: lista.slice((page - 1) * porPagina, page * porPagina),
+    meta: { current_page: Number(page), last_page: Math.max(1, Math.ceil(lista.length / porPagina)), total: lista.length },
+  };
+}
+ 
+export function publicoMock(ref) {
+  const c = convenios.find((x) => refDe(x) === ref && esPublico(x));
+  if (!c) throw error(404, 'No encontramos ese convenio');
+  const ids = VINCULOS.filter((v) => v.origen === c.id).map((v) => v.destino)
+    .concat(VINCULOS.filter((v) => v.destino === c.id).map((v) => v.origen));
+  const relacionados = convenios.filter((x) => ids.includes(x.id) && esPublico(x))
+    .map((x) => ({ ref: refDe(x), codigo: x.codigo, titulo: x.titulo, tipo: x.tipo }));
+  return { data: { ...aPublico(c), relacionados } };
+}
+ 
+const comentarios = {
+  1: [{ id: 1, contenido: 'Revisar la cláusula de renovación antes de que venza.', es_ofensivo: false, autor: { name: 'Gabriel Gestor' }, created_at: '2026-10-20T13:00:00Z' }],
+};
+const OFENSIVAS = ['idiota', 'estupido', 'inutil', 'basura']; // el filtro de verdad lo hace la API
+ 
+export function comentariosMock(usuario, id) {
+  verMock(usuario, id); // mismo control de acceso que la ficha
+  return { data: comentarios[id] ?? [] };
+}
+ 
+export function comentarMock(usuario, id, contenido) {
+  const { data: c } = verMock(usuario, id);
+  if (!c.permisos.comentar) throw error(403, 'No tenés permiso para hacer esto con este convenio.');
+  const palabras = contenido.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-z]+/);
+  const ofensivo = palabras.some((p) => OFENSIVAS.includes(p));
+  const nuevo = {
+    id: Date.now(), contenido: ofensivo ? 'Comentario ofensivo' : contenido, es_ofensivo: ofensivo,
+    autor: { name: usuario.name }, created_at: new Date().toISOString(),
+  };
+  comentarios[id] = [...(comentarios[id] ?? []), nuevo];
+  return { data: nuevo };
+}
+ 
+const documentos = {}; // id del convenio -> lista
+const archivos = {}; // id del documento -> el File (para "descargarlo")
+ 
+export function subirDocumentoMock(usuario, id, archivo, categoria) {
+  const { data: c } = verMock(usuario, id);
+  if (!c.permisos.editar) throw error(403, 'No tenés permiso para hacer esto con este convenio.');
+  if (!archivo.name.toLowerCase().endsWith('.pdf')) {
+    const e = error(422, 'El archivo tiene que ser un PDF.');
+    e.errors = { archivo: ['El archivo tiene que ser un PDF.'] };
+    throw e;
+  }
+  const lista = documentos[id] ?? [];
+  const doc = {
+    id: Date.now(), categoria, nombre_original: archivo.name, tamano_bytes: archivo.size,
+    sha256: '(se calcula en la API)', created_at: new Date().toISOString(),
+    numero_version: lista.filter((d) => d.categoria === categoria).length + 1,
+  };
+  documentos[id] = [...lista, doc];
+  archivos[doc.id] = archivo;
+  return { data: doc };
+}
+ 
+export function descargarDocumentoMock(id, documentoId) {
+  const archivo = archivos[documentoId];
+  if (!archivo) throw error(404, 'El documento no existe');
+  return archivo; // un File también es un Blob
 }

@@ -6,6 +6,10 @@ import { verConvenio, accionConvenio } from '../../../lib/convenios';
 import { TIPOS, ESTADOS, fecha } from '../../../lib/formato';
 import Chip from '../../../ui/atoms/Chip';
 import AccionesConvenio from '../../../ui/molecules/AccionesConvenio';
+import RelacionadosConvenio from '../../../ui/molecules/RelacionadosConvenio';
+import QrPublico from '../../../ui/molecules/QrPublico';
+import DocumentosConvenio from '../../../ui/organisms/DocumentosConvenio';
+import ComentariosConvenio from '../../../ui/organisms/ComentariosConvenio';
  
 const MENSAJES = {
   'enviar-revision': 'El convenio se envió a revisión.',
@@ -40,7 +44,7 @@ export default function FichaConvenio() {
   }, [id]);
  
   useEffect(() => { cargar(); }, [cargar]);
-
+ 
   // aviso al volver del alta o de la edición (?creado=1 / ?editado=1)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -109,8 +113,8 @@ export default function FichaConvenio() {
       </div>
  
       <div className="row g-4">
-        <section className="col-12 col-lg-8">
-          <div className="card">
+        <div className="col-12 col-lg-8 d-flex flex-column gap-4">
+          <section className="card">
             <div className="card-body">
               <h2 className="h6 fw-bold mb-3">Datos del convenio</h2>
               <dl className="row g-3 mb-0">
@@ -126,10 +130,15 @@ export default function FichaConvenio() {
                 </div>
               </dl>
             </div>
-          </div>
-        </section>
+          </section>
+ 
+          <DocumentosConvenio convenio={c} onSubido={cargar} />
+          <ComentariosConvenio convenioId={c.id} puedeComentar={c.permisos?.comentar} />
+        </div>
  
         <aside className="col-12 col-lg-4 d-flex flex-column gap-4">
+          <QrPublico convenio={c} />
+          <RelacionadosConvenio antecedentes={c.antecedentes} derivados={c.derivados} />
           {c.observaciones?.length > 0 && (
             <section className="card border-warning">
               <div className="card-body">
