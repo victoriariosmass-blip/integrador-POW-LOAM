@@ -12,7 +12,7 @@ export const ElementoConvenio = ({ codigo, descripcion, estado, alPresionar }) =
 
   return (
     <TouchableOpacity
-      style={[estilos.contenedor, { backgroundColor: colores.tarjeta, borderColor: colores.borde }]}
+      style={[estilos.contenedor, { backgroundColor: colores.tarjeta, borderColor: colores.borde, shadowColor: colores.sombra }]}
       onPress={alPresionar}
     >
       <View style={estilos.filaSuperior}>
@@ -30,8 +30,12 @@ const estilos = StyleSheet.create({
   contenedor: {
     padding: 14,
     borderWidth: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
+    borderRadius: 16,
+    // sombra suave, como las tarjetas de la web
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 1,
     marginBottom: 10,
   },
   filaSuperior: {

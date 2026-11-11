@@ -48,7 +48,7 @@ export default function PantallaPerfil({ navigation }) {
             style={[
               estilos.opcionTamanio,
               { borderColor: colores.borde },
-              tamanioLetra === tamanio && { backgroundColor: colores.acento, borderColor: colores.acento },
+              tamanioLetra === tamanio && { backgroundColor: colores.botonPrimario, borderColor: colores.botonPrimario },
             ]}
             onPress={() => setTamanioLetra(tamanio)}
           >
@@ -73,7 +73,7 @@ export default function PantallaPerfil({ navigation }) {
         <Switch
           value={esModoOscuro}
           onValueChange={setEsModoOscuro}
-          trackColor={{ false: '#CBD5E0', true: colores.acento }}
+          trackColor={{ false: colores.borde, true: colores.acento }}
           thumbColor={esModoOscuro ? '#FFFFFF' : undefined}
         />
       </View>

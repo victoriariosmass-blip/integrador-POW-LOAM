@@ -16,20 +16,21 @@ export const ProveedorPreferencias = ({ children }) => {
   const factorActual = factoresEscala[tamanioLetra] || 1;
 
   const colores = {
-    fondo: esModoOscuro ? '#080B12' : '#FFFFFF',
-    tarjeta: esModoOscuro ? '#111827' : '#F7FAFC',
-    tarjetaElevada: esModoOscuro ? '#172033' : '#FFFFFF',
-    textoPrincipal: esModoOscuro ? '#FFFFFF' : '#1A202C',
-    textoSecundario: esModoOscuro ? '#CBD5E1' : '#718096',
-    borde: '#E2E8F0',
-    acento: esModoOscuro ? '#60A5FA' : '#2B6CB0',
-    botonPrimario: esModoOscuro ? '#2563EB' : '#4A5568',
-    botonSecundario: esModoOscuro ? '#172033' : '#FFFFFF',
-    error: esModoOscuro ? '#FCA5A5' : '#B71C1C',
-    errorFondo: esModoOscuro ? '#451A1A' : '#FFEBEE',
-    exito: esModoOscuro ? '#86EFAC' : '#276749',
-    exitoFondo: esModoOscuro ? '#123322' : '#F0FFF4',
-    exitoBorde: esModoOscuro ? '#4ADE80' : '#68D391',
+    fondo: esModoOscuro ? '#12101F' : '#F6F6FB',
+    tarjeta: esModoOscuro ? '#1E1B3A' : '#FFFFFF',
+    tarjetaElevada: esModoOscuro ? '#26224A' : '#FFFFFF',
+    textoPrincipal: esModoOscuro ? '#F1F0FE' : '#1E1B3A',
+    textoSecundario: esModoOscuro ? '#B8B5D6' : '#5E5B78',
+    borde: esModoOscuro ? '#34305C' : '#E3E2F0',
+    acento: esModoOscuro ? '#A5A1F5' : '#4338CA',
+    botonPrimario: esModoOscuro ? '#5B54E8' : '#4338CA',
+    botonSecundario: esModoOscuro ? '#1E1B3A' : '#FFFFFF',
+    error: esModoOscuro ? '#FCA5A5' : '#9B1C1C',
+    errorFondo: esModoOscuro ? '#3F1A24' : '#FDECEC',
+    exito: esModoOscuro ? '#86EFAC' : '#1C6B3A',
+    exitoFondo: esModoOscuro ? '#123322' : '#E6F6EC',
+    exitoBorde: esModoOscuro ? '#4ADE80' : '#ACDDBE',
+    sombra: '#1E1B3A',
   };
 
   return (

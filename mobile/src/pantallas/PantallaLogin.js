@@ -36,6 +36,7 @@ export default function PantallaLogin() {
       style={[estilos.contenedor, { backgroundColor: colores.fondo }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <Text style={[estilos.marca, { color: colores.acento, fontSize: 13 * factorActual }]}>CONVENIOS UNLPAM</Text>
       <Text style={[estilos.titulo, { color: colores.textoPrincipal, fontSize: 26 * factorActual }]}>
         Gestión de Convenios
       </Text>
@@ -51,7 +52,7 @@ export default function PantallaLogin() {
 
       <Text style={[estilos.etiqueta, { color: colores.textoPrincipal, fontSize: 15 * factorActual }]}>Email</Text>
       <TextInput
-        style={[estilos.campo, { borderColor: colores.borde, color: colores.textoPrincipal, fontSize: 16 * factorActual }]}
+        style={[estilos.campo, { backgroundColor: colores.tarjeta, borderColor: colores.borde, color: colores.textoPrincipal, fontSize: 16 * factorActual }]}
         value={email}
         onChangeText={setEmail}
         placeholder="nombre@convenios.test"
@@ -92,12 +93,14 @@ export default function PantallaLogin() {
 
 const estilos = StyleSheet.create({
   contenedor: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
-  titulo: { fontWeight: 'bold', marginBottom: 6 },
+  marca: { fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
+  titulo: { fontWeight: '800', marginBottom: 6 },
   subtitulo: { marginBottom: 24 },
   etiqueta: { fontWeight: '600', marginBottom: 6 },
-  campo: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16 },
-  boton: { borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  campo: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16 },
+  boton: { borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8,
+    shadowColor: '#4338CA', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 3 },
   botonDeshabilitado: { opacity: 0.7 },
   textoBoton: { color: '#FFFFFF', fontWeight: 'bold' },
-  error: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 16 },
+  error: { borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 16 },
 });
