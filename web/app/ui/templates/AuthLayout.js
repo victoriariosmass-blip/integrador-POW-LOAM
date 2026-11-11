@@ -3,7 +3,7 @@
 export default function AuthLayout({ icono = 'bi-mortarboard', titulo, subtitulo, children }) {
   return (
     <main className="min-vh-100 row g-0">
-      <section className="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-center bg-body-tertiary border-end p-5">
+      <section className="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-center auth-panel p-5">
         <div
           className="d-flex align-items-center justify-content-center bg-secondary-subtle rounded mb-4 w-100"
           style={{ maxWidth: 420, height: 260 }}

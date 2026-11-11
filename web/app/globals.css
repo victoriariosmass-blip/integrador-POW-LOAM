@@ -1,1 +1,183 @@
-/* Estilos propios del proyecto. Los colores y tipografías los maneja Bootstrap. */
+/* =====================================================================
+   Estilo "Índigo moderno"
+   Se cambian las variables de Bootstrap: así todas las pantallas toman los
+   colores, la letra y los bordes sin tocar cada componente.
+   Colores: índigo #4338CA (principal), noche #1E1B3A (menú y texto),
+   celeste #0369A1 (acento), lavanda #F1F0FE, fondo #F6F6FB.
+   Letras: Manrope en títulos, Inter en el resto (las carga layout.tsx).
+   ===================================================================== */
+ 
+:root {
+  /* colores base */
+  --bs-primary: #4338CA;
+  --bs-primary-rgb: 67, 56, 202;
+  --bs-primary-text-emphasis: #3730A3;
+  --bs-primary-bg-subtle: #EEF0FF;
+  --bs-primary-border-subtle: #C9CBF7;
+  --bs-info: #0369A1;
+  --bs-info-rgb: 3, 105, 161;
+  --bs-body-bg: #F6F6FB;
+  --bs-body-bg-rgb: 246, 246, 251;
+  --bs-body-color: #1E1B3A;
+  --bs-body-color-rgb: 30, 27, 58;
+  --bs-secondary-color: #5E5B78;              /* text-body-secondary */
+  --bs-secondary-rgb: 94, 91, 120;            /* text-secondary */
+  --bs-tertiary-bg: #F1F0FE;
+  --bs-border-color: #E3E2F0;
+  --bs-link-color: #4338CA;
+  --bs-link-color-rgb: 67, 56, 202;
+  --bs-link-hover-color: #3730A3;
+  --bs-link-hover-color-rgb: 55, 48, 163;
+  --bs-focus-ring-color: rgba(67, 56, 202, .25);
+ 
+  /* letra y bordes */
+  --bs-body-font-family: var(--font-inter, 'Inter'), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bs-body-font-size: .95rem;
+  --bs-border-radius: .75rem;     /* 12px: botones y campos */
+  --bs-border-radius-sm: .5rem;
+  --bs-border-radius-lg: 1rem;    /* 16px: tarjetas */
+ 
+  /* propios */
+  --indigo-noche: #1E1B3A;
+  --indigo-lavanda: #F1F0FE;
+  --sombra-tarjeta: 0 1px 2px rgba(30, 27, 58, .06), 0 4px 16px rgba(30, 27, 58, .06);
+}
+ 
+/* ---- títulos ---- */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, .navbar-brand, .display-6 {
+  font-family: var(--font-manrope, 'Manrope'), var(--bs-body-font-family);
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+ 
+/* ---- botones ---- */
+.btn {
+  --bs-btn-font-weight: 600;
+  --bs-btn-padding-x: 1.1rem;
+  --bs-btn-padding-y: .55rem;
+  --bs-btn-border-radius: var(--bs-border-radius);
+}
+.btn-sm { --bs-btn-padding-x: .75rem; --bs-btn-padding-y: .3rem; --bs-btn-border-radius: var(--bs-border-radius-sm); }
+.btn-primary {
+  --bs-btn-bg: #4338CA; --bs-btn-border-color: #4338CA;
+  --bs-btn-hover-bg: #3730A3; --bs-btn-hover-border-color: #3730A3;
+  --bs-btn-active-bg: #312E81; --bs-btn-active-border-color: #312E81;
+  --bs-btn-disabled-bg: #A5A1E8; --bs-btn-disabled-border-color: #A5A1E8;
+  box-shadow: 0 2px 8px rgba(67, 56, 202, .3);
+}
+.btn-outline-primary {
+  --bs-btn-color: #4338CA; --bs-btn-border-color: #C9CBF7;
+  --bs-btn-hover-bg: #EEF0FF; --bs-btn-hover-color: #3730A3; --bs-btn-hover-border-color: #4338CA;
+  --bs-btn-active-bg: #E0E2FF; --bs-btn-active-color: #3730A3; --bs-btn-active-border-color: #4338CA;
+}
+/* botón secundario: blanco con borde suave (exportar, filtros, cancelar...) */
+.btn-outline-secondary {
+  --bs-btn-color: #1E1B3A; --bs-btn-bg: #FFFFFF; --bs-btn-border-color: #D9D7EE;
+  --bs-btn-hover-bg: #F1F0FE; --bs-btn-hover-color: #1E1B3A; --bs-btn-hover-border-color: #C9C6E4;
+  --bs-btn-active-bg: #E8E6FB; --bs-btn-active-color: #1E1B3A; --bs-btn-active-border-color: #C9C6E4;
+  --bs-btn-disabled-color: #8C89A6; --bs-btn-disabled-bg: #F3F3F7; --bs-btn-disabled-border-color: #E3E2F0;
+}
+.btn-outline-danger {
+  --bs-btn-color: #A61B1B; --bs-btn-bg: #FDECEC; --bs-btn-border-color: #FDECEC;
+  --bs-btn-hover-bg: #F9D5D5; --bs-btn-hover-color: #8A1414; --bs-btn-hover-border-color: #F9D5D5;
+}
+.btn-warning {
+  --bs-btn-bg: #0369A1; --bs-btn-border-color: #0369A1; --bs-btn-color: #FFFFFF;
+  --bs-btn-hover-bg: #075985; --bs-btn-hover-border-color: #075985; --bs-btn-hover-color: #FFFFFF;
+}
+ 
+/* ---- campos ---- */
+.form-control, .form-select {
+  border-color: #D9D7EE;
+  border-radius: var(--bs-border-radius);
+  padding-top: .55rem;
+  padding-bottom: .55rem;
+  background-color: #FFFFFF;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #4338CA;
+  box-shadow: 0 0 0 .2rem rgba(67, 56, 202, .2);
+}
+.form-check-input:checked { background-color: #4338CA; border-color: #4338CA; }
+.form-label { font-weight: 600; }
+ 
+/* ---- tarjetas: sin borde, con sombra suave ---- */
+.card {
+  --bs-card-border-width: 0;
+  --bs-card-border-radius: var(--bs-border-radius-lg);
+  --bs-card-inner-border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--sombra-tarjeta);
+}
+a.card { transition: box-shadow .15s, transform .15s; }
+a.card:hover { box-shadow: 0 2px 4px rgba(30, 27, 58, .08), 0 10px 24px rgba(30, 27, 58, .1); transform: translateY(-1px); }
+ 
+/* ---- tablas: dentro de una tarjeta blanca, encabezado lavanda ---- */
+.table-responsive {
+  background: #FFFFFF;
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--sombra-tarjeta);
+}
+.table-responsive > .table { margin-bottom: 0; }
+.table { --bs-table-bg: transparent; --bs-table-hover-bg: #F8F7FF; --bs-table-border-color: #ECEBF5; }
+.table > :not(caption) > * > * { padding: .85rem 1rem; }
+.table > thead th,
+.table > thead.table-light th {
+  background: var(--indigo-lavanda);
+  color: #3730A3;
+  font-family: var(--font-manrope, 'Manrope'), var(--bs-body-font-family);
+  font-weight: 700;
+  font-size: .82rem;
+  border-bottom: 0;
+}
+.table-hover > tbody > tr { cursor: pointer; }
+/* el código del convenio en la tabla, en índigo y sin subrayar */
+.table a.link-dark { color: #4338CA !important; text-decoration: none; }
+.table a.link-dark:hover { text-decoration: underline; }
+ 
+/* ---- etiquetas de estado (atom Chip) ---- */
+.chip {
+  display: inline-block;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: .2rem .65rem;
+  border-radius: 999px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.chip-borrador   { background: #F3F3F7; color: #44415C; border-color: #DCDAE8; }
+.chip-revision   { background: #FFF7E0; color: #7A5300; border-color: #F2D98F; }
+.chip-aprobado   { background: #EEF0FF; color: #3730A3; border-color: #C9CBF7; }
+.chip-firmado    { background: #E6F6EC; color: #1C6B3A; border-color: #ACDDBE; }
+.chip-vigente    { background: #E6F6EC; color: #1C6B3A; border-color: #ACDDBE; }
+.chip-por_vencer { background: #FFF0E0; color: #8A4300; border-color: #F5C894; }
+.chip-vencido    { background: #FDECEC; color: #9B1C1C; border-color: #F3B9B9; }
+.chip-rescindido { background: #FDECEC; color: #9B1C1C; border-color: #F3B9B9; }
+.chip-archivado  { background: #ECEBF2; color: #3D3A52; border-color: #D3D1E0; }
+.chip-otro       { background: #F3F3F7; color: #44415C; border-color: #DCDAE8; }
+ 
+/* ---- barra superior ---- */
+.app-topbar { background: #FFFFFF; }
+ 
+/* ---- menú lateral oscuro (AppShell + Sidebar) ---- */
+.app-sidebar { background: var(--indigo-noche); color: #FFFFFF; flex-shrink: 0; }
+.app-sidebar .nav-link { color: #C9C6E4; border-radius: .625rem; padding: .7rem .8rem; }
+.app-sidebar .nav-link:hover, .app-sidebar .nav-link:focus-visible { color: #FFFFFF; background: rgba(255, 255, 255, .08); }
+.app-sidebar .nav-link.active { color: #FFFFFF; background: #4338CA; font-weight: 600; }
+.app-sidebar .btn-outline-secondary {
+  --bs-btn-color: #C9C6E4; --bs-btn-bg: transparent; --bs-btn-border-color: #3A3660;
+  --bs-btn-hover-color: #FFFFFF; --bs-btn-hover-bg: rgba(255, 255, 255, .08); --bs-btn-hover-border-color: #57528A;
+}
+.offcanvas.app-sidebar .btn-close { filter: invert(1) grayscale(1) brightness(2); }
+ 
+/* ---- pantallas de acceso (login y verificación) ---- */
+.auth-panel { background: var(--indigo-noche); color: #FFFFFF; }
+.auth-panel .text-body-secondary { color: #C9C6E4 !important; }
+.auth-panel .bg-secondary-subtle { background: rgba(255, 255, 255, .08) !important; }
+.auth-panel .text-secondary { color: #A5A1F5 !important; }
+ 
+/* ---- otros detalles ---- */
+.progress { --bs-progress-bar-bg: #4338CA; --bs-progress-bg: #ECEBF5; }
+.nav-pills { --bs-nav-pills-link-active-bg: #4338CA; }
+.alert { border-radius: var(--bs-border-radius); }
+:focus-visible { outline: 2px solid #4338CA; outline-offset: 2px; }

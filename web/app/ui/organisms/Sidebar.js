@@ -33,7 +33,7 @@ export default function Sidebar() {
           const activo = pathname.startsWith(href);
           return (
             <li className="nav-item" key={href}>
-              <Link href={href} className={`nav-link d-flex align-items-center gap-2 ${activo ? 'active' : 'link-dark'}`}
+              <Link href={href} className={`nav-link d-flex align-items-center gap-2 ${activo ? 'active' : ''}`}
                     aria-current={activo ? 'page' : undefined}>
                 <i className={`bi ${icon}`} aria-hidden="true" /> {label}
               </Link>
