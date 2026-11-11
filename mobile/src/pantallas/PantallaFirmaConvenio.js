@@ -113,7 +113,7 @@ export default function PantallaFirmaConvenio({ route, navigation }) {
       <LienzoFirma ref={lienzoRef} alCambiarTrazo={(t) => { setTrazo(t); setError(''); }} />
 
       <Text style={[estilos.nota, { color: colores.textoSecundario, fontSize: 12 * factorActual }]}>
-        📍 Al confirmar se registran la fecha, la hora y tu ubicación, y se pide tu huella o rostro.
+        Al confirmar se registran la fecha, la hora y tu ubicación, y se pide tu huella o rostro.
       </Text>
 
       {error ? (

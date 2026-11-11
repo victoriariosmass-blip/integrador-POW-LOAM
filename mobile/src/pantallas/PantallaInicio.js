@@ -57,12 +57,12 @@ export default function PantallaInicio({ navigation }) {
       }
     >
       <Text style={[estilos.saludo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>Hola, {nombre}</Text>
-      <BotonPersonalizado titulo="📷 Escanear QR de un convenio" variante="secundario" alPresionar={() => navigation.navigate('Escanear')} />
+      <BotonPersonalizado titulo="Escanear QR de un convenio" variante="secundario" alPresionar={() => navigation.navigate('Escanear')} />
       {avisosApagados ? (
         <TouchableOpacity onPress={() => Linking.openSettings()} accessibilityRole="button"
           style={{ borderWidth: 1, borderColor: colores.borde, borderRadius: 10, padding: 12, marginVertical: 8 }}>
           <Text style={{ color: colores.textoPrincipal, fontSize: 14 * factorActual }}>
-            🔕 Las notificaciones están desactivadas, así que no te van a llegar los avisos de vencimientos.{' '}
+            Las notificaciones están desactivadas, así que no te van a llegar los avisos de vencimientos.{' '}
             <Text style={{ color: colores.acento, fontWeight: '600' }}>Activarlas</Text>
           </Text>
         </TouchableOpacity>
