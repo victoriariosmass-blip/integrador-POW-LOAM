@@ -10,10 +10,10 @@ const PASOS = [
   { estado: 'firmado', texto: 'Firmado' },
 ];
 const FINALES = { rescindido: 'Rescindido', archivado: 'Archivado' };
- 
+
 const ACENTO = 'var(--bs-primary)';
 const APAGADO = 'var(--bs-border-color)';
- 
+
 // estado: en qué quedó; devuelto: true si volvió de revisión a borrador
 export default function CircuitoEstados({ estado, devuelto = false }) {
   const final = FINALES[estado];
@@ -21,9 +21,9 @@ export default function CircuitoEstados({ estado, devuelto = false }) {
   const descripcion = final
     ? `${final} (después de firmado)`
     : `${PASOS[actual]?.texto ?? estado}, paso ${actual + 1} de ${PASOS.length}${devuelto ? ', devuelto con observaciones' : ''}`;
- 
+
   return (
-    <div className="d-flex align-items-center flex-wrap gap-2" role="img" aria-label={`Estado: ${descripcion}`}>
+    <div className="circuito d-flex align-items-center flex-wrap gap-2" role="img" aria-label={`Estado: ${descripcion}`}>
       <ol className="list-unstyled d-flex align-items-center m-0 p-0" aria-hidden="true">
         {PASOS.map((p, i) => {
           const hecho = i <= actual;
@@ -42,8 +42,8 @@ export default function CircuitoEstados({ estado, devuelto = false }) {
                     boxShadow: esActual ? '0 0 0 3px rgba(var(--bs-primary-rgb), .25)' : 'none',
                   }}
                 />
-                {/* en el celular solo se lee el nombre del paso actual; los demás quedan como puntos */}
-                <span className={`small ${esActual ? 'fw-semibold text-body' : `d-none d-sm-inline ${hecho ? 'text-body' : 'text-body-tertiary'}`}`}>
+                {/* si no entra, solo se lee el nombre del paso actual; los demás quedan como puntos */}
+                <span className={`small paso-texto ${esActual ? 'actual fw-semibold text-body' : hecho ? 'text-body' : 'text-body-tertiary'}`}>
                   {p.texto}
                 </span>
               </span>
