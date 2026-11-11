@@ -1,12 +1,14 @@
 //pantalla principal: metricas y 10 ultimos movimientos (trae los datos de la API)
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, RefreshControl, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { TarjetaMetrica } from '../componentes/moleculas/TarjetaMetrica';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
 import { ElementoConvenio } from '../componentes/moleculas/ElementoConvenio';
+import { TarjetaSede } from '../componentes/organismos/TarjetaSede';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { usarSesion } from '../contexto/ContextoSesion';
 import { obtenerResumen, textoEstado } from '../servicios/convenios';
+import { revisarAvisos } from '../servicios/avisos';
 
 export default function PantallaInicio({ navigation }) {
   const { factorActual, colores } = usarPreferencias();
@@ -27,6 +29,17 @@ export default function PantallaInicio({ navigation }) {
   }, []);
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  // Avisos de vencimientos y cambios de estado: una vez cada vez que se abre la app
+  const avisosRevisados = useRef(false);
+  const [avisosApagados, setAvisosApagados] = useState(false);
+  useEffect(() => {
+    if (avisosRevisados.current || !usuario) return;
+    avisosRevisados.current = true;
+    revisarAvisos(usuario)
+      .then((r) => setAvisosApagados(!r.permiso))
+      .catch((e) => console.warn('[avisos] no se pudieron revisar:', e)); // se intenta la próxima vez
+  }, [usuario]);
   useEffect(() => navigation.addListener('focus', cargar), [navigation, cargar]);
 
   const nombre = usuario?.name?.split(' ')[0] ?? '';
@@ -45,6 +58,16 @@ export default function PantallaInicio({ navigation }) {
     >
       <Text style={[estilos.saludo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>Hola, {nombre}</Text>
       <BotonPersonalizado titulo="📷 Escanear QR de un convenio" variante="secundario" alPresionar={() => navigation.navigate('Escanear')} />
+      {avisosApagados ? (
+        <TouchableOpacity onPress={() => Linking.openSettings()} accessibilityRole="button"
+          style={{ borderWidth: 1, borderColor: colores.borde, borderRadius: 10, padding: 12, marginVertical: 8 }}>
+          <Text style={{ color: colores.textoPrincipal, fontSize: 14 * factorActual }}>
+            🔕 Las notificaciones están desactivadas, así que no te van a llegar los avisos de vencimientos.{' '}
+            <Text style={{ color: colores.acento, fontWeight: '600' }}>Activarlas</Text>
+          </Text>
+        </TouchableOpacity>
+      ) : null}
+      <TarjetaSede alVerConvenios={(unidad) => navigation.navigate('ConveniosUnidad', { unidad })} />
       {error ? (
         <Text style={{ color: colores.error, fontSize: 15 * factorActual, marginBottom: 12 }}>{error}</Text>
       ) : null}

@@ -81,6 +81,16 @@ export default function PantallaPerfil({ navigation }) {
       {/* Accesos a funciones adicionales */}
       <TouchableOpacity
         style={[estilos.filaEnlace, { borderBottomColor: colores.borde }]}
+        onPress={() => navigation.navigate('Bloqueo')}
+        accessibilityRole="button"
+      >
+        <Text style={{ color: colores.textoPrincipal, fontSize: 16 * factorActual }}>
+          🔒 Bloqueo con huella o PIN
+        </Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={[estilos.filaEnlace, { borderBottomColor: colores.borde }]}
         onPress={() => navigation.navigate('Sostenibilidad')}
       >
         <Text style={{ color: colores.textoPrincipal, fontSize: 16 * factorActual }}>

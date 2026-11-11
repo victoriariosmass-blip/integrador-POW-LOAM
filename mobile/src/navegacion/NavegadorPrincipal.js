@@ -1,7 +1,8 @@
 //navegador general tipo pila que contiene a NavegadorPestanias y permite abrir las pantallas que se superponen
-import React from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator, Platform } from 'react-native';
+import { DarkTheme, DefaultTheme, NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { NavegadorPestanias } from './NavegadorPestanias';
@@ -11,10 +12,14 @@ import PantallaSubirAnexo from '../pantallas/PantallaSubirAnexo';
 import PantallaSostenibilidad from '../pantallas/PantallaSostenibilidad';
 import PantallaLogin from '../pantallas/PantallaLogin';
 import PantallaEscanear from '../pantallas/PantallaEscanear';
+import PantallaDesbloqueo from '../pantallas/PantallaDesbloqueo';
+import PantallaBloqueo from '../pantallas/PantallaBloqueo';
+import PantallaConveniosUnidad from '../pantallas/PantallaConveniosUnidad';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { ProveedorSesion, usarSesion } from '../contexto/ContextoSesion';
 
 const Pila = createNativeStackNavigator();
+const navegacion = createNavigationContainerRef(); // para abrir la ficha al tocar una notificación
 
 export default function NavegadorPrincipal() {
   return (
@@ -40,8 +45,30 @@ function NavegacionConTema() {
     },
   };
 
+  // Al tocar un aviso se abre la ficha de ese convenio. Si la app estaba cerrada o bloqueada,
+  // queda pendiente y se abre apenas haya sesión y esté desbloqueada. (En la web no hay avisos.)
+  const { usuario, bloqueada } = usarSesion();
+  const [avisoTocado, setAvisoTocado] = useState(null); // { id, codigo }
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const guardar = (respuesta) => {
+      const datos = respuesta?.notification.request.content.data;
+      if (datos?.id) setAvisoTocado(datos);
+    };
+    guardar(Notifications.getLastNotificationResponse()); // la app se abrió tocando el aviso
+    const sub = Notifications.addNotificationResponseReceivedListener(guardar); // la app ya estaba abierta
+    return () => sub.remove();
+  }, []);
+  useEffect(() => {
+    if (avisoTocado && usuario && !bloqueada && navegacion.isReady()) {
+      navegacion.navigate('DetalleConvenio', { id: avisoTocado.id, idConvenio: avisoTocado.codigo });
+      setAvisoTocado(null);
+      Notifications.clearLastNotificationResponse();
+    }
+  }, [avisoTocado, usuario, bloqueada]);
+
   return (
-    <NavigationContainer theme={tema}>
+    <NavigationContainer theme={tema} ref={navegacion}>
       <Pantallas />
     </NavigationContainer>
   );
@@ -49,7 +76,7 @@ function NavegacionConTema() {
 
 // Sin sesión solo existe el login; con sesión, el resto de la app
 function Pantallas() {
-  const { usuario, cargando } = usarSesion();
+  const { usuario, cargando, bloqueada } = usarSesion();
   const { colores } = usarPreferencias();
 
   if (cargando) {
@@ -73,6 +100,8 @@ function Pantallas() {
     >
       {!usuario ? (
         <Pila.Screen name="Login" component={PantallaLogin} options={{ headerShown: false }} />
+      ) : bloqueada ? (
+        <Pila.Screen name="Desbloqueo" component={PantallaDesbloqueo} options={{ headerShown: false }} />
       ) : (
         <>
           <Pila.Screen
@@ -99,6 +128,16 @@ function Pantallas() {
             name="SubirAnexo"
             component={PantallaSubirAnexo}
             options={{ title: 'Subir Anexo PDF' }}
+          />
+          <Pila.Screen
+            name="Bloqueo"
+            component={PantallaBloqueo}
+            options={{ title: 'Bloqueo de la app' }}
+          />
+          <Pila.Screen
+            name="ConveniosUnidad"
+            component={PantallaConveniosUnidad}
+            options={{ title: 'Convenios de la sede' }}
           />
           <Pila.Screen
             name="Sostenibilidad"

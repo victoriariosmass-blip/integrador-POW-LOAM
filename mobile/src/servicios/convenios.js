@@ -73,6 +73,8 @@ const UNLPAM = { id: 1, nombre: 'Universidad Nacional de La Pampa', tipo: 'unive
 const FICHAS_MOCK = {
   1: { id: 1, codigo: 'MC-2024-0001', titulo: 'Marco con Cooperativa Eléctrica de General Pico', tipo: 'marco_colaboracion', estado: 'firmado', unidad: UNIDAD_FI, objeto: 'Colaboración en investigación y extensión.', fecha_firma: '2024-03-15', fecha_vencimiento: '2027-03-15', dias_preaviso: 60, contraparte: 'Cooperativa Eléctrica de General Pico' },
   3: { id: 3, codigo: 'MP-2025-0001', titulo: 'Marco de pasantías con Agroindustrias del Oeste', tipo: 'marco_pasantia', estado: 'aprobado', unidad: UNIDAD_FI, objeto: 'Pasantías educativas para estudiantes avanzados.', fecha_firma: null, fecha_vencimiento: null, dias_preaviso: null, contraparte: 'Agroindustrias del Oeste S.A.' },
+  // vence en 20 días: sirve para probar el aviso de "próximo a vencer"
+  2: { id: 2, codigo: 'EC-2025-0001', titulo: 'Específico de capacitación en energías renovables', tipo: 'especifico_colaboracion', estado: 'firmado', unidad: UNIDAD_FI, objeto: 'Cursos de capacitación para personal técnico.', fecha_firma: '2025-05-02', fecha_vencimiento: new Date(Date.now() + 20 * 864e5).toISOString().slice(0, 10), dias_preaviso: 30, contraparte: 'Cooperativa Eléctrica de General Pico' },
   9: { id: 9, codigo: 'EC-2026-0003', titulo: 'Específico de capacitación docente con Escuela Técnica N° 1', tipo: 'especifico_colaboracion', estado: 'aprobado', unidad: UNIDAD_FI, objeto: 'Cursos de actualización para docentes de la escuela.', fecha_firma: null, fecha_vencimiento: '2027-12-15', dias_preaviso: 30, contraparte: 'Escuela Técnica N° 1' },
 };
 const COMENTARIOS_MOCK = {
@@ -112,6 +114,31 @@ function fichaMock(id, usuario) {
     derivados: VINCULOS_MOCK.filter((v) => v.destino === c.id).map((v) => relacionadoMock(v.origen, v.tipo)),
   };
 }
+
+// Todos los convenios que el usuario puede ver, con filtros (GET /api/convenios, todas las páginas).
+// filtros: { estado, unidad_id, ... }. Se usa para los avisos y para los convenios de una sede.
+export async function listarConvenios(filtros = {}) {
+  if (USAR_MOCK) {
+    await esperar(400);
+    return Object.values(FICHAS_MOCK)
+      .filter((c) => !filtros.estado || c.estado === filtros.estado)
+      .filter((c) => !filtros.unidad_id || c.unidad.id === Number(filtros.unidad_id))
+      .map(({ contraparte, ...c }) => c);
+  }
+  const params = new URLSearchParams();
+  Object.entries(filtros).forEach(([clave, valor]) => {
+    if (valor) params.set(clave, valor);
+  });
+  const todos = [];
+  for (let page = 1; page <= 10; page++) { // tope de 10 páginas (150 convenios) para no colgar la app
+    params.set('page', page);
+    const respuesta = await api(`/convenios?${params}`);
+    todos.push(...respuesta.data);
+    if (page >= respuesta.meta.last_page) break;
+  }
+  return todos;
+}
+
 
 // Ficha completa: datos, partes, documentos e historial (GET /api/convenios/{id})
 export async function verConvenio(id) {
@@ -201,11 +228,12 @@ export async function buscarPorQR(texto) {
 
   if (USAR_MOCK) {
     await esperar(400);
-    const c = Object.values(FICHAS_MOCK).find((f) => `mock-${f.id}` === ref && f.estado === 'firmado');
+    const c = Object.values(FICHAS_MOCK).find((f) => `mock-${f.id}` === ref);
     if (!c) throw Object.assign(new Error('No encontramos ese convenio'), { status: 404 });
     return c.id;
   }
-  // GET /api/publico/convenios/{ref}: solo responde si el convenio es público (firmado y no confidencial)
-  const respuesta = await api(`/publico/convenios/${encodeURIComponent(ref)}`);
+  // GET /api/convenios/ref/{ref}: con la sesión iniciada. Abre cualquier convenio que el usuario
+  // pueda ver (también los confidenciales); si no tiene permiso, la API responde 403.
+  const respuesta = await api(`/convenios/ref/${encodeURIComponent(ref)}`);
   return respuesta.data.id;
 }
