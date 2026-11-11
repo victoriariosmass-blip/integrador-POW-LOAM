@@ -85,7 +85,7 @@ export default function PantallaPerfil({ navigation }) {
         accessibilityRole="button"
       >
         <Text style={{ color: colores.textoPrincipal, fontSize: 16 * factorActual }}>
-          🔒 Bloqueo con huella o PIN
+          Bloqueo con huella o PIN
         </Text>
       </TouchableOpacity>
       
@@ -94,7 +94,7 @@ export default function PantallaPerfil({ navigation }) {
         onPress={() => navigation.navigate('Sostenibilidad')}
       >
         <Text style={{ color: colores.textoPrincipal, fontSize: 16 * factorActual }}>
-          🌱 Sostenibilidad Institucional
+          Sostenibilidad Institucional
         </Text>
       </TouchableOpacity>
 

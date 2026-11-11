@@ -58,7 +58,7 @@ export const TarjetaSede = ({ alVerConvenios }) => {
     <View style={[estilos.tarjeta, { backgroundColor: colores.tarjeta, borderColor: colores.borde }]}>
       {sede ? (
         <>
-          <Text style={[texto(16), estilos.titulo]}>📍 Bienvenido/a a {sede.nombre}</Text>
+          <Text style={[texto(16), estilos.titulo]}>Bienvenido/a a {sede.nombre}</Text>
           <BotonPersonalizado titulo={`Ver convenios de ${sede.sigla}`} alPresionar={() => alVerConvenios(sede)} />
           <TouchableOpacity onPress={async () => { await olvidarSede(); setSede(null); }} accessibilityRole="button">
             <Text style={[estilos.enlace, { color: colores.acento, fontSize: 14 * factorActual }]}>Cambiar de sede</Text>
@@ -66,7 +66,7 @@ export const TarjetaSede = ({ alVerConvenios }) => {
         </>
       ) : (
         <>
-          <Text style={[texto(16), estilos.titulo]}>📍 ¿En qué sede estás?</Text>
+          <Text style={[texto(16), estilos.titulo]}>¿En qué sede estás?</Text>
           <Text style={{ color: colores.textoSecundario, fontSize: 13 * factorActual, marginBottom: 8 }}>
             Se mira tu ubicación una sola vez, solo cuando tocás el botón.
           </Text>
