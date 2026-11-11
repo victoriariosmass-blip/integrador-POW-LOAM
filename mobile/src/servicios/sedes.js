@@ -11,7 +11,7 @@ const CLAVE_SEDE = 'sede_elegida';
 
 // Coordenadas aproximadas de las sedes (las mismas que el seeder de unidades)
 const UNIDADES_MOCK = [
-  { id: 7, nombre: 'Facultad de Ingeniería', sigla: 'FI', latitud: -35.6633, longitud: -63.7564, radio_metros: 200 },
+  { id: 7, nombre: 'Facultad de Ingeniería', sigla: 'FI', latitud: -35.668185, longitud: -63.770496, radio_metros: 200 },
   { id: 4, nombre: 'Facultad de Ciencias Exactas y Naturales', sigla: 'FCEyN', latitud: -36.5495, longitud: -64.2975, radio_metros: 200 },
   { id: 1, nombre: 'Rectorado', sigla: 'RECT', latitud: -36.6167, longitud: -64.2869, radio_metros: 200 },
 ];
