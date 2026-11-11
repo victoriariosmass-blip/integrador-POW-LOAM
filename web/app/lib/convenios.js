@@ -2,7 +2,7 @@ import { api } from './api';
 import { USAR_MOCK } from './config';
 import { usuarioActual } from './auth';
 import {
-  listarMock, verMock, accionMock, crearMock, editarMock, resumenMock, unidadesMock,
+  listarMock, verMock, accionMock, crearMock, editarMock, resumenMock, estadisticasMock, unidadesMock,
   comentariosMock, comentarMock, subirDocumentoMock, descargarDocumentoMock,
 } from './mockConvenios';
 
@@ -10,7 +10,7 @@ function esperar(ms) {
   return new Promise((r) => setTimeout(r, ms)); // simula la demora del servidor
 }
  
-// GET /api/convenios?estado=&tipo=&q=&page=
+// GET /api/convenios?estado=&tipo=&q=&unidad_id=&firma_desde=&firma_hasta=&vence_desde=&vence_hasta=&page=
 export async function listarConvenios(filtros = {}) {
   if (USAR_MOCK) {
     await esperar(400);
@@ -74,6 +74,16 @@ export async function obtenerResumen() {
   }
  
   return api('/resumen');
+}
+
+// GET /api/estadisticas -> cantidades por estado, tipo, unidad y año de firma, y personas únicas
+export async function obtenerEstadisticas() {
+  if (USAR_MOCK) {
+    await esperar(300);
+    return estadisticasMock(await usuarioActual());
+  }
+ 
+  return api('/estadisticas');
 }
  
 // GET /api/unidades -> para elegir la unidad en el alta (usuarios globales)

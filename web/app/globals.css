@@ -190,3 +190,29 @@ a.card:hover { box-shadow: 0 2px 4px rgba(30, 27, 58, .08), 0 10px 24px rgba(30,
 @container (max-width: 380px) {
   .circuito .paso-texto:not(.actual) { display: none; }
 }
+
+
+
+/* ---- estadísticas del panel (molécula BarrasEstadistica) ----
+   Nombre a la izquierda, barra índigo y el número pegado donde termina la barra.
+   --largo va de 0 a 1 (lo calcula el componente: total / máximo). */
+.barras-fila {
+  display: grid;
+  grid-template-columns: minmax(6rem, 38%) 1fr;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: .75rem;
+  font-size: .9rem;
+}
+.barras-fila:last-child { margin-bottom: 0; }
+.barras-etiqueta { line-height: 1.25; }
+.barras-valor { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+.barras-barra {
+  flex: none;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6D63E0, #4338CA);
+  width: calc((100% - 2.5rem) * var(--largo));
+  min-width: 6px;
+}
+.barras-numero { font-weight: 700; }

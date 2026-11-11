@@ -55,12 +55,17 @@ function error(status, mensaje) {
   return e;
 }
  
-export function listarMock(usuario, { estado, tipo, q, page = 1 }) {
+export function listarMock(usuario, { estado, tipo, q, unidad_id, firma_desde, firma_hasta, vence_desde, vence_hasta, vigentes, page = 1 }) {
   const texto = (q ?? '').toLowerCase();
+  const entre = (valor, desde, hasta) => (!desde || (valor && valor >= desde)) && (!hasta || (valor && valor <= hasta));
   const filtrados = convenios
     .filter((c) => puedeVer(usuario, c))
-    .filter((c) => !estado || c.estado === estado)
+    .filter((c) => !estado || estado.split(',').includes(c.estado))
+    .filter((c) => !vigentes || (c.estado === 'firmado' && (!c.fecha_vencimiento || c.fecha_vencimiento >= new Date().toISOString().slice(0, 10))))
     .filter((c) => !tipo || c.tipo === tipo)
+    .filter((c) => !unidad_id || c.unidad.id === Number(unidad_id))
+    .filter((c) => entre(c.fecha_firma, firma_desde, firma_hasta))
+    .filter((c) => entre(c.fecha_vencimiento, vence_desde, vence_hasta))
     .filter((c) => !texto || c.titulo.toLowerCase().includes(texto) || c.codigo.toLowerCase().includes(texto));
   const porPagina = 15;
   const ultima = Math.max(1, Math.ceil(filtrados.length / porPagina));
@@ -135,6 +140,28 @@ function validar(datos, alta) {
     errors.fecha_vencimiento = [alta ? 'El vencimiento tiene que ser posterior a la firma.' : 'El vencimiento tiene que ser posterior al inicio.'];
   }
   if (Object.keys(errors).length) throw errorValidacion(errors);
+}
+
+
+// mismas cuentas que GET /api/estadisticas
+export function estadisticasMock(usuario) {
+  const visibles = convenios.filter((c) => puedeVer(usuario, c));
+  const hoy = new Date().toISOString().slice(0, 10);
+  const contar = (lista, clave) => lista.reduce((acc, c) => ({ ...acc, [clave(c)]: (acc[clave(c)] ?? 0) + 1 }), {});
+  const porUnidad = contar(visibles, (c) => c.unidad.sigla);
+  const porAnio = contar(visibles.filter((c) => c.fecha_firma), (c) => c.fecha_firma.slice(0, 4));
+  return {
+    total: visibles.length,
+    firmados: visibles.filter((c) => c.estado === 'firmado').length,
+    vigentes: visibles.filter((c) => c.estado === 'firmado' && (!c.fecha_vencimiento || c.fecha_vencimiento >= hoy)).length,
+    por_estado: contar(visibles, (c) => c.estado),
+    por_tipo: contar(visibles, (c) => c.tipo),
+    por_unidad: Object.entries(porUnidad)
+      .map(([sigla, total]) => ({ sigla, unidad: UNIDADES.find((u) => u.sigla === sigla)?.nombre ?? sigla, total }))
+      .sort((a, b) => b.total - a.total),
+    por_anio_firma: Object.entries(porAnio).map(([anio, total]) => ({ anio: Number(anio), total })).sort((a, b) => a.anio - b.anio),
+    personas_unicas: visibles.some((c) => c.tipo === 'especifico_pasantia') ? 1 : 0, // la pasantía de prueba tiene una persona
+  };
 }
  
 export function unidadesMock() {

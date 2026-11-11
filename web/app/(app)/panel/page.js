@@ -1,28 +1,43 @@
+
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useUsuario } from '../../lib/UsuarioContext';
-import { obtenerResumen } from '../../lib/convenios';
-import { fecha } from '../../lib/formato';
+import { obtenerResumen, obtenerEstadisticas } from '../../lib/convenios';
+import { fecha, TIPOS, ESTADOS } from '../../lib/formato';
 import CircuitoEstados from '../../ui/molecules/CircuitoEstados';
+import BarrasEstadistica from '../../ui/molecules/BarrasEstadistica';
  
-// Las 4 métricas de inicio. "filtro" arma el link al listado ya filtrado.
+// hace un año (AAAA-MM-DD), para el link de "Firmados en el último año"
+const haceUnAnio = () => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 1);
+  return d.toISOString().slice(0, 10);
+};
+ 
+// Las 4 métricas de inicio. "filtro" arma el link al listado con el MISMO criterio con que
+// la API cuenta cada número (así la cantidad del listado coincide con la de la tarjeta).
 const METRICAS = [
-  { clave: 'firmados_ultimo_anio', titulo: 'Firmados en el último año', icono: 'bi-pen', filtro: 'estado=firmado' },
-  { clave: 'vigentes', titulo: 'Vigentes', icono: 'bi-check-circle', filtro: 'estado=firmado' },
-  { clave: 'en_tramite', titulo: 'En trámite', icono: 'bi-hourglass-split', filtro: null },
-  { clave: 'por_firmar', titulo: 'Por firmar', icono: 'bi-clipboard-check', filtro: 'estado=aprobado' },
+  { clave: 'firmados_ultimo_anio', titulo: 'Firmados en el último año', icono: 'bi-pen', filtro: () => `estado=firmado&firma_desde=${haceUnAnio()}` },
+  { clave: 'vigentes', titulo: 'Vigentes', icono: 'bi-check-circle', filtro: () => 'vigentes=1' },
+  { clave: 'en_tramite', titulo: 'En trámite', icono: 'bi-hourglass-split', filtro: () => 'estado=borrador,revision' },
+  { clave: 'por_firmar', titulo: 'Por firmar', icono: 'bi-clipboard-check', filtro: () => 'estado=aprobado' },
 ];
  
 export default function Panel() {
   const usuario = useUsuario();
   const [resumen, setResumen] = useState(null);
   const [error, setError] = useState('');
+  const [estadisticas, setEstadisticas] = useState(null);
+  const [errorEstadisticas, setErrorEstadisticas] = useState('');
  
   useEffect(() => {
     obtenerResumen()
       .then(setResumen)
       .catch((e) => setError(e.message || 'No se pudo cargar el resumen'));
+    obtenerEstadisticas()
+      .then(setEstadisticas)
+      .catch((e) => setErrorEstadisticas(e.message || 'No se pudieron cargar las estadísticas'));
   }, []);
  
   return (
@@ -53,11 +68,7 @@ export default function Panel() {
               );
               return (
                 <div key={m.clave} className="col-6 col-lg-3">
-                  {m.filtro ? (
-                    <Link href={`/convenios?${m.filtro}`} className="card h-100 text-decoration-none">{contenido}</Link>
-                  ) : (
-                    <div className="card h-100">{contenido}</div>
-                  )}
+                  <Link href={`/convenios?${m.filtro()}`} className="card h-100 text-decoration-none">{contenido}</Link>
                 </div>
               );
             })}
@@ -97,6 +108,52 @@ export default function Panel() {
               )}
             </div>
           </section>
+        </>
+      )}
+ 
+      {/* Estadísticas: todo dentro del alcance del usuario (lo cuenta la API) */}
+      <h2 className="h5 fw-bold mt-5 mb-3">Estadísticas</h2>
+      {errorEstadisticas && <div className="alert alert-danger" role="alert">{errorEstadisticas}</div>}
+      {!estadisticas && !errorEstadisticas && (
+        <p className="text-body-secondary" role="status">Cargando estadísticas…</p>
+      )}
+      {estadisticas && (
+        <>
+          <div className="row g-3 mb-3">
+            {[
+              ['Convenios', estadisticas.total],
+              ['Firmados', estadisticas.firmados],
+              ['Vigentes', estadisticas.vigentes],
+              ['Personas vinculadas (sin repetir)', estadisticas.personas_unicas],
+            ].map(([titulo, valor]) => (
+              <div key={titulo} className="col-6 col-lg-3">
+                <div className="card h-100">
+                  <div className="card-body">
+                    <p className="small text-body-secondary mb-1">{titulo}</p>
+                    <p className="h3 fw-semibold mb-0">{valor}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="row g-3">
+            <div className="col-12 col-lg-6">
+              <BarrasEstadistica titulo="Por estado"
+                filas={Object.entries(estadisticas.por_estado).map(([k, total]) => ({ etiqueta: ESTADOS[k] ?? k, total }))} />
+            </div>
+            <div className="col-12 col-lg-6">
+              <BarrasEstadistica titulo="Por tipo"
+                filas={Object.entries(estadisticas.por_tipo).map(([k, total]) => ({ etiqueta: TIPOS[k] ?? k, total }))} />
+            </div>
+            <div className="col-12 col-lg-6">
+              <BarrasEstadistica titulo="Por unidad"
+                filas={estadisticas.por_unidad.map((u) => ({ etiqueta: u.unidad, total: u.total }))} />
+            </div>
+            <div className="col-12 col-lg-6">
+              <BarrasEstadistica titulo="Por año de firma"
+                filas={estadisticas.por_anio_firma.map((a) => ({ etiqueta: String(a.anio), total: a.total }))} />
+            </div>
+          </div>
         </>
       )}
     </>
