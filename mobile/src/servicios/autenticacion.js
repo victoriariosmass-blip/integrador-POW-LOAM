@@ -14,26 +14,64 @@ function esperar(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-// POST /api/token: devuelve el token y el usuario. El token queda guardado.
+// Ingreso en dos pasos (verificación en dos pasos, como la web):
+// 1) POST /api/token con email y contraseña -> si están bien, la API "manda" un código de 6 números
+//    (queda en storage/logs/laravel.log) y devuelve un mfa_token que identifica este intento.
+// 2) POST /api/token/verificar con el mfa_token y el código -> recién ahí da el token de verdad.
+// Con datos de prueba el código es siempre 123456 (igual que en la web).
+
+// Paso 1. Devuelve { requiereMfa: true, mfaToken, canal, email },
+// o el usuario directo si la API todavía no pide código (por compatibilidad).
 export async function iniciarSesion(email, password) {
+  const correo = email.trim().toLowerCase();
   if (USAR_MOCK) {
     await esperar(600);
-    const usuario = USUARIOS_MOCK[email.trim().toLowerCase()];
+    const usuario = USUARIOS_MOCK[correo];
     if (!usuario || password !== 'password') {
       const error = new Error('Email o contraseña incorrectos');
       error.status = 422;
       throw error;
     }
-    await guardarToken(`mock|${email}`);
-    return { ...usuario, email };
+    return { requiereMfa: true, mfaToken: `mock|${correo}`, canal: 'mail', email: correo };
   }
 
   const datos = await api('/token', {
     method: 'POST',
-    body: { email: email.trim(), password, dispositivo: 'app' },
+    body: { email: correo, password, dispositivo: 'app' },
   });
+  if (datos.requiere_mfa) {
+    return { requiereMfa: true, mfaToken: datos.mfa_token, canal: datos.canal, email: correo };
+  }
   await guardarToken(datos.token);
   return datos.usuario;
+}
+
+// Paso 2. Con el código correcto guarda el token y devuelve el usuario.
+export async function verificarCodigo(mfaToken, codigo) {
+  if (USAR_MOCK) {
+    await esperar(500);
+    if (codigo !== '123456') {
+      const error = new Error('El código no es correcto o venció');
+      error.status = 422;
+      throw error;
+    }
+    const email = mfaToken.replace('mock|', '');
+    await guardarToken(`mock|${email}`);
+    return { ...USUARIOS_MOCK[email], email };
+  }
+
+  const datos = await api('/token/verificar', { method: 'POST', body: { mfa_token: mfaToken, codigo } });
+  await guardarToken(datos.token);
+  return datos.usuario;
+}
+
+// "Reenviar código" (la API pide 30 segundos entre envíos)
+export async function reenviarCodigo(mfaToken, canal = 'mail') {
+  if (USAR_MOCK) {
+    await esperar(400);
+    return { enviado: true, canal };
+  }
+  return api('/token/reenviar', { method: 'POST', body: { mfa_token: mfaToken, canal } });
 }
 
 // Al abrir la app: si hay token guardado, trae el usuario (GET /api/user)

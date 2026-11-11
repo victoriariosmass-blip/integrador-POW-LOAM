@@ -11,6 +11,7 @@ import PantallaFirmaConvenio from '../pantallas/PantallaFirmaConvenio';
 import PantallaSubirAnexo from '../pantallas/PantallaSubirAnexo';
 import PantallaSostenibilidad from '../pantallas/PantallaSostenibilidad';
 import PantallaLogin from '../pantallas/PantallaLogin';
+import PantallaCodigoMfa from '../pantallas/PantallaCodigoMfa';
 import PantallaEscanear from '../pantallas/PantallaEscanear';
 import PantallaDesbloqueo from '../pantallas/PantallaDesbloqueo';
 import PantallaBloqueo from '../pantallas/PantallaBloqueo';
@@ -76,7 +77,7 @@ function NavegacionConTema() {
 
 // Sin sesión solo existe el login; con sesión, el resto de la app
 function Pantallas() {
-  const { usuario, cargando, bloqueada } = usarSesion();
+  const { usuario, cargando, bloqueada, pendienteMfa } = usarSesion();
   const { colores } = usarPreferencias();
 
   if (cargando) {
@@ -99,7 +100,11 @@ function Pantallas() {
       }}
     >
       {!usuario ? (
-        <Pila.Screen name="Login" component={PantallaLogin} options={{ headerShown: false }} />
+        pendienteMfa ? (
+          <Pila.Screen name="CodigoMfa" component={PantallaCodigoMfa} options={{ headerShown: false }} />
+        ) : (
+          <Pila.Screen name="Login" component={PantallaLogin} options={{ headerShown: false }} />
+        )
       ) : bloqueada ? (
         <Pila.Screen name="Desbloqueo" component={PantallaDesbloqueo} options={{ headerShown: false }} />
       ) : (
