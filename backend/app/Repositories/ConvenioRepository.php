@@ -29,6 +29,9 @@
               'transiciones.usuario:id,name,rol',
               'observaciones' => fn ($q) => $q->latest(),
               'observaciones.autor:id,name,rol',
+              // árbol: el marco o convenio que modifica, y los específicos/adendas que cuelgan de este
+              'antecedentes' => fn ($q) => $q->select('convenios.id', 'convenios.codigo', 'convenios.titulo', 'convenios.tipo', 'convenios.estado'),
+              'derivados' => fn ($q) => $q->select('convenios.id', 'convenios.codigo', 'convenios.titulo', 'convenios.tipo', 'convenios.estado'),
           ])->findOrFail($id);
       }
 
