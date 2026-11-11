@@ -48,8 +48,10 @@ export default function PantallaEscanear({ navigation }) {
       navigation.replace('DetalleConvenio', { id });
     } catch (e) {
       const mensaje = e.status === 404
-        ? 'Este QR no corresponde a un convenio firmado. Solo los convenios firmados y no confidenciales tienen QR.'
-        : e.message || 'No se pudo leer el código.';
+        ? 'Este código QR no corresponde a ningún convenio.'
+        : e.status === 403
+          ? 'No tenés permiso para ver este convenio.'
+          : e.message || 'No se pudo leer el código.';
       Alert.alert('No se pudo abrir el convenio', mensaje, [
         { text: 'Escanear otro', onPress: () => setEscaneado(false) },
         { text: 'Salir', style: 'cancel', onPress: () => navigation.goBack() },
@@ -62,7 +64,7 @@ export default function PantallaEscanear({ navigation }) {
   return (
     <View style={estilos.contenedor}>
       <CameraView
-        style={StyleSheet.absoluteFillObject}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         onBarcodeScanned={escaneado ? undefined : manejarLecturaQR}
         barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
       />
