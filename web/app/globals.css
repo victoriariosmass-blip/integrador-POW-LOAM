@@ -260,3 +260,21 @@ a.card:hover { box-shadow: 0 2px 4px rgba(30, 27, 58, .08), 0 10px 24px rgba(30,
   .bandeja-fecha { text-align: left; }
   .bandeja-flecha { display: none; }
 }
+
+
+/* ---- buscador de la barra de arriba (Topbar): píldora lavanda con lupa ---- */
+.buscador-topbar { position: relative; max-width: 460px; }
+.buscador-topbar .bi-search {
+  position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+  color: #8C89A6; pointer-events: none;
+}
+.buscador-topbar .form-control {
+  background: #F1F0FE; border-color: transparent; border-radius: 999px;
+  padding: .55rem 1.1rem .55rem 2.6rem;
+}
+.buscador-topbar .form-control::placeholder { color: #8C89A6; }
+.buscador-topbar .form-control:focus {
+  background: #FFFFFF; border-color: #4338CA;
+  box-shadow: 0 0 0 .25rem rgba(67, 56, 202, .15);
+}
+.buscador-topbar:focus-within .bi-search { color: #4338CA; }
