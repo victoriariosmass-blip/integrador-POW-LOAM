@@ -5,11 +5,13 @@ import { useUsuario } from '../../lib/UsuarioContext';
 import { calcularAlertas } from '../../lib/alertas';
 import { fecha, textoDias } from '../../lib/formato';
  
+// Diseño "bandeja": una sola tarjeta con una sección por nivel (encabezado lavanda
+// con su ícono) y una fila por alerta. Toda la fila es un link a la ficha del convenio.
+// Los colores e íconos están en globals.css (.bandeja-...).
 const NIVELES = {
-  // fondo: el color de la categoría con muy poca opacidad (10 %); el ícono del título, el color pleno
-  alta: { titulo: 'Requieren atención', icono: 'bi-exclamation-octagon text-danger', fondo: 'bg-danger bg-opacity-10' },
-  media: { titulo: 'Próximos a vencer', icono: 'bi-hourglass-split text-warning', fondo: 'bg-warning bg-opacity-10' },
-  info: { titulo: 'Pendientes del circuito', icono: 'bi-info-circle text-info', fondo: 'bg-info bg-opacity-10' },
+  alta: { titulo: 'Requieren atención', icono: 'bi-exclamation-octagon', tono: 'rojo' },
+  media: { titulo: 'Próximos a vencer', icono: 'bi-hourglass-split', tono: 'ambar' },
+  info: { titulo: 'Pendientes del circuito', icono: 'bi-list-check', tono: 'indigo' },
 };
  
 export default function Alertas() {
@@ -44,36 +46,54 @@ export default function Alertas() {
         </div>
       )}
  
-      {alertas?.length > 0 && Object.entries(NIVELES).map(([nivel, n]) => {
-        const lista = alertas.filter((a) => a.nivel === nivel);
-        if (lista.length === 0) return null;
-        return (
-          <section key={nivel} className="mb-4">
-            <h2 className="h6 fw-bold mb-2">
-              <i className={`bi ${n.icono} me-2`} aria-hidden="true" />{n.titulo} ({lista.length})
-            </h2>
-            <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
-              {lista.map((a) => (
-                <li key={a.id} className={`card ${n.fondo}`}>
-                  <div className="card-body py-2">
-                    <div className="d-flex flex-wrap align-items-center gap-2">
-                      <Link href={`/convenios/${a.convenio.id}`} className="fw-semibold">{a.convenio.codigo}</Link>
-                      <span className="fw-semibold">{a.titulo}</span>
-                      {a.dias !== null && (
-                        <span className="small text-body-secondary ms-auto">
-                          Vence el {fecha(a.convenio.fecha_vencimiento)} ({textoDias(a.dias)})
-                        </span>
-                      )}
-                    </div>
-                    <p className="small mb-0">{a.convenio.titulo}</p>
-                    <p className="small text-body-secondary mb-0">{a.detalle}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        );
-      })}
+      {alertas?.length > 0 && (
+        <div className="card bandeja">
+          {Object.entries(NIVELES).map(([nivel, n]) => {
+            const lista = alertas.filter((a) => a.nivel === nivel);
+            if (lista.length === 0) return null;
+            return (
+              <section key={nivel} aria-labelledby={`nivel-${nivel}`}>
+                <h2 id={`nivel-${nivel}`} className="bandeja-encabezado">
+                  <span className={`bandeja-icono tono-${n.tono}`} aria-hidden="true">
+                    <i className={`bi ${n.icono}`} />
+                  </span>
+                  {n.titulo}
+                  <span className="bandeja-cantidad">{lista.length}</span>
+                </h2>
+                <ul className="list-unstyled mb-0">
+                  {lista.map((a) => (
+                      <li key={a.id}>
+                        <Link href={`/convenios/${a.convenio.id}`} className="bandeja-fila">
+                          <span className="bandeja-texto">
+                            <span className="d-block">
+                              <span className="bandeja-codigo">{a.convenio.codigo}</span>{' '}
+                              <span className="fw-semibold">{a.titulo}</span>
+                              <span className="text-body-secondary small"> · {a.convenio.titulo}</span>
+                            </span>
+                            <span className="d-block small text-body-secondary">{a.detalle}</span>
+                          </span>
+                          <span className="bandeja-fecha">
+                            {a.dias !== null ? (
+                              <>
+                                <span className={`d-block fw-bold tono-texto-${n.tono}`}>{textoDias(a.dias)}</span>
+                                <span className="d-block small text-body-secondary">{fecha(a.convenio.fecha_vencimiento)}</span>
+                              </>
+                            ) : (
+                              <span className="small text-body-secondary">
+                                {a.id.startsWith('firma') ? 'Aprobado' : 'En revisión'}
+                              </span>
+                            )}
+                          </span>
+                          <i className="bi bi-chevron-right bandeja-flecha" aria-hidden="true" />
+                        </Link>
+                      </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }

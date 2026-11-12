@@ -216,3 +216,47 @@ a.card:hover { box-shadow: 0 2px 4px rgba(30, 27, 58, .08), 0 10px 24px rgba(30,
   min-width: 6px;
 }
 .barras-numero { font-weight: 700; }
+
+ 
+/* ---- alertas en formato bandeja (página /alertas) ----
+   Una tarjeta, una sección por nivel con encabezado lavanda y una fila por alerta. */
+.bandeja { overflow: hidden; }
+.bandeja-encabezado {
+  display: flex; align-items: center; gap: .5rem;
+  margin: 0; padding: .65rem 1.25rem;
+  background: #F1F0FE; color: #5E5B78;
+  font-family: var(--bs-body-font-family);
+  font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+}
+.bandeja-cantidad {
+  background: #fff; color: #3730A3; border: 1px solid #C9CBF7;
+  border-radius: 999px; padding: 0 .5rem; font-size: .72rem;
+}
+.bandeja-fila {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .9rem 1.25rem; border-top: 1px solid #EEEDF6;
+  color: inherit; text-decoration: none;
+}
+.bandeja-fila:hover { background: #FAFAFE; }
+.bandeja-fila:focus-visible { outline: 3px solid rgba(67, 56, 202, .35); outline-offset: -3px; }
+.bandeja-icono {
+  flex: none; width: 1.75rem; height: 1.75rem; border-radius: .5rem;
+  display: flex; align-items: center; justify-content: center; font-size: .9rem;
+}
+.bandeja-texto { flex: 1; min-width: 0; }
+.bandeja-codigo { color: #4338CA; font-weight: 700; }
+.bandeja-fecha { text-align: right; white-space: nowrap; }
+.bandeja-flecha { color: #8C89A6; }
+.tono-rojo   { background: #FDECEC; color: #9B1C1C; }
+.tono-ambar  { background: #FFF0E0; color: #8A4300; }
+.tono-indigo { background: #E0E2FF; color: #3730A3; }
+.tono-texto-rojo   { color: #9B1C1C; }
+.tono-texto-ambar  { color: #8A4300; }
+.tono-texto-indigo { color: #3730A3; }
+/* en el celular la fecha baja debajo del texto */
+@media (max-width: 575.98px) {
+  .bandeja-fila { flex-wrap: wrap; gap: .25rem .75rem; }
+  .bandeja-texto { flex-basis: 100%; }
+  .bandeja-fecha { text-align: left; }
+  .bandeja-flecha { display: none; }
+}
