@@ -1,5 +1,6 @@
-
 import { API_URL } from './config';
+import { guardarRespuesta, leerRespuesta, marcarConConexion } from './offline';
+
  
 function getCookie(name) {
   if (typeof document === 'undefined') return null;
@@ -33,6 +34,11 @@ export async function api(path, { method = 'GET', body, headers = {}, comoArchiv
       body: esFormData ? body : body ? JSON.stringify(body) : undefined,
     });
   } catch (e) {
+    // Sin conexión: si es una consulta (GET) y hay una copia guardada, se usa esa
+    if (method === 'GET' && !comoArchivo) {
+      const guardada = await leerRespuesta(path);
+      if (guardada !== null) return guardada;
+    }
     // la API no responde (apagada, sin conexión...): el detalle queda en la consola
     console.error('No se pudo conectar con la API:', e);
     const error = new Error('No se pudo conectar con el servidor. Probá de nuevo en unos minutos.');
@@ -40,6 +46,7 @@ export async function api(path, { method = 'GET', body, headers = {}, comoArchiv
     throw error;
   }
  
+  marcarConConexion(); // la API respondió: si estaba el cartel de "sin conexión", se saca
   if (res.ok && comoArchivo) return res.blob();
  
   const data = res.status === 204 ? null : await res.json().catch(() => null);
@@ -54,5 +61,6 @@ export async function api(path, { method = 'GET', body, headers = {}, comoArchiv
     error.errors = data?.errors; // errores de validación por campo
     throw error;
   }
+  if (method === 'GET' && !comoArchivo) guardarRespuesta(path, data); // copia para usar sin conexión
   return data;
 }

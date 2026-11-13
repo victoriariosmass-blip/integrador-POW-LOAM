@@ -1,5 +1,7 @@
 import Sidebar from '../organisms/Sidebar';
 import Topbar from '../organisms/Topbar';
+import AvisoConexion from '../organisms/AvisoConexion';
+
 
 export default function AppShell({ children }) {
   return (
@@ -18,7 +20,10 @@ export default function AppShell({ children }) {
           <div className="offcanvas-body p-0"><Sidebar /></div>
         </div>
 
-        <main className="flex-grow-1 overflow-auto p-4">{children}</main>
+        <main className="flex-grow-1 overflow-auto p-4">
+          <AvisoConexion />
+          {children}
+        </main>
       </div>
     </div>
   );
