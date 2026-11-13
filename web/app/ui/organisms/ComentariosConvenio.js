@@ -19,6 +19,12 @@ export default function ComentariosConvenio({ convenioId, puedeComentar }) {
   }, [convenioId]);
  
   useEffect(() => { cargar(); }, [cargar]);
+
+  // Cuando se mandan los comentarios que estaban pendientes, se vuelve a pedir la lista
+  useEffect(() => {
+    window.addEventListener('convenios:sincronizado', cargar);
+    return () => window.removeEventListener('convenios:sincronizado', cargar);
+  }, [cargar]);
  
   async function enviar(ev) {
     ev.preventDefault();
@@ -48,7 +54,14 @@ export default function ComentariosConvenio({ convenioId, puedeComentar }) {
           <ul className="list-unstyled d-flex flex-column gap-2 mb-3">
             {comentarios.map((c) => (
               <li key={c.id} className={`rounded border p-2 ${c.es_ofensivo ? 'border-danger-subtle bg-danger-subtle' : 'bg-body-tertiary'}`}>
-                <p className="small text-body-secondary mb-1">{c.autor?.name} · {fecha(c.created_at)}</p>
+                <p className="small text-body-secondary mb-1">
+                  {c.autor?.name} · {fecha(c.created_at)}
+                  {c.pendiente && (
+                    <span className="badge rounded-pill text-bg-warning ms-2">
+                      <i className="bi bi-cloud-arrow-up me-1" aria-hidden="true" />Pendiente de envío
+                    </span>
+                  )}
+                </p>
                 <p className={`mb-0 ${c.es_ofensivo ? 'fst-italic text-danger-emphasis' : ''}`}>{c.contenido}</p>
               </li>
             ))}

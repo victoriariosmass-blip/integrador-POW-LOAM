@@ -1,6 +1,7 @@
 import { api } from './api';
 import { USAR_MOCK } from './config';
 import { usuarioActual } from './auth';
+import { guardarPendiente } from './offline';
 import {
   listarMock, verMock, accionMock, crearMock, editarMock, resumenMock, estadisticasMock, unidadesMock,
   comentariosMock, comentarMock, subirDocumentoMock, descargarDocumentoMock,
@@ -113,7 +114,19 @@ export async function comentar(id, contenido) {
     return comentarMock(await usuarioActual(), id, contenido);
   }
  
-  return api(`/convenios/${id}/comentarios`, { method: 'POST', body: { contenido } });
+try {
+    return await api(`/convenios/${id}/comentarios`, { method: 'POST', body: { contenido } });
+  } catch (e) {
+    if (e.status !== 0) throw e;
+    // Sin conexión: queda guardado y se manda solo cuando vuelva (ver AvisoConexion)
+    await guardarPendiente({ convenioId: id, contenido });
+    return { data: { id: `pendiente-${Date.now()}`, contenido, pendiente: true, autor: { name: 'Vos' }, created_at: new Date().toISOString() } };
+  }
+}
+ 
+// Manda un comentario que quedó pendiente (lo usa la sincronización)
+export function enviarComentarioPendiente(pendiente) {
+  return api(`/convenios/${pendiente.convenioId}/comentarios`, { method: 'POST', body: { contenido: pendiente.contenido } });
 }
  
 // ---- Documentos (PDF) ----

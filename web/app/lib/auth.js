@@ -1,4 +1,6 @@
 import { api } from './api';
+import { borrarDatosLocales } from './offline';
+
 
 import { USAR_MOCK } from './config';
  
@@ -93,6 +95,7 @@ export async function usuarioActual() {
 }
  
 export async function logout() {
+  await borrarDatosLocales(); // no quedan convenios guardados en el navegador
   if (USAR_MOCK) {
     borrar(CLAVE_USUARIO);
     borrar(CLAVE_PENDIENTE);
