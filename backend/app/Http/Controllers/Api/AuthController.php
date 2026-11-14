@@ -39,6 +39,10 @@
 
           $usuario = User::where('email', $datos['email'])->first();
 
+          if (! $usuario->activo) {
+              return response()->json(['message' => 'Tu usuario está desactivado. Consultá con administración.'], 403);
+          }
+
           // Segundo paso: código de verificación (simulado, ver MfaService)
           $request->session()->put('mfa_user_id', $usuario->id);
           $request->session()->forget('mfa_intentos');
@@ -76,6 +80,10 @@
               return response()->json(['message' => 'Email o contraseña incorrectos'], 422);
           }
 
+          if (! $usuario->activo) {
+              return response()->json(['message' => 'Tu usuario está desactivado. Consultá con administración.'], 403);
+          }
+          
           return response()->json([
               'requiere_mfa' => false, // cuando esté el MFA, pasa a true
               'token' => $usuario->createToken($datos['dispositivo'] ?? 'app')->plainTextToken,

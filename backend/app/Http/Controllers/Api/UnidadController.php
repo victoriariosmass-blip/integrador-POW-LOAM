@@ -5,13 +5,14 @@
        use App\Models\Unidad;
        use OpenApi\Attributes as OA;
  
-       // Lista de unidades (rectorado y facultades) para los formularios
+       // Lista de unidades (rectorado y facultades) para los formularios.
+       // La app usa las coordenadas para reconocer en qué sede está el usuario.
        class UnidadController extends Controller
        {
            #[OA\Get(path: '/api/unidades', summary: 'Unidades (para elegir en el alta de convenio)', tags: ['Convenios'],
                responses: [new OA\Response(response: 200, description: 'Lista de unidades')])]
            public function __invoke()
            {
-               return response()->json(['data' => Unidad::orderBy('nombre')->get(['id', 'nombre', 'sigla'])]);
+               return response()->json(['data' => Unidad::orderBy('nombre')->get(['id', 'nombre', 'sigla', 'latitud', 'longitud', 'radio_metros'])]);
            }
        }
