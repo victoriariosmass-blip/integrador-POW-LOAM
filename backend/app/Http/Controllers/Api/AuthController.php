@@ -9,6 +9,8 @@
   use Illuminate\Support\Facades\Hash;
   use Laravel\Sanctum\PersonalAccessToken;
   use OpenApi\Attributes as OA;
+  use Illuminate\Support\Facades\Cache;
+  use Illuminate\Support\Str;
 
   class AuthController extends Controller
   {
@@ -39,10 +41,6 @@
 
           $usuario = User::where('email', $datos['email'])->first();
 
-          if (! $usuario->activo) {
-              return response()->json(['message' => 'Tu usuario está desactivado. Consultá con administración.'], 403);
-          }
-
           // Segundo paso: código de verificación (simulado, ver MfaService)
           $request->session()->put('mfa_user_id', $usuario->id);
           $request->session()->forget('mfa_intentos');
@@ -55,7 +53,7 @@
       }
 
       // Login por token: lo usa la app y sirve para probar en Swagger
-      #[OA\Post(path: '/api/token', summary: 'Obtener token (app y Swagger)', tags: ['Auth'],
+      #[OA\Post(path: '/api/token', summary: 'App y Swagger, primer paso: email y contraseña (después /api/token/verificar)', tags: ['Auth'],
           requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
               required: ['email', 'password'],
               properties: [
@@ -64,7 +62,7 @@
                   new OA\Property(property: 'dispositivo', type: 'string', example: 'swagger'),
               ])),
           responses: [
-              new OA\Response(response: 200, description: 'Token y usuario'),
+              new OA\Response(response: 200, description: 'Contraseña correcta: devuelve mfa_token y manda el código (queda en el log)'),
               new OA\Response(response: 422, description: 'Credenciales incorrectas'),
           ])]
       public function token(Request $request)
@@ -80,14 +78,21 @@
               return response()->json(['message' => 'Email o contraseña incorrectos'], 422);
           }
 
-          if (! $usuario->activo) {
-              return response()->json(['message' => 'Tu usuario está desactivado. Consultá con administración.'], 403);
-          }
-          
+          // Segundo paso (verificación en dos pasos), igual que la web pero sin sesión:
+          // se guarda el intento 10 minutos en el cache y la app recibe un mfa_token para identificarlo.
+          $mfaToken = Str::random(40);
+          Cache::put('mfa_app:'.hash('sha256', $mfaToken), [
+              'user_id' => $usuario->id,
+              'dispositivo' => $datos['dispositivo'] ?? 'app',
+              'intentos' => 0,
+              'vence' => now()->addMinutes(10),
+          ], now()->addMinutes(10));
+          app(MfaService::class)->enviarCodigo($usuario, 'mail');
+
           return response()->json([
-              'requiere_mfa' => false, // cuando esté el MFA, pasa a true
-              'token' => $usuario->createToken($datos['dispositivo'] ?? 'app')->plainTextToken,
-              'usuario' => $usuario,
+              'requiere_mfa' => true,
+              'mfa_token' => $mfaToken,
+              'canal' => 'mail',
           ]);
       }
 
