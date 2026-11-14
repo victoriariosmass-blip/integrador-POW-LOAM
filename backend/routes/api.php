@@ -12,10 +12,13 @@ use App\Http\Controllers\Api\ResumenController;
 use App\Http\Controllers\Api\UnidadController;
 use App\Http\Controllers\Api\UsuarioController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\MfaAppController;
 
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/token', [AuthController::class, 'token']);
+Route::post('/token/verificar', [MfaAppController::class, 'verificar']);
+Route::post('/token/reenviar', [MfaAppController::class, 'reenviar']);
 Route::post('/mfa/verificar', [MfaController::class, 'verificar']);
 Route::post('/mfa/reenviar', [MfaController::class, 'reenviar']);
 Route::middleware('throttle:60,1')->group(function () {
