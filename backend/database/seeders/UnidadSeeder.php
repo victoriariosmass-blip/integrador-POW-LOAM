@@ -17,7 +17,7 @@ class UnidadSeeder extends Seeder
             ['nombre' => 'Facultad de Ciencias Exactas y Naturales', 'sigla' => 'FCEyN', 'latitud' => -36.5495, 'longitud' => -64.2975],
             ['nombre' => 'Facultad de Ciencias Humanas', 'sigla' => 'FCH', 'latitud' => -36.6208, 'longitud' => -64.2958],
             ['nombre' => 'Facultad de Ciencias Veterinarias', 'sigla' => 'FCV', 'latitud' => -35.6588, 'longitud' => -63.7569],
-            ['nombre' => 'Facultad de Ingeniería', 'sigla' => 'FI', 'latitud' => -35.6633, 'longitud' => -63.7564],
+            ['nombre' => 'Facultad de Ingeniería', 'sigla' => 'FI', 'latitud' => -35.668185, 'longitud' => -63.770496],
             ['nombre' => 'Facultad de Ciencias de la Salud', 'sigla' => 'FCS', 'latitud' => -36.6250, 'longitud' => -64.2950],
         ];
 
