@@ -5,10 +5,12 @@ use App\Http\Controllers\Api\ComentarioController;
 use App\Http\Controllers\Api\ConvenioController;
 use App\Http\Controllers\Api\DocumentoController;
 use App\Http\Controllers\Api\EstadoConvenioController;
+use App\Http\Controllers\Api\EstadisticasController;
 use App\Http\Controllers\Api\MfaController;
 use App\Http\Controllers\Api\PublicoController;
 use App\Http\Controllers\Api\ResumenController;
 use App\Http\Controllers\Api\UnidadController;
+use App\Http\Controllers\Api\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -28,7 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::get('/resumen', ResumenController::class);
     Route::get('/unidades', UnidadController::class);
+    Route::get('/estadisticas', EstadisticasController::class);
     Route::get('/convenios', [ConvenioController::class, 'index']);
+    Route::get('/convenios/ref/{ref}', [ConvenioController::class, 'porReferencia']);
     Route::get('/convenios/{id}', [ConvenioController::class, 'show']);
     Route::post('/convenios', [ConvenioController::class, 'store']);
     Route::put('/convenios/{id}', [ConvenioController::class, 'update']);
@@ -49,4 +53,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Documentos (PDF y anexos)
     Route::post('/convenios/{id}/documentos', [DocumentoController::class, 'store']);
     Route::get('/convenios/{id}/documentos/{documento}', [DocumentoController::class, 'descargar']);
+
+    // Usuarios (solo admin)
+    Route::get('/usuarios', [UsuarioController::class, 'index']);
+    Route::post('/usuarios', [UsuarioController::class, 'store']);
+    Route::put('/usuarios/{id}', [UsuarioController::class, 'update']);
 });

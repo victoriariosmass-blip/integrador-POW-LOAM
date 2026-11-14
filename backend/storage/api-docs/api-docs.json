@@ -207,6 +207,7 @@
                     {
                         "name": "estado",
                         "in": "query",
+                        "description": "Uno o varios separados por coma: borrador,revision",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -226,6 +227,60 @@
                         "required": false,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "unidad_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "firma_desde",
+                        "in": "query",
+                        "description": "AAAA-MM-DD",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "firma_hasta",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "vence_desde",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "vence_hasta",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "vigentes",
+                        "in": "query",
+                        "description": "1 = solo firmados vigentes",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
                         }
                     }
                 ],
@@ -387,6 +442,37 @@
                 }
             }
         },
+        "/api/convenios/ref/{ref}": {
+            "get": {
+                "tags": [
+                    "Convenios"
+                ],
+                "summary": "Ficha por la referencia del QR (con sesión)",
+                "operationId": "5887034519b36c9baabbcf29f11469de",
+                "parameters": [
+                    {
+                        "name": "ref",
+                        "in": "path",
+                        "description": "ref_publica (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ficha"
+                    },
+                    "403": {
+                        "description": "El usuario no puede ver ese convenio"
+                    },
+                    "404": {
+                        "description": "No hay convenio con esa referencia"
+                    }
+                }
+            }
+        },
         "/api/convenios/{id}/documentos": {
             "post": {
                 "tags": [
@@ -477,6 +563,23 @@
                     },
                     "404": {
                         "description": "No existe"
+                    }
+                }
+            }
+        },
+        "/api/estadisticas": {
+            "get": {
+                "tags": [
+                    "Convenios"
+                ],
+                "summary": "Estadísticas del panel (dentro del alcance del usuario)",
+                "operationId": "cc666dacbb2748311a63e8b1d5414a7a",
+                "responses": {
+                    "200": {
+                        "description": "Cantidades por estado, tipo, unidad y año de firma, y personas únicas"
+                    },
+                    "401": {
+                        "description": "No autenticado"
                     }
                 }
             }
@@ -980,6 +1083,173 @@
                     }
                 }
             }
+        },
+        "/api/usuarios": {
+            "get": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Listado de usuarios (solo admin)",
+                "operationId": "d57cb6c6a223fe9801b81b52dcac45df",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Busca en nombre y email",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "rol",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuarios paginados"
+                    },
+                    "403": {
+                        "description": "No es admin"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Alta de usuario (solo admin)",
+                "operationId": "96d159a6919ad7ade81fd7af5c7a6be8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "rol",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Laura Gestora"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "laura@convenios.test"
+                                    },
+                                    "rol": {
+                                        "description": "admin, gestor, revisor, autoridad o consulta",
+                                        "type": "string",
+                                        "example": "gestor"
+                                    },
+                                    "unidad_id": {
+                                        "description": "Vacío = alcance global",
+                                        "type": "integer",
+                                        "example": 7,
+                                        "nullable": true
+                                    },
+                                    "password": {
+                                        "description": "Mínimo 8 caracteres",
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado"
+                    },
+                    "403": {
+                        "description": "No es admin"
+                    },
+                    "422": {
+                        "description": "Datos inválidos o email repetido"
+                    }
+                }
+            }
+        },
+        "/api/usuarios/{id}": {
+            "put": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Editar o desactivar un usuario (solo admin)",
+                "operationId": "ee6ffe04a5be33eeca7f8f90c91d9803",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "rol": {
+                                        "type": "string"
+                                    },
+                                    "unidad_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "activo": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "password": {
+                                        "description": "Solo si se quiere cambiar",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuario actualizado"
+                    },
+                    "403": {
+                        "description": "No es admin"
+                    },
+                    "422": {
+                        "description": "Datos inválidos, o el admin intenta quitarse su propio rol o desactivarse"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1020,6 +1290,10 @@
         {
             "name": "Público",
             "description": "Público"
+        },
+        {
+            "name": "Usuarios",
+            "description": "Usuarios"
         }
     ]
 }
