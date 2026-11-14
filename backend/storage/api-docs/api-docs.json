@@ -802,6 +802,94 @@
                 }
             }
         },
+        "/api/token/verificar": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "App: segundo paso, código de verificación",
+                "operationId": "8b8e4300b42a01a24c5f3ad6862b4035",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "mfa_token",
+                                    "codigo"
+                                ],
+                                "properties": {
+                                    "mfa_token": {
+                                        "description": "El que devolvió POST /api/token",
+                                        "type": "string"
+                                    },
+                                    "codigo": {
+                                        "description": "Está en storage/logs/laravel.log",
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token y usuario"
+                    },
+                    "401": {
+                        "description": "El ingreso venció o hubo demasiados intentos"
+                    },
+                    "422": {
+                        "description": "Código incorrecto o vencido"
+                    }
+                }
+            }
+        },
+        "/api/token/reenviar": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "App: mandar otro código",
+                "operationId": "64e2ebb4edde8035a4e2287629f4fb9f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "mfa_token"
+                                ],
+                                "properties": {
+                                    "mfa_token": {
+                                        "type": "string"
+                                    },
+                                    "canal": {
+                                        "description": "mail o sms",
+                                        "type": "string",
+                                        "example": "mail"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Código reenviado"
+                    },
+                    "401": {
+                        "description": "El ingreso venció"
+                    },
+                    "429": {
+                        "description": "Hay que esperar 30 segundos entre envíos"
+                    }
+                }
+            }
+        },
         "/api/mfa/verificar": {
             "post": {
                 "tags": [
