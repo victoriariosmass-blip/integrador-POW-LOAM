@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -9,9 +8,27 @@ import { TIPOS } from '../../lib/formato';
 // Formulario compartido por el alta (/convenios/nuevo) y la edición (/convenios/[id]/editar).
 // - inicial: valores con los que arranca (vacío en el alta, el convenio en la edición)
 // - unidades: si viene una lista, muestra el select de unidad (solo usuarios globales en el alta)
-// - edicion: true muestra los campos que solo acepta el PUT
+// - edicion: true en /editar (la fecha de vencimiento se compara con la de inicio en vez de la de firma)
+// Tiene todos los datos de la ficha que pide el enunciado: objeto, alcance, obligaciones, rescisión,
+// marco legal, resolución, expediente, renovación, confidencialidad, notas y las fechas.
 // - onGuardar(datos): la página llama a la API; si tira error 422, se muestran los errores por campo
-
+ 
+// Campo de texto largo con su etiqueta, ayuda y error (accesible: el error queda asociado al campo)
+function AreaTexto({ id, etiqueta, valor, onCambio, error, ayuda }) {
+  const descripcion = error ? `${id}-msg` : ayuda ? `${id}-ayuda` : undefined;
+  return (
+    <div className="mb-3">
+      <label htmlFor={id} className="form-label fw-semibold">{etiqueta}</label>
+      <textarea id={id} rows={3} className={`form-control ${error ? 'is-invalid' : ''}`} value={valor}
+        aria-invalid={!!error || undefined} aria-describedby={descripcion}
+        onChange={(e) => onCambio(e.target.value)} />
+      {error
+        ? <div id={`${id}-msg`} className="invalid-feedback">{error}</div>
+        : ayuda && <div id={`${id}-ayuda`} className="form-text">{ayuda}</div>}
+    </div>
+  );
+}
+ 
 export default function FormConvenio({ inicial = {}, unidades = null, edicion = false, onGuardar, cancelarHref, textoBoton }) {
   const [datos, setDatos] = useState({
     titulo: inicial.titulo ?? '',
@@ -21,6 +38,13 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
     fecha_firma: inicial.fecha_firma?.slice(0, 10) ?? '',
     fecha_inicio: inicial.fecha_inicio?.slice(0, 10) ?? '',
     fecha_vencimiento: inicial.fecha_vencimiento?.slice(0, 10) ?? '',
+    dias_preaviso: inicial.dias_preaviso ?? '',
+    alcance: inicial.alcance ?? '',
+    obligaciones: inicial.obligaciones ?? '',
+    condiciones_rescision: inicial.condiciones_rescision ?? '',
+    marco_legal: inicial.marco_legal ?? '',
+    condiciones_renovacion: inicial.condiciones_renovacion ?? '',
+    renovacion_automatica: Boolean(inicial.renovacion_automatica),
     resolucion: inicial.resolucion ?? '',
     expediente: inicial.expediente ?? '',
     confidencial: Boolean(inicial.confidencial),
@@ -35,28 +59,31 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
     setErrores((e) => ({ ...e, [campo]: undefined }));
   }
  
-  // Arma lo que se manda: los vacíos van como null y solo los campos que acepta cada endpoint
+  // Arma lo que se manda a la API: los textos vacíos van como null
   function armarCuerpo() {
-    const vacioANull = (v) => (v === '' ? null : v);
-    const base = {
+    const texto = (v) => (v.trim() === '' ? null : v.trim());
+    const fechaONull = (v) => (v === '' ? null : v);
+    const cuerpo = {
       titulo: datos.titulo.trim(),
       tipo: datos.tipo,
       objeto: datos.objeto.trim(),
-      fecha_firma: vacioANull(datos.fecha_firma),
-      fecha_vencimiento: vacioANull(datos.fecha_vencimiento),
-    };
-    if (!edicion) {
-      if (unidades) base.unidad_id = datos.unidad_id ? Number(datos.unidad_id) : null;
-      return base;
-    }
-    return {
-      ...base,
-      fecha_inicio: vacioANull(datos.fecha_inicio),
-      resolucion: vacioANull(datos.resolucion.trim()),
-      expediente: vacioANull(datos.expediente.trim()),
+      alcance: texto(datos.alcance),
+      obligaciones: texto(datos.obligaciones),
+      condiciones_rescision: texto(datos.condiciones_rescision),
+      marco_legal: texto(datos.marco_legal),
+      condiciones_renovacion: texto(datos.condiciones_renovacion),
+      renovacion_automatica: datos.renovacion_automatica,
+      resolucion: texto(datos.resolucion),
+      expediente: texto(datos.expediente),
       confidencial: datos.confidencial,
-      notas: vacioANull(datos.notas.trim()),
+      notas: texto(datos.notas),
+      fecha_firma: fechaONull(datos.fecha_firma),
+      fecha_inicio: fechaONull(datos.fecha_inicio),
+      fecha_vencimiento: fechaONull(datos.fecha_vencimiento),
+      dias_preaviso: datos.dias_preaviso === '' ? null : Number(datos.dias_preaviso),
     };
+    if (!edicion && unidades) cuerpo.unidad_id = datos.unidad_id ? Number(datos.unidad_id) : null;
+    return cuerpo;
   }
  
   // Controles rápidos antes de llamar a la API (la API vuelve a validar todo)
@@ -72,6 +99,9 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
     }
     if (cuerpo.fecha_vencimiento && desde && cuerpo.fecha_vencimiento <= desde) {
       e.fecha_vencimiento = edicion ? 'Tiene que ser posterior a la fecha de inicio.' : 'Tiene que ser posterior a la fecha de firma.';
+    }
+    if (cuerpo.dias_preaviso !== null && (!Number.isInteger(cuerpo.dias_preaviso) || cuerpo.dias_preaviso < 0)) {
+      e.dias_preaviso = 'Tiene que ser un número de días (0 o más).';
     }
     return e;
   }
@@ -160,47 +190,74 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
               <Field label="Fecha de firma" type="date" value={datos.fecha_firma} error={errores.fecha_firma}
                 onChange={(e) => cambiar('fecha_firma', e.target.value)} />
             </div>
-            {edicion && (
-              <div className="col-12 col-md-4">
-                <Field label="Fecha de inicio" type="date" value={datos.fecha_inicio} error={errores.fecha_inicio}
-                  onChange={(e) => cambiar('fecha_inicio', e.target.value)} />
-              </div>
-            )}
+            <div className="col-12 col-md-4">
+              <Field label="Fecha de inicio" type="date" value={datos.fecha_inicio} error={errores.fecha_inicio}
+                onChange={(e) => cambiar('fecha_inicio', e.target.value)} />
+            </div>
             <div className="col-12 col-md-4">
               <Field label="Vencimiento" type="date" value={datos.fecha_vencimiento} error={errores.fecha_vencimiento}
                 hint="Dejalo vacío si no vence." onChange={(e) => cambiar('fecha_vencimiento', e.target.value)} />
+            </div>
+            <div className="col-12 col-md-4">
+              <Field label="Preaviso (días)" type="number" min={0} value={datos.dias_preaviso} error={errores.dias_preaviso}
+                hint="Con cuántos días de anticipación hay que avisar si no se renueva." onChange={(e) => cambiar('dias_preaviso', e.target.value)} />
             </div>
           </div>
         </div>
       </div>
  
-      {edicion && (
-        <div className="card mb-3">
-          <div className="card-body">
-            <h2 className="h6 fw-bold mb-3">Datos administrativos</h2>
-            <div className="row">
-              <div className="col-12 col-md-6">
-                <Field label="Resolución" value={datos.resolucion} error={errores.resolucion} maxLength={50}
-                  onChange={(e) => cambiar('resolucion', e.target.value)} />
-              </div>
-              <div className="col-12 col-md-6">
-                <Field label="Expediente" value={datos.expediente} error={errores.expediente} maxLength={50}
-                  onChange={(e) => cambiar('expediente', e.target.value)} />
-              </div>
-            </div>
-            <div className="form-check mb-3">
-              <input id="confidencial" type="checkbox" className="form-check-input" checked={datos.confidencial}
-                onChange={(e) => cambiar('confidencial', e.target.checked)} />
-              <label htmlFor="confidencial" className="form-check-label">Confidencial (no lo ve el rol de consulta)</label>
-            </div>
-            <div>
-              <label htmlFor="notas" className="form-label fw-semibold">Notas internas</label>
-              <textarea id="notas" rows={3} className="form-control" value={datos.notas}
-                onChange={(e) => cambiar('notas', e.target.value)} />
-            </div>
+      <div className="card mb-3">
+        <div className="card-body">
+          <h2 className="h6 fw-bold mb-3">Contenido del convenio</h2>
+          <AreaTexto id="alcance" etiqueta="Alcance" valor={datos.alcance} onCambio={(v) => cambiar('alcance', v)}
+            error={errores.alcance} ayuda="Hasta dónde llega: actividades, áreas o personas que abarca." />
+          <AreaTexto id="obligaciones" etiqueta="Obligaciones de las partes" valor={datos.obligaciones}
+            onCambio={(v) => cambiar('obligaciones', v)} error={errores.obligaciones} />
+          <AreaTexto id="condiciones_rescision" etiqueta="Condiciones de rescisión" valor={datos.condiciones_rescision}
+            onCambio={(v) => cambiar('condiciones_rescision', v)} error={errores.condiciones_rescision} />
+          <AreaTexto id="marco_legal" etiqueta="Marco legal" valor={datos.marco_legal}
+            onCambio={(v) => cambiar('marco_legal', v)} error={errores.marco_legal} ayuda="Leyes, ordenanzas o resoluciones en las que se basa." />
+        </div>
+      </div>
+ 
+      <div className="card mb-3">
+        <div className="card-body">
+          <h2 className="h6 fw-bold mb-3">Renovación</h2>
+          <AreaTexto id="condiciones_renovacion" etiqueta="Condiciones de renovación" valor={datos.condiciones_renovacion}
+            onCambio={(v) => cambiar('condiciones_renovacion', v)} error={errores.condiciones_renovacion} />
+          <div className="form-check">
+            <input id="renovacion_automatica" type="checkbox" className="form-check-input" checked={datos.renovacion_automatica}
+              onChange={(e) => cambiar('renovacion_automatica', e.target.checked)} />
+            <label htmlFor="renovacion_automatica" className="form-check-label">Se renueva automáticamente al vencer</label>
           </div>
         </div>
-      )}
+      </div>
+ 
+      <div className="card mb-3">
+        <div className="card-body">
+          <h2 className="h6 fw-bold mb-3">Datos administrativos</h2>
+          <div className="row">
+            <div className="col-12 col-md-6">
+              <Field label="Resolución" value={datos.resolucion} error={errores.resolucion} maxLength={50}
+                onChange={(e) => cambiar('resolucion', e.target.value)} />
+            </div>
+            <div className="col-12 col-md-6">
+              <Field label="Expediente" value={datos.expediente} error={errores.expediente} maxLength={50}
+                onChange={(e) => cambiar('expediente', e.target.value)} />
+            </div>
+          </div>
+          <div className="form-check mb-3">
+            <input id="confidencial" type="checkbox" className="form-check-input" checked={datos.confidencial}
+              onChange={(e) => cambiar('confidencial', e.target.checked)} />
+            <label htmlFor="confidencial" className="form-check-label">Confidencial (no lo ve el rol de consulta)</label>
+          </div>
+          <div>
+            <label htmlFor="notas" className="form-label fw-semibold">Notas internas</label>
+            <textarea id="notas" rows={3} className="form-control" value={datos.notas}
+              onChange={(e) => cambiar('notas', e.target.value)} />
+          </div>
+        </div>
+      </div>
  
       <div className="d-flex gap-2">
         <Button type="submit" loading={guardando}>{textoBoton}</Button>

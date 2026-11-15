@@ -6,10 +6,13 @@ import { verConvenio, accionConvenio } from '../../../lib/convenios';
 import { TIPOS, ESTADOS, fecha } from '../../../lib/formato';
 import Chip from '../../../ui/atoms/Chip';
 import AccionesConvenio from '../../../ui/molecules/AccionesConvenio';
-import RelacionadosConvenio from '../../../ui/molecules/RelacionadosConvenio';
 import QrPublico from '../../../ui/molecules/QrPublico';
 import DocumentosConvenio from '../../../ui/organisms/DocumentosConvenio';
 import ComentariosConvenio from '../../../ui/organisms/ComentariosConvenio';
+import PartesConvenio from '../../../ui/organisms/PartesConvenio';
+import PersonasConvenio from '../../../ui/organisms/PersonasConvenio';
+import VinculosConvenio from '../../../ui/organisms/VinculosConvenio';
+import ObservacionesConvenio from '../../../ui/organisms/ObservacionesConvenio';
  
 const MENSAJES = {
   'enviar-revision': 'El convenio se envió a revisión.',
@@ -18,6 +21,16 @@ const MENSAJES = {
   rescindir: 'El convenio quedó rescindido.',
   archivar: 'El convenio quedó archivado.',
 };
+ 
+// Texto largo de la ficha (alcance, obligaciones...): ocupa todo el ancho y respeta los saltos de línea
+function DatoLargo({ etiqueta, children }) {
+  return (
+    <div className="col-12">
+      <dt className="small text-body-secondary fw-normal">{etiqueta}</dt>
+      <dd className="mb-0" style={{ whiteSpace: 'pre-line' }}>{children || '—'}</dd>
+    </div>
+  );
+}
  
 function Dato({ etiqueta, children }) {
   return (
@@ -44,6 +57,13 @@ export default function FichaConvenio() {
   }, [id]);
  
   useEffect(() => { cargar(); }, [cargar]);
+ 
+  // Después de cargar partes, personas, vínculos u observaciones: se recarga la ficha
+  // y se borra el error de la última acción (por ejemplo, "necesita al menos dos partes")
+  const refrescar = () => {
+    setErrorAccion('');
+    cargar();
+  };
  
   // aviso al volver del alta o de la edición (?creado=1 / ?editado=1)
   useEffect(() => {
@@ -121,39 +141,42 @@ export default function FichaConvenio() {
                 <Dato etiqueta="Tipo">{TIPOS[c.tipo] ?? c.tipo}</Dato>
                 <Dato etiqueta="Unidad">{c.unidad?.nombre}</Dato>
                 <Dato etiqueta="Fecha de firma">{fecha(c.fecha_firma)}</Dato>
+                <Dato etiqueta="Fecha de inicio">{fecha(c.fecha_inicio)}</Dato>
                 <Dato etiqueta="Vencimiento">{fecha(c.fecha_vencimiento) ?? 'Sin vencimiento registrado'}</Dato>
+                <Dato etiqueta="Preaviso">{c.dias_preaviso != null ? `${c.dias_preaviso} días antes del vencimiento` : null}</Dato>
                 <Dato etiqueta="Resolución">{c.resolucion}</Dato>
                 <Dato etiqueta="Expediente">{c.expediente}</Dato>
-                <div className="col-12">
-                  <dt className="small text-body-secondary fw-normal">Objeto</dt>
-                  <dd className="mb-0">{c.objeto || '—'}</dd>
-                </div>
+                <DatoLargo etiqueta="Objeto">{c.objeto}</DatoLargo>
               </dl>
             </div>
           </section>
  
+          <section className="card">
+            <div className="card-body">
+              <h2 className="h6 fw-bold mb-3">Contenido y condiciones</h2>
+              <dl className="row g-3 mb-0">
+                <DatoLargo etiqueta="Alcance">{c.alcance}</DatoLargo>
+                <DatoLargo etiqueta="Obligaciones de las partes">{c.obligaciones}</DatoLargo>
+                <DatoLargo etiqueta="Condiciones de rescisión">{c.condiciones_rescision}</DatoLargo>
+                <DatoLargo etiqueta="Marco legal">{c.marco_legal}</DatoLargo>
+                <DatoLargo etiqueta="Condiciones de renovación">
+                  {[c.renovacion_automatica ? 'Se renueva automáticamente al vencer.' : null, c.condiciones_renovacion].filter(Boolean).join(' ')}
+                </DatoLargo>
+                {c.notas && <DatoLargo etiqueta="Notas internas">{c.notas}</DatoLargo>}
+              </dl>
+            </div>
+          </section>
+ 
+          <PartesConvenio convenio={c} puedeEditar={c.permisos?.editar} onCambio={refrescar} />
+          <PersonasConvenio convenio={c} puedeEditar={c.permisos?.editar} onCambio={refrescar} />
           <DocumentosConvenio convenio={c} onSubido={cargar} />
           <ComentariosConvenio convenioId={c.id} puedeComentar={c.permisos?.comentar} />
         </div>
  
         <aside className="col-12 col-lg-4 d-flex flex-column gap-4">
           <QrPublico convenio={c} />
-          <RelacionadosConvenio antecedentes={c.antecedentes} derivados={c.derivados} />
-          {c.observaciones?.length > 0 && (
-            <section className="card border-warning">
-              <div className="card-body">
-                <h2 className="h6 fw-bold mb-3">Observaciones de revisión</h2>
-                <ul className="list-unstyled mb-0 d-flex flex-column gap-3">
-                  {c.observaciones.map((o) => (
-                    <li key={o.id}>
-                      <p className="mb-1">{o.contenido}</p>
-                      <p className="small text-body-secondary mb-0">{o.autor?.name} · {fecha(o.created_at)}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </section>
-          )}
+          <ObservacionesConvenio convenio={c} puedeResponder={c.permisos?.editar} onCambio={refrescar} />
+          <VinculosConvenio convenio={c} puedeEditar={c.permisos?.editar} onCambio={refrescar} />
  
           <section className="card">
             <div className="card-body">
