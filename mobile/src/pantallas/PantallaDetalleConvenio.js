@@ -7,7 +7,7 @@ import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { EtiquetaEstado } from '../componentes/atomos/EtiquetaEstado';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
 import PantallaComentarios from './PantallaComentarios';
-import { verConvenio, textoEstado, fecha, TIPOS, ESTADOS } from '../servicios/convenios';
+import { verConvenio, textoEstado, fecha, TIPOS, ESTADOS, CATEGORIAS_DOCUMENTO } from '../servicios/convenios';
 
 const PESTANIAS = [
   { clave: 'datos', titulo: 'DATOS' },
@@ -166,6 +166,11 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
         </View>
       )}
 
+      {pestaniaActiva === 'documentos' && c.permisos?.editar && (
+        <BotonPersonalizado titulo="Subir documento PDF" variante="secundario"
+          alPresionar={() => navigation.navigate('SubirAnexo', { id: c.id, codigo: c.codigo })} />
+      )}
+
       {pestaniaActiva === 'documentos' && (
         <View style={tarjeta}>
           {(c.documentos ?? []).length === 0 ? (
@@ -175,7 +180,8 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
               <View key={d.id} style={estilos.filaLista}>
                 <Text style={texto(14)}>📄 {d.nombre_original}</Text>
                 <Text style={secundario(12)}>
-                  {d.categoria} · versión {d.numero_version} · {(d.tamano_bytes / 1024 / 1024).toFixed(1)} MB
+                  {CATEGORIAS_DOCUMENTO[d.categoria] ?? d.categoria} · versión {d.numero_version}
+
                 </Text>
               </View>
             ))

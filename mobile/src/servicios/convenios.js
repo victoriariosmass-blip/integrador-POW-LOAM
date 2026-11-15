@@ -75,8 +75,10 @@ const FICHAS_MOCK = {
   3: { id: 3, codigo: 'MP-2025-0001', titulo: 'Marco de pasantías con Agroindustrias del Oeste', tipo: 'marco_pasantia', estado: 'aprobado', unidad: UNIDAD_FI, objeto: 'Pasantías educativas para estudiantes avanzados.', fecha_firma: null, fecha_vencimiento: null, dias_preaviso: null, contraparte: 'Agroindustrias del Oeste S.A.' },
   // vence en 20 días: sirve para probar el aviso de "próximo a vencer"
   2: { id: 2, codigo: 'EC-2025-0001', titulo: 'Específico de capacitación en energías renovables', tipo: 'especifico_colaboracion', estado: 'firmado', unidad: UNIDAD_FI, objeto: 'Cursos de capacitación para personal técnico.', fecha_firma: '2025-05-02', fecha_vencimiento: new Date(Date.now() + 20 * 864e5).toISOString().slice(0, 10), dias_preaviso: 30, contraparte: 'Cooperativa Eléctrica de General Pico' },
+  12: { id: 12, codigo: 'EC-2026-0005', titulo: 'Específico de prácticas en laboratorio de suelos', tipo: 'especifico_colaboracion', estado: 'borrador', unidad: UNIDAD_FI, objeto: 'Prácticas de estudiantes en el laboratorio de la empresa.', fecha_firma: null, fecha_vencimiento: null, dias_preaviso: null, contraparte: 'Agroindustrias del Oeste S.A.' },
   9: { id: 9, codigo: 'EC-2026-0003', titulo: 'Específico de capacitación docente con Escuela Técnica N° 1', tipo: 'especifico_colaboracion', estado: 'aprobado', unidad: UNIDAD_FI, objeto: 'Cursos de actualización para docentes de la escuela.', fecha_firma: null, fecha_vencimiento: '2027-12-15', dias_preaviso: 30, contraparte: 'Escuela Técnica N° 1' },
 };
+const DOCUMENTOS_MOCK = {}; // { idConvenio: [documentos subidos en esta sesión] }
 const COMENTARIOS_MOCK = {
   3: [{ id: 1, contenido: 'Revisión técnica aprobada.', es_ofensivo: false, autor: { name: 'Raúl Revisor' }, created_at: '2026-10-22T13:00:00Z' }],
 };
@@ -101,14 +103,18 @@ function fichaMock(id, usuario) {
   return {
     ...datos,
     partes: [UNLPAM, { id: 2, nombre: contraparte, tipo: 'empresa', pivot: { representante_nombre: 'Responsable de la empresa', representante_cargo: 'Gerente' } }],
-    documentos: [],
+    documentos: DOCUMENTOS_MOCK[id] ?? [],
     transiciones: [
       { id: 1, estado_desde: null, estado_hasta: 'borrador', fundamento: 'Alta del instrumento', created_at: '2026-10-20T12:00:00Z', usuario: { name: 'Gabriel Gestor' } },
       ...(c.estado !== 'borrador' ? [{ id: 2, estado_desde: 'revision', estado_hasta: 'aprobado', fundamento: 'Aprobado por revisión', created_at: '2026-10-22T13:00:00Z', usuario: { name: 'Raúl Revisor' } }] : []),
       ...(c.estado === 'firmado' ? [{ id: 3, estado_desde: 'aprobado', estado_hasta: 'firmado', fundamento: 'Firmado por Rita Rectora', created_at: c.fecha_firma, usuario: { name: 'Rita Rectora' } }] : []),
     ],
-    // misma regla que la API: firma la autoridad si está aprobado; consulta no comenta
-    permisos: { firmar: usuario?.rol === 'autoridad' && c.estado === 'aprobado', comentar: usuario?.rol !== 'consulta', editar: false },
+
+    permisos: {
+      firmar: usuario?.rol === 'autoridad' && c.estado === 'aprobado',
+      comentar: usuario?.rol !== 'consulta',
+      editar: ['admin', 'gestor'].includes(usuario?.rol) && c.estado === 'borrador', // también habilita subir documentos
+    },
      // árbol: de qué depende y qué depende de él
     antecedentes: VINCULOS_MOCK.filter((v) => v.origen === c.id).map((v) => relacionadoMock(v.destino, v.tipo)),
     derivados: VINCULOS_MOCK.filter((v) => v.destino === c.id).map((v) => relacionadoMock(v.origen, v.tipo)),
@@ -149,6 +155,46 @@ export async function verConvenio(id) {
   const respuesta = await api(`/convenios/${id}`);
   return respuesta.data;
 }
+
+// ---- Documentos ----
+
+export const CATEGORIAS_DOCUMENTO = {
+  principal: 'Principal',
+  anexo: 'Anexo',
+  dictamen: 'Dictamen',
+  resolucion: 'Resolución',
+  otro: 'Otro',
+};
+
+// Sube un PDF al convenio (POST /api/convenios/{id}/documentos, multipart).
+// archivo: el que devuelve expo-document-picker ({ uri, name, size, file? }).
+// La API vuelve a revisar todo: que sea PDF de verdad, hasta 20 MB y que el usuario pueda editarlo.
+// Nunca pisa un documento anterior: cada carga es una versión nueva de su categoría.
+export async function subirDocumento(id, archivo, categoria) {
+  if (USAR_MOCK) {
+    await esperar(800);
+    const lista = DOCUMENTOS_MOCK[id] ?? (DOCUMENTOS_MOCK[id] = []);
+    const documento = {
+      id: Date.now(),
+      categoria,
+      nombre_original: archivo.name,
+      tamano_bytes: archivo.size ?? 0,
+      numero_version: lista.filter((d) => d.categoria === categoria).length + 1,
+    };
+    lista.push(documento);
+    return documento;
+  }
+  const datos = new FormData();
+  datos.append('categoria', categoria);
+  if (archivo.file) {
+    datos.append('archivo', archivo.file); // en la web de Expo el selector da el archivo directo
+  } else {
+    datos.append('archivo', { uri: archivo.uri, name: archivo.name, type: 'application/pdf' }); // en el celular
+  }
+  const respuesta = await api(`/convenios/${id}/documentos`, { method: 'POST', body: datos });
+  return respuesta.data;
+}
+
 
 // Firma desde la app (POST /api/convenios/{id}/firmar)
 // datos: { firma_imagen: 'data:image/png;base64,...', latitud, longitud, biometria_ok }

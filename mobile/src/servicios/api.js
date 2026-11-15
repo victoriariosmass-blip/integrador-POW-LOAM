@@ -4,6 +4,7 @@ import { leerToken } from './almacenamiento';
 
 export async function api(ruta, { method = 'GET', body } = {}) {
   const token = await leerToken();
+  const esFormulario = typeof FormData !== 'undefined' && body instanceof FormData;
 
   let res;
   try {
@@ -11,10 +12,10 @@ export async function api(ruta, { method = 'GET', body } = {}) {
       method,
       headers: {
         Accept: 'application/json',
-        ...(body ? { 'Content-Type': 'application/json' } : {}),
+        ...(body && !esFormulario ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: body ? (esFormulario ? body : JSON.stringify(body)) : undefined,
     });
   } catch {
     const error = new Error('No se pudo conectar con el servidor. Revisá tu conexión.');
