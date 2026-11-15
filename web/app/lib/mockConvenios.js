@@ -179,8 +179,8 @@ export function crearMock(usuario, datos) {
   const nuevo = {
     id: Math.max(...convenios.map((c) => c.id)) + 1,
     codigo: base + String(numero).padStart(4, '0'),
-    titulo: datos.titulo, tipo: datos.tipo, objeto: datos.objeto, unidad,
-    estado: 'borrador', confidencial: false,
+    ...datos, unidad,
+    estado: 'borrador', confidencial: Boolean(datos.confidencial),
     fecha_firma: datos.fecha_firma || null, fecha_vencimiento: datos.fecha_vencimiento || null,
     version: 1, revisor_id: null,
   };

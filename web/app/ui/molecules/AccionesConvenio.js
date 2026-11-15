@@ -14,7 +14,7 @@ export default function AccionesConvenio({ convenio, onAccion, cargando }) {
     ev.preventDefault();
     if (!texto.trim()) return;
     const datos = pidiendo === 'devolver' ? { observaciones: texto.trim() } : { fundamento: texto.trim() };
-    onAccion(pidiendo, datos).then(() => { setPidiendo(null); setTexto(''); });
+    onAccion(pidiendo, datos).then(() => { setPidiendo(null); setTexto(''); }).catch(() => {}); // el error lo muestra la ficha
   }
  
   if (pidiendo) {
@@ -37,11 +37,11 @@ export default function AccionesConvenio({ convenio, onAccion, cargando }) {
   return (
     <div className="d-flex flex-wrap gap-2">
       {p.editar && <Link href={`/convenios/${convenio.id}/editar`} className="btn btn-outline-primary">Editar</Link>}
-      {p.enviar_revision && <Button loading={cargando} onClick={() => onAccion('enviar-revision')}>Enviar a revisión</Button>}
-      {p.revisar && <Button loading={cargando} onClick={() => onAccion('aprobar')}>Aprobar</Button>}
+      {p.enviar_revision && <Button loading={cargando} onClick={() => onAccion('enviar-revision').catch(() => {})}>Enviar a revisión</Button>}
+      {p.revisar && <Button loading={cargando} onClick={() => onAccion('aprobar').catch(() => {})}>Aprobar</Button>}
       {p.revisar && <Button variant="secondary" onClick={() => setPidiendo('devolver')}>Devolver con observaciones</Button>}
       {p.rescindir && <Button variant="danger" onClick={() => setPidiendo('rescindir')}>Rescindir</Button>}
-      {p.archivar && <Button variant="secondary" loading={cargando} onClick={() => onAccion('archivar')}>Archivar</Button>}
+      {p.archivar && <Button variant="secondary" loading={cargando} onClick={() => onAccion('archivar').catch(() => {})}>Archivar</Button>}
       {p.firmar && (
         <p className="alert alert-info mb-0 w-100">
           <i className="bi bi-phone me-2" aria-hidden="true" />Este convenio espera tu firma. Se firma desde la app.

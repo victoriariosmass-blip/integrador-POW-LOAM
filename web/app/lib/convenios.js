@@ -153,3 +153,60 @@ export async function descargarDocumento(id, documentoId) {
  
   return api(`/convenios/${id}/documentos/${documentoId}`, { comoArchivo: true });
 }
+
+
+// ---- Partes, personas, vínculos y observaciones (solo con la API real) ----
+// Se cargan desde la ficha mientras el convenio está en borrador (mismo permiso que editar).
+ 
+function soloApi() {
+  if (USAR_MOCK) {
+    const e = new Error('Esto funciona con la API real (USAR_MOCK = false).');
+    e.status = 0;
+    throw e;
+  }
+}
+ 
+// GET /api/partes?q= -> instituciones ya cargadas, para elegir en vez de repetirlas
+export async function buscarPartes(q) {
+  soloApi();
+  return api(`/partes?q=${encodeURIComponent(q)}`);
+}
+ 
+// POST /api/convenios/{id}/partes -> { parte_id } o { parte: {nombre, tipo, cuit} } + representante
+export async function agregarParte(id, datos) {
+  soloApi();
+  return api(`/convenios/${id}/partes`, { method: 'POST', body: datos });
+}
+ 
+export async function quitarParte(id, parteId) {
+  soloApi();
+  return api(`/convenios/${id}/partes/${parteId}`, { method: 'DELETE' });
+}
+ 
+// POST /api/convenios/{id}/personas -> { persona: {nombre, apellido}, rol, fecha_desde, fecha_hasta, pasantia? }
+export async function agregarPersona(id, datos) {
+  soloApi();
+  return api(`/convenios/${id}/personas`, { method: 'POST', body: datos });
+}
+ 
+export async function quitarPersona(id, vinculoId) {
+  soloApi();
+  return api(`/convenios/${id}/personas/${vinculoId}`, { method: 'DELETE' });
+}
+ 
+// POST /api/convenios/{id}/vinculos -> { destino_id, tipo: especifico_de | adenda_de | renueva_a | sustituye_a }
+export async function agregarVinculo(id, datos) {
+  soloApi();
+  return api(`/convenios/${id}/vinculos`, { method: 'POST', body: datos });
+}
+ 
+export async function quitarVinculo(id, vinculoId) {
+  soloApi();
+  return api(`/convenios/${id}/vinculos/${vinculoId}`, { method: 'DELETE' });
+}
+ 
+// POST /api/convenios/{id}/observaciones/{obs}/responder -> el gestor dice qué corrigió
+export async function responderObservacion(id, observacionId, respuesta) {
+  soloApi();
+  return api(`/convenios/${id}/observaciones/${observacionId}/responder`, { method: 'POST', body: { respuesta } });
+}
