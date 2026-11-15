@@ -1,21 +1,45 @@
-// Alertas: se calculan en la web a partir de los convenios que el usuario
-// puede ver (la API ya filtra por rol y unidad). No hay tabla de alertas.
+// Alertas:
+// - Vencimientos y pendientes del circuito: se calculan en la web a partir de los convenios que el
+//   usuario puede ver (la API ya filtra por rol y unidad).
+// - Avisos (nivel 'aviso'): los genera la API cuando se asigna una revisión o cambia el estado de un
+//   convenio (por ejemplo, devuelto con observaciones). Vienen de GET /api/notificaciones (últimos 30 días).
+import { api } from './api';
+import { USAR_MOCK } from './config';
 import { listarTodos } from './listados';
 import { diasHasta } from './formato';
+
+// Avisos de la API pasados al mismo formato que las demás alertas.
+// "titulo" viene como "EP-2026-0005 · Devuelto con observaciones" y "cuerpo" como
+// "Título del convenio · Tipo · Estado: ...": se sacan el código y el título, que la bandeja ya muestra.
+async function avisosDeLaApi() {
+  if (USAR_MOCK) return [];
+  try {
+    const { data } = await api('/notificaciones');
+    return data.filter((n) => n.convenio).map((n) => ({
+      id: `aviso-${n.id}`, nivel: 'aviso', convenio: n.convenio, dias: null, fecha: n.created_at,
+      titulo: n.titulo.replace(`${n.convenio.codigo} · `, ''),
+      detalle: (n.cuerpo ?? '').replace(`${n.convenio.titulo} · `, ''),
+      enlace: n.enlace,
+    }));
+  } catch {
+    return []; // si falla, se muestran igual las demás alertas
+  }
+}
  
 const PREAVISO_SIN_DATO = 30; // si el convenio no tiene días de preaviso cargados
 const ROLES_REVISION = ['admin', 'revisor'];
 const ROLES_FIRMA = ['admin', 'autoridad'];
  
-// Devuelve [{ id, nivel: 'alta' | 'media' | 'info', convenio, titulo, detalle }]
+// Devuelve [{ id, nivel: 'aviso' | 'alta' | 'media' | 'info', convenio, titulo, detalle }]
 export async function calcularAlertas(usuario) {
-  const [firmados, enRevision, aprobados] = await Promise.all([
+  const [firmados, enRevision, aprobados, avisos] = await Promise.all([
     listarTodos({ estado: 'firmado' }),
     ROLES_REVISION.includes(usuario.rol) ? listarTodos({ estado: 'revision' }) : [],
     ROLES_FIRMA.includes(usuario.rol) ? listarTodos({ estado: 'aprobado' }) : [],
+    avisosDeLaApi(),
   ]);
- 
-  const alertas = [];
+
+  const alertas = [...avisos]; // ya vienen del más nuevo al más viejo
  
   for (const c of firmados) {
     const dias = diasHasta(c.fecha_vencimiento);
@@ -50,6 +74,6 @@ export async function calcularAlertas(usuario) {
     });
   }
  
-  const orden = { alta: 0, media: 1, info: 2 };
+  const orden = { aviso: 0, alta: 1, media: 2, info: 3 };
   return alertas.sort((a, b) => orden[a.nivel] - orden[b.nivel] || (a.dias ?? 0) - (b.dias ?? 0));
 }

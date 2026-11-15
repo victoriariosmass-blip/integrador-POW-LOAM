@@ -86,9 +86,31 @@
               'es_firmante' => ['boolean'],
               'firmo_en' => ['nullable', 'date'],
           ], [
+              // Mensajes en castellano (el proyecto no tiene traducciones: sin esto salen los de Laravel en inglés)
               'parte_id.required_without' => 'Elegí una institución o cargá una nueva.',
+              'parte_id.exists' => 'La institución elegida no existe.',
+              'parte.required_without' => 'Elegí una institución o cargá una nueva.',
+              'parte.array' => 'Los datos de la institución no son válidos.',
+              'parte.nombre.required_with' => 'Escribí el nombre de la institución.',
+              'parte.nombre.string' => 'El nombre de la institución no es válido.',
+              'parte.nombre.max' => 'El nombre de la institución puede tener hasta 200 caracteres.',
+              'parte.tipo.required_with' => 'Elegí el tipo de institución.',
+              'parte.tipo.in' => 'Elegí un tipo de institución válido.',
+              'parte.cuit.string' => 'El CUIT no es válido.',
+              'parte.cuit.max' => 'El CUIT puede tener hasta 13 caracteres (con guiones).',
               'parte.cuit.unique' => 'Ya hay una institución con ese CUIT: buscala en la lista.',
+              'parte.domicilio.string' => 'El domicilio no es válido.',
+              'parte.domicilio.max' => 'El domicilio puede tener hasta 255 caracteres.',
+              'parte.email.email' => 'El email de la institución no es válido.',
+              'parte.telefono.string' => 'El teléfono no es válido.',
+              'parte.telefono.max' => 'El teléfono puede tener hasta 30 caracteres.',
               'representante_nombre.required' => 'Indicá quién la representa.',
+              'representante_nombre.string' => 'El nombre del representante no es válido.',
+              'representante_nombre.max' => 'El nombre del representante puede tener hasta 150 caracteres.',
+              'representante_cargo.string' => 'El cargo no es válido.',
+              'representante_cargo.max' => 'El cargo puede tener hasta 150 caracteres.',
+              'es_firmante.boolean' => 'Indicá si firma o no.',
+              'firmo_en.date' => 'La fecha de firma no es válida.',
           ]);
 
           $parte = isset($datos['parte_id']) ? Parte::find($datos['parte_id']) : Parte::create($datos['parte']);
@@ -170,9 +192,41 @@
               'pasantia.plan_trabajo' => ['nullable', 'string'],
           ], [
               'persona_id.required_without' => 'Elegí una persona o cargá una nueva.',
+              'persona_id.exists' => 'La persona elegida no existe.',
+              'persona.required_without' => 'Elegí una persona o cargá una nueva.',
+              'persona.array' => 'Los datos de la persona no son válidos.',
+              'persona.nombre.required_with' => 'Escribí el nombre.',
+              'persona.nombre.string' => 'El nombre no es válido.',
+              'persona.nombre.max' => 'El nombre puede tener hasta 100 caracteres.',
+              'persona.apellido.required_with' => 'Escribí el apellido.',
+              'persona.apellido.string' => 'El apellido no es válido.',
+              'persona.apellido.max' => 'El apellido puede tener hasta 100 caracteres.',
+              'persona.documento.string' => 'El documento no es válido.',
+              'persona.documento.max' => 'El documento puede tener hasta 20 caracteres.',
+              'persona.documento.unique' => 'Ya hay una persona con ese documento.',
+              'persona.email.email' => 'El email no es válido.',
+              'persona.telefono.string' => 'El teléfono no es válido.',
+              'persona.telefono.max' => 'El teléfono puede tener hasta 30 caracteres.',
+              'rol.required' => 'Elegí el rol.',
               'rol.in' => 'Elegí un rol válido.',
-              'pasantia.horas_semanales.max' => 'Una pasantía puede tener hasta 20 horas semanales (Ley 26.427).',
+              'fecha_desde.date' => 'La fecha de inicio no es válida.',
+              'fecha_hasta.date' => 'La fecha de fin no es válida.',
               'fecha_hasta.after_or_equal' => 'La fecha de fin no puede ser anterior a la de inicio.',
+              'pasantia.array' => 'Los datos de la pasantía no son válidos.',
+              'pasantia.carrera.required_with' => 'Escribí la carrera.',
+              'pasantia.carrera.string' => 'La carrera no es válida.',
+              'pasantia.carrera.max' => 'La carrera puede tener hasta 150 caracteres.',
+              'pasantia.horas_semanales.required_with' => 'Indicá las horas semanales.',
+              'pasantia.horas_semanales.integer' => 'Las horas semanales tienen que ser un número entero.',
+              'pasantia.horas_semanales.min' => 'Las horas semanales tienen que ser al menos 1.',
+              'pasantia.horas_semanales.max' => 'Una pasantía puede tener hasta 20 horas semanales (Ley 26.427).',
+              'pasantia.asignacion_estimulo.numeric' => 'La asignación tiene que ser un número.',
+              'pasantia.asignacion_estimulo.min' => 'La asignación no puede ser negativa.',
+              'pasantia.seguro.string' => 'El seguro no es válido.',
+              'pasantia.seguro.max' => 'El seguro puede tener hasta 150 caracteres.',
+              'pasantia.obra_social.string' => 'La obra social no es válida.',
+              'pasantia.obra_social.max' => 'La obra social puede tener hasta 150 caracteres.',
+              'pasantia.plan_trabajo.string' => 'El plan de trabajo no es válido.',
           ]);
 
           if (! empty($datos['pasantia']) && ($convenio->tipo !== 'especifico_pasantia' || $datos['rol'] !== 'pasante')) {
@@ -229,7 +283,14 @@
           $datos = $request->validate([
               'destino_id' => ['required', 'integer', 'exists:convenios,id', 'not_in:'.$id],
               'tipo' => ['required', 'in:especifico_de,adenda_de,renueva_a,sustituye_a'],
-          ], ['destino_id.not_in' => 'Un convenio no se puede vincular consigo mismo.']);
+          ], [
+              'destino_id.required' => 'Elegí el convenio antecedente.',
+              'destino_id.integer' => 'El convenio elegido no es válido.',
+              'destino_id.exists' => 'El convenio elegido no existe.',
+              'destino_id.not_in' => 'Un convenio no se puede vincular consigo mismo.',
+              'tipo.required' => 'Elegí el tipo de vínculo.',
+              'tipo.in' => 'Elegí un tipo de vínculo válido.',
+          ]);
 
           $destino = $this->convenios->ver($request->user(), $datos['destino_id']); // tiene que poder verlo
           if ($error = $this->incompatibilidad($convenio, $destino, $datos['tipo'])) {
@@ -296,7 +357,11 @@
       public function responderObservacion(Request $request, int $id, int $observacion)
       {
           $convenio = $this->editable($request, $id);
-          $datos = $request->validate(['respuesta' => ['required', 'string', 'max:1000']], ['respuesta.required' => 'Escribí qué se corrigió.']);
+          $datos = $request->validate(['respuesta' => ['required', 'string', 'max:1000']], [
+              'respuesta.required' => 'Escribí qué se corrigió.',
+              'respuesta.string' => 'La respuesta no es válida.',
+              'respuesta.max' => 'La respuesta puede tener hasta 1000 caracteres.',
+          ]);
 
           // Enunciado: "conservar responsable, fecha, contenido y resolución de cada observación,
           // junto con la respuesta o corrección del equipo gestor"

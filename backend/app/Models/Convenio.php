@@ -172,7 +172,12 @@ class Convenio extends Model
         return match ($user->rol) {
             'admin' => $query,
             'gestor', 'autoridad' => $porUnidad($query),
-            'revisor' => $query->whereHas('asignaciones', fn ($q) => $q->where('revisor_id', $user->id)),
+            // Enunciado: "Panel de revisión: permitir revisar la ficha y los documentos...".
+            // El revisor ve todos los convenios en revisión de su alcance (su unidad, o todos si es global)
+            // y además los que alguna vez le asignaron. Aprobar o devolver: solo los asignados (ConvenioPolicy::revisar).
+            'revisor' => $query->where(fn (Builder $w) => $w
+                ->whereHas('asignaciones', fn ($q) => $q->where('revisor_id', $user->id))
+                ->orWhere(fn (Builder $q) => $porUnidad($q->where('estado', 'revision')))),
             'consulta' => $porUnidad($query)->where('confidencial', false),
             default => $query->whereRaw('1 = 0'),
         };

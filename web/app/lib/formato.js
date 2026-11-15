@@ -35,6 +35,17 @@ export function fecha(valor) {
   return `${d}/${m}/${a}`;
 }
 
+// "2026-11-15T17:42:10.000000Z" -> "15/11/2026 14:42" (hora de Argentina)
+export function fechaHora(valor) {
+  if (!valor) return null;
+  const f = new Date(valor);
+  if (Number.isNaN(f.getTime())) return fecha(valor);
+  return f.toLocaleString('es-AR', {
+    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
+    timeZone: 'America/Argentina/Buenos_Aires',
+  }).replace(',', '');
+}
+
 
 // Días desde hoy hasta la fecha ("2026-12-01"): positivo si falta, negativo si ya pasó
 export function diasHasta(valor) {

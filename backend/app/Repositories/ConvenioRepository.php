@@ -41,6 +41,9 @@
               'observaciones' => fn ($q) => $q->latest(),
               'observaciones.autor:id,name,rol',
               'observaciones.resueltoPor:id,name,rol',
+              // firma registrada desde la app (quién, cuándo, dónde y si validó con biometría)
+              'firmas' => fn ($q) => $q->select('id', 'convenio_id', 'user_id', 'firmado_en', 'latitud', 'longitud', 'biometria_ok', 'sha256_documento'),
+              'firmas.usuario:id,name,rol',
               // árbol: el marco o convenio que modifica, y los específicos/adendas que cuelgan de este
               'antecedentes' => fn ($q) => $q->select('convenios.id', 'convenios.codigo', 'convenios.titulo', 'convenios.tipo', 'convenios.estado'),
               'derivados' => fn ($q) => $q->select('convenios.id', 'convenios.codigo', 'convenios.titulo', 'convenios.tipo', 'convenios.estado'),

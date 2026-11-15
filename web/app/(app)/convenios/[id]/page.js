@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { verConvenio, accionConvenio } from '../../../lib/convenios';
-import { TIPOS, ESTADOS, fecha } from '../../../lib/formato';
+import { TIPOS, ESTADOS, fecha, fechaHora } from '../../../lib/formato';
 import Chip from '../../../ui/atoms/Chip';
 import AccionesConvenio from '../../../ui/molecules/AccionesConvenio';
 import QrPublico from '../../../ui/molecules/QrPublico';
@@ -175,6 +175,28 @@ export default function FichaConvenio() {
  
         <aside className="col-12 col-lg-4 d-flex flex-column gap-4">
           <QrPublico convenio={c} />
+
+          {/* Firma registrada desde la app (no es firma digital): quién, cuándo y dónde */}
+          {c.firmas?.length > 0 && (
+            <section className="card">
+              <div className="card-body">
+                <h2 className="h6 fw-bold mb-3">Firmas</h2>
+                <ul className="list-unstyled mb-0 d-flex flex-column gap-3">
+                  {c.firmas.map((f) => (
+                    <li key={f.id}>
+                      <p className="mb-1 fw-semibold">{f.usuario?.name ?? 'Usuario'}</p>
+                      <p className="small mb-1">{fechaHora(f.firmado_en)}</p>
+                      <p className="small text-body-secondary mb-0">
+                        {f.latitud != null && f.longitud != null
+                          ? `Lat. ${Number(f.latitud).toFixed(6)} · Long. ${Number(f.longitud).toFixed(6)}`
+                          : 'Sin ubicación registrada'}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
           <ObservacionesConvenio convenio={c} puedeResponder={c.permisos?.editar} onCambio={refrescar} />
           <VinculosConvenio convenio={c} puedeEditar={c.permisos?.editar} onCambio={refrescar} />
  

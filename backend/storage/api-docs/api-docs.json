@@ -1304,11 +1304,11 @@
                                     },
                                     "latitud": {
                                         "type": "number",
-                                        "example": -35.656599999999997407940099947154521942138671875
+                                        "example": -35.6566
                                     },
                                     "longitud": {
                                         "type": "number",
-                                        "example": -63.7567999999999983629095368087291717529296875
+                                        "example": -63.7568
                                     },
                                     "biometria_ok": {
                                         "type": "boolean",
@@ -1496,6 +1496,23 @@
                     },
                     "429": {
                         "description": "Hay que esperar 30 segundos entre envíos"
+                    }
+                }
+            }
+        },
+        "/api/notificaciones": {
+            "get": {
+                "tags": [
+                    "Avisos"
+                ],
+                "summary": "Avisos del usuario de los últimos 30 días",
+                "operationId": "0948f363ff82fe41be095dd1d6a54f75",
+                "responses": {
+                    "200": {
+                        "description": "Lista de avisos: código y título en \"titulo\", tipo y estado en \"cuerpo\", enlace a la ficha y el convenio"
+                    },
+                    "401": {
+                        "description": "Sin sesión"
                     }
                 }
             }
@@ -1814,6 +1831,10 @@
         {
             "name": "Documentos",
             "description": "Documentos"
+        },
+        {
+            "name": "Avisos",
+            "description": "Avisos"
         },
         {
             "name": "Público",

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DocumentoController;
 use App\Http\Controllers\Api\EstadoConvenioController;
 use App\Http\Controllers\Api\EstadisticasController;
 use App\Http\Controllers\Api\MfaController;
+use App\Http\Controllers\Api\NotificacionController;
 use App\Http\Controllers\Api\PublicoController;
 use App\Http\Controllers\Api\ResumenController;
 use App\Http\Controllers\Api\UnidadController;
@@ -44,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/resumen', ResumenController::class);
     Route::get('/unidades', UnidadController::class);
     Route::get('/estadisticas', EstadisticasController::class);
+    Route::get('/notificaciones', NotificacionController::class); // avisos de los últimos 30 días
     Route::get('/convenios', [ConvenioController::class, 'index']);
     Route::get('/convenios/ref/{ref}', [ConvenioController::class, 'porReferencia']);
     Route::get('/convenios/{id}', [ConvenioController::class, 'show']);

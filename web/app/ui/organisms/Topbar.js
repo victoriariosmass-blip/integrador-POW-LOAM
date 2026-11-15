@@ -11,7 +11,7 @@ export default function Topbar() {
   const usuario = useUsuario();
   const router = useRouter();
   const [texto, setTexto] = useState('');
-  const [urgentes, setUrgentes] = useState(0); // alertas de vencimiento (las que no son del circuito)
+  const [urgentes, setUrgentes] = useState(0); // avisos de los últimos 30 días + vencimientos (no cuenta los pendientes del circuito)
  
   useEffect(() => {
     calcularAlertas(usuario)

@@ -9,6 +9,7 @@ import { fecha, textoDias } from '../../lib/formato';
 // con su ícono) y una fila por alerta. Toda la fila es un link a la ficha del convenio.
 // Los colores e íconos están en globals.css (.bandeja-...).
 const NIVELES = {
+  aviso: { titulo: 'Avisos recientes', icono: 'bi-envelope', tono: 'indigo' },
   alta: { titulo: 'Requieren atención', icono: 'bi-exclamation-octagon', tono: 'rojo' },
   media: { titulo: 'Próximos a vencer', icono: 'bi-hourglass-split', tono: 'ambar' },
   info: { titulo: 'Pendientes del circuito', icono: 'bi-list-check', tono: 'indigo' },
@@ -63,7 +64,7 @@ export default function Alertas() {
                 <ul className="list-unstyled mb-0">
                   {lista.map((a) => (
                       <li key={a.id}>
-                        <Link href={`/convenios/${a.convenio.id}`} className="bandeja-fila">
+                        <Link href={a.enlace ?? `/convenios/${a.convenio.id}`} className="bandeja-fila">
                           <span className="bandeja-texto">
                             <span className="d-block">
                               <span className="bandeja-codigo">{a.convenio.codigo}</span>{' '}
@@ -78,6 +79,8 @@ export default function Alertas() {
                                 <span className={`d-block fw-bold tono-texto-${n.tono}`}>{textoDias(a.dias)}</span>
                                 <span className="d-block small text-body-secondary">{fecha(a.convenio.fecha_vencimiento)}</span>
                               </>
+                            ) : a.nivel === 'aviso' ? (
+                              <span className="small text-body-secondary">{fecha(a.fecha)}</span>
                             ) : (
                               <span className="small text-body-secondary">
                                 {a.id.startsWith('firma') ? 'Aprobado' : 'En revisión'}
