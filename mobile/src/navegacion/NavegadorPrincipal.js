@@ -11,6 +11,8 @@ import PantallaFirmaConvenio from '../pantallas/PantallaFirmaConvenio';
 import PantallaSubirAnexo from '../pantallas/PantallaSubirAnexo';
 import PantallaLeerPdf from '../pantallas/PantallaLeerPdf';
 import PantallaBuscar from '../pantallas/PantallaBuscar';
+import PantallaIdentidad from '../pantallas/PantallaIdentidad';
+import PantallaAyuda from '../pantallas/PantallaAyuda';
 import PantallaSostenibilidad from '../pantallas/PantallaSostenibilidad';
 import PantallaLogin from '../pantallas/PantallaLogin';
 import PantallaCodigoMfa from '../pantallas/PantallaCodigoMfa';
@@ -135,6 +137,16 @@ function Pantallas() {
             name="Buscar"
             component={PantallaBuscar}
             options={{ title: 'Buscar convenios' }}
+          />
+          <Pila.Screen
+            name="Identidad"
+            component={PantallaIdentidad}
+            options={{ title: 'Registrar mi identidad' }}
+          />
+          <Pila.Screen
+            name="Ayuda"
+            component={PantallaAyuda}
+            options={{ title: 'Ayuda' }}
           />
           <Pila.Screen
             name="LeerPdf"

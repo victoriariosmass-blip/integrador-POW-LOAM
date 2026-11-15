@@ -4,11 +4,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, ActivityIndicator } from 'react-native';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
+import { BannerSinConexion } from '../componentes/organismos/BannerSinConexion';
+import { usarConexion } from '../contexto/ContextoConexion';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { listarComentarios, comentar, fecha } from '../servicios/convenios';
 
 export default function PantallaComentarios({ id, puedeComentar }) {
   const { colores, factorActual } = usarPreferencias();
+  const { enLinea } = usarConexion();
   const [comentarios, setComentarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -44,6 +47,7 @@ export default function PantallaComentarios({ id, puedeComentar }) {
     }
   };
 
+  if (!enLinea && cargando) return <BannerSinConexion mensaje="Sin conexión • Los comentarios no están disponibles" />;
   if (cargando) return <ActivityIndicator color={colores.acento} style={{ marginTop: 16 }} />;
 
   return (
@@ -75,6 +79,7 @@ export default function PantallaComentarios({ id, puedeComentar }) {
 
       {error ? <Text style={[estilos.error, { color: colores.error }]}>{error}</Text> : null}
 
+      {!enLinea && <BannerSinConexion mensaje="Sin conexión • No se pueden enviar comentarios" />}
       {puedeComentar ? (
         <View style={estilos.filaEntrada}>
           <TextInput
@@ -87,7 +92,7 @@ export default function PantallaComentarios({ id, puedeComentar }) {
             maxLength={2000}
             accessibilityLabel="Nuevo comentario"
           />
-          <BotonPersonalizado titulo={enviando ? 'Enviando…' : 'Enviar'} alPresionar={enviar} deshabilitado={enviando || !nuevoTexto.trim()} />
+          <BotonPersonalizado titulo={enviando ? 'Enviando…' : 'Enviar'} alPresionar={enviar} deshabilitado={enviando || !nuevoTexto.trim() || !enLinea} />
         </View>
       ) : (
         <Text style={{ color: colores.textoSecundario, marginTop: 10 }}>Tu rol puede leer los comentarios pero no escribir.</Text>

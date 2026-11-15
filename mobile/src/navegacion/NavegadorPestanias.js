@@ -5,6 +5,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Svg, { Path } from 'react-native-svg';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { BuscadorHeader } from '../componentes/moleculas/BuscadorHeader';
+import { FotoPerfil } from '../componentes/atomos/FotoPerfil';
+import { usarSesion } from '../contexto/ContextoSesion';
+import { TouchableOpacity } from 'react-native';
 
 import PantallaInicio from '../pantallas/PantallaInicio';
 import PantallaPendientes from '../pantallas/PantallaPendientes';
@@ -34,17 +37,25 @@ const IconoImagen = ({ source, color }) => (
 );
 
 export const NavegadorPestanias = () => {
-  const { colores } = usarPreferencias();
+  const { colores, fotoPerfil } = usarPreferencias();
+  const { usuario } = usarSesion();
 
   return (
     <Pestanias.Navigator
-      screenOptions={{
+      screenOptions={({ navigation }) => ({
         // header con el buscador (enunciado de LOAM: "El buscador debe aparecer en el header")
         headerShown: true,
         headerTitle: () => <BuscadorHeader />,
         headerTitleAlign: 'center',
         headerStyle: { backgroundColor: colores.tarjeta },
         headerShadowVisible: false,
+        // miniatura de la foto de perfil arriba a la derecha (lleva al perfil)
+        headerRight: () => (
+          <TouchableOpacity onPress={() => navigation.navigate('Perfil')} style={{ marginRight: 14 }}
+            accessibilityRole="button" accessibilityLabel="Mi perfil">
+            <FotoPerfil uri={fotoPerfil} nombre={usuario?.name ?? ''} tamanio={32} />
+          </TouchableOpacity>
+        ),
         tabBarActiveTintColor: colores.acento,
         tabBarInactiveTintColor: colores.textoSecundario,
         tabBarStyle: {
@@ -53,7 +64,7 @@ export const NavegadorPestanias = () => {
           borderTopWidth: 1,
         },
         tabBarLabelStyle: { fontWeight: '600' },
-      }}
+      })}
     >
       <Pestanias.Screen
         name="Inicio"

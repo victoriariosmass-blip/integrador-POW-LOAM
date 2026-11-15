@@ -3,14 +3,18 @@
 //   1. Vencimientos: firmados vencidos o dentro del preaviso (una vez por día cada uno).
 //   2. Cambios de estado: un convenio cambió de estado desde la última vez que se miró.
 //   3. Revisión asignada: al revisor le aparece un convenio nuevo en revisión.
+//   4. Datos que trae la API (enunciado de LOAM, "Notificaciones vía API"): convenio nuevo registrado,
+//      cambio de datos de un convenio, convenio cancelado (rescindido) y comentario nuevo
+//      (este último en los convenios que esperan firma, para no pedir los comentarios de todos).
 // Cada aviso lleva código, título, tipo, el estado o la fecha, y al tocarlo abre la ficha.
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { listarConvenios, TIPOS, ESTADOS, fecha } from './convenios';
+import { listarConvenios, listarComentarios, TIPOS, ESTADOS, fecha } from './convenios';
 
 const CLAVE_VISTOS = 'avisos_estados_vistos'; // { id: estado } de la última revisión
-const CLAVE_VENCIMIENTOS = 'avisos_vencimiento_dia'; // { id: 'AAAA-MM-DD' } último aviso de cada uno
+const CLAVE_VENCIMIENTOS = 'avisos_vencimiento_dia';
+const CLAVE_COMENTARIOS = 'avisos_comentarios'; // { id: cantidad de comentarios la última vez } // { id: 'AAAA-MM-DD' } último aviso de cada uno
 const PREAVISO_SIN_DATO = 30; // días, si el convenio no tiene dias_preaviso (igual que la web)
 const MAX_AVISOS = 5; // para no llenar la barra de notificaciones
 
@@ -97,17 +101,42 @@ export async function revisarAvisos(usuario) {
       }
     }
 
-    // 2 y 3. Cambios desde la última vez
+    // 2, 3 y 4. Cambios desde la última vez (antes se guardaba solo el estado; ahora estado y versión)
     if (!primeraVez) {
-      const antes = vistos[c.id];
-      if (antes === undefined && usuario?.rol === 'revisor' && c.estado === 'revision') {
-        pendientes.push([c, 'Revisión asignada', 'Se te asignó para revisar.']);
-      } else if (antes !== undefined && antes !== c.estado) {
-        pendientes.push([c, `Pasó a ${ESTADOS[c.estado] ?? c.estado}`, `Antes estaba en ${ESTADOS[antes] ?? antes}.`]);
+      const guardado = vistos[c.id];
+      const antes = typeof guardado === 'string' ? { estado: guardado } : guardado;
+      if (antes === undefined) {
+        if (usuario?.rol === 'revisor' && c.estado === 'revision') {
+          pendientes.push([c, 'Revisión asignada', 'Se te asignó para revisar.']);
+        } else {
+          pendientes.push([c, 'Nuevo convenio registrado', `Estado: ${ESTADOS[c.estado] ?? c.estado}.`]);
+        }
+      } else if (antes.estado !== c.estado) {
+        pendientes.push(c.estado === 'rescindido'
+          ? [c, 'Convenio cancelado', 'Se rescindió el convenio.']
+          : [c, `Pasó a ${ESTADOS[c.estado] ?? c.estado}`, `Antes estaba en ${ESTADOS[antes.estado] ?? antes.estado}.`]);
+      } else if (antes.version != null && c.version != null && antes.version !== c.version) {
+        pendientes.push([c, 'Cambiaron los datos', 'Se modificaron datos del convenio.']);
       }
     }
-    vistos[c.id] = c.estado;
+    vistos[c.id] = { estado: c.estado, version: c.version ?? null };
   }
+
+  // Comentarios nuevos en los convenios que esperan firma (como mucho 10)
+  const comentarios = await leer(CLAVE_COMENTARIOS);
+  for (const c of convenios.filter((x) => x.estado === 'aprobado').slice(0, 10)) {
+    try {
+      const lista = await listarComentarios(c.id);
+      const cantidad = (lista.data ?? lista).length;
+      if (!primeraVez && comentarios[c.id] !== undefined && cantidad > comentarios[c.id]) {
+        pendientes.push([c, 'Nuevo comentario', 'Hay un comentario nuevo en el convenio.']);
+      }
+      comentarios[c.id] = cantidad;
+    } catch {
+      // si falla uno, se sigue con los demás
+    }
+  }
+  await AsyncStorage.setItem(CLAVE_COMENTARIOS, JSON.stringify(comentarios));
 
   for (const [c, titulo, detalle] of pendientes.slice(0, MAX_AVISOS)) {
     await avisar(c, titulo, detalle);
@@ -121,5 +150,5 @@ export async function revisarAvisos(usuario) {
 
 // Al cerrar sesión: el próximo usuario arranca de cero
 export async function olvidarAvisos() {
-  await AsyncStorage.multiRemove([CLAVE_VISTOS, CLAVE_VENCIMIENTOS]);
+  await AsyncStorage.multiRemove([CLAVE_VISTOS, CLAVE_VENCIMIENTOS, CLAVE_COMENTARIOS]);
 }

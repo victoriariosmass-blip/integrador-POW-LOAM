@@ -6,6 +6,9 @@ import { View, Text, TextInput, ScrollView, TouchableOpacity, ActivityIndicator,
 import { ArbolConvenio } from '../componentes/organismos/ArbolConvenio';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { buscarConvenios, TIPOS, ESTADOS } from '../servicios/convenios';
+import { usarConexion } from '../contexto/ContextoConexion';
+import { BannerSinConexion } from '../componentes/organismos/BannerSinConexion';
+import { AyudaPuntual } from '../componentes/moleculas/AyudaPuntual';
 
 const ANIO = new Date().getFullYear();
 const ANIOS = [ANIO, ANIO - 1, ANIO - 2, ANIO - 3, ANIO - 4];
@@ -16,9 +19,11 @@ export default function PantallaBuscar({ navigation }) {
   const [filtros, setFiltros] = useState({ anio: '', tipo: '', estado: '' });
   const [resultados, setResultados] = useState(null);
   const [error, setError] = useState('');
+  const { enLinea } = usarConexion();
 
   // Busca solo, medio segundo después de dejar de escribir o al cambiar un filtro
   useEffect(() => {
+    if (!enLinea) return undefined; // sin conexión no se busca (se avisa arriba)
     const espera = setTimeout(() => {
       setError('');
       buscarConvenios({ q, ...filtros })
@@ -26,7 +31,7 @@ export default function PantallaBuscar({ navigation }) {
         .catch((e) => setError(e.message || 'No se pudo buscar'));
     }, 500);
     return () => clearTimeout(espera);
-  }, [q, filtros]);
+  }, [q, filtros, enLinea]);
 
   const cambiar = (campo, valor) => setFiltros((f) => ({ ...f, [campo]: f[campo] === valor ? '' : valor })); // tocar de nuevo lo saca
 
@@ -48,6 +53,8 @@ export default function PantallaBuscar({ navigation }) {
 
   return (
     <ScrollView style={{ backgroundColor: colores.fondo }} contentContainerStyle={estilos.contenedor} keyboardShouldPersistTaps="handled">
+      {!enLinea && <BannerSinConexion mensaje="Sin conexión • El buscador no está disponible. Podés ver tus pendientes." />}
+      <AyudaPuntual texto="Escribí parte del código o del título y, si querés, elegí año de firma, tipo o estado. Tocá ▸ en un resultado para ver su convenio padre, sus hijos, la resolución y los documentos; tocá el código para abrir la ficha." />
       <TextInput
         style={[estilos.campo, { backgroundColor: colores.tarjeta, borderColor: colores.borde, color: colores.textoPrincipal, fontSize: 16 * factorActual }]}
         placeholder="Código o título (ej: MC-2024, pasantía…)" placeholderTextColor={colores.textoSecundario}
@@ -61,7 +68,7 @@ export default function PantallaBuscar({ navigation }) {
       {chips('estado', Object.entries(ESTADOS))}
 
       {error ? <Text style={{ color: colores.error, marginVertical: 8 }}>{error}</Text> : null}
-      {resultados === null && !error && <ActivityIndicator color={colores.acento} style={{ marginTop: 16 }} />}
+      {enLinea && resultados === null && !error && <ActivityIndicator color={colores.acento} style={{ marginTop: 16 }} />}
       {resultados?.length === 0 && <Text style={{ color: colores.textoSecundario, marginTop: 12 }}>No hay convenios con esos filtros.</Text>}
       {resultados?.length > 0 && (
         <Text style={{ color: colores.textoSecundario, fontSize: 12 * factorActual, marginVertical: 8 }}>

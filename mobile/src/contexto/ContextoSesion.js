@@ -6,6 +6,8 @@ import { AppState } from 'react-native';
 import { iniciarSesion, verificarCodigo, reenviarCodigo, usuarioGuardado, cerrarSesion } from '../servicios/autenticacion';
 import { bloqueoActivo, desactivarBloqueo } from '../servicios/desbloqueo';
 import { olvidarAvisos } from '../servicios/avisos';
+import { avisarNovedadesSiNoEntra, cancelarRecordatorios } from '../servicios/recordatorios';
+import { olvidarPerfil } from '../servicios/perfil';
 
 const ContextoSesion = createContext(null);
 
@@ -68,7 +70,17 @@ export const ProveedorSesion = ({ children }) => {
     setAvisoLogin(motivo);
   };
 
+  // "Hay novedades": cada vez que la persona entra (o vuelve a la app) se corre la cuenta de nuevo
+  useEffect(() => {
+    if (!usuario) return undefined;
+    avisarNovedadesSiNoEntra().catch(() => {});
+    const sub = AppState.addEventListener('change', (e) => { if (e === 'active') avisarNovedadesSiNoEntra().catch(() => {}); });
+    return () => sub.remove();
+  }, [usuario]);
+
   const salir = async () => {
+    await cancelarRecordatorios();
+    await olvidarPerfil();
     await cerrarSesion();
     await desactivarBloqueo(); // el PIN es de esta sesión: el próximo usuario configura el suyo
     await olvidarAvisos();
