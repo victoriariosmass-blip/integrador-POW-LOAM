@@ -132,7 +132,7 @@ function Pantallas() {
           <Pila.Screen
             name="SubirAnexo"
             component={PantallaSubirAnexo}
-            options={{ title: 'Subir Anexo PDF' }}
+            options={{ title: 'Subir documento' }}
           />
           <Pila.Screen
             name="Bloqueo"
