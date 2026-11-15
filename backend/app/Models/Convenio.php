@@ -117,8 +117,9 @@ class Convenio extends Model
     /** Instrumentos de los que este depende (su marco, el convenio que modifica, etc.) */
     public function antecedentes(): BelongsToMany
     {
-        return $this->belongsToMany(Convenio::class, 'vinculos_convenio', 'convenio_origen_id', 'convenio_destino_id')
-            ->withPivot('tipo');
+         return $this->belongsToMany(Convenio::class, 'vinculos_convenio', 'convenio_origen_id', 'convenio_destino_id')
+            ->withPivot('id', 'tipo'); // id: para poder quitar el vínculo
+
     }
 
     /** Instrumentos que dependen de este (específicos, adendas, renovaciones) */

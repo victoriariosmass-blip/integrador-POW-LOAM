@@ -23,12 +23,14 @@
       public function enviarARevision(User $usuario, Convenio $convenio): Convenio
       {
           Gate::forUser($usuario)->authorize('enviarARevision', $convenio);
+          $this->exigirDosPartes($convenio);
           return $this->cambiar($usuario, $convenio, 'revision', 'Enviado a revisión');
       }
 
       public function aprobar(User $usuario, Convenio $convenio, ?string $fundamento): Convenio
       {
           Gate::forUser($usuario)->authorize('revisar', $convenio);
+          $this->exigirDosPartes($convenio);
 
           return DB::transaction(function () use ($usuario, $convenio, $fundamento) {
               $this->cerrarAsignacion($convenio);
@@ -148,7 +150,14 @@
               return $convenio->fresh();
           });
       }
-
+    // Enunciado: "Antes de aprobar un convenio deben existir al menos dos partes."
+      // Se controla también al enviarlo a revisión, para que el gestor lo sepa antes.
+      private function exigirDosPartes(Convenio $convenio): void
+      {
+          if ($convenio->partes()->count() < 2) {
+              abort(422, 'El convenio necesita al menos dos partes (por ejemplo, la UNLPam o la unidad académica y la contraparte) antes de enviarse a revisión o aprobarse.');
+          }
+      }
       private function cerrarAsignacion(Convenio $convenio): void
       {
           $convenio->asignaciones()->whereNull('completado_en')->update(['completado_en' => now()]);
