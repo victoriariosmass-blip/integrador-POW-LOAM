@@ -110,7 +110,7 @@ export default function PersonasConvenio({ convenio, puedeEditar, onCambio }) {
         <div className="d-flex align-items-center justify-content-between mb-3">
           <h2 className="h6 fw-bold mb-0">{esPasantia ? 'Personas y datos de la pasantía' : 'Personas vinculadas'}</h2>
           {puedeEditar && !abierto && (
-            <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => setAbierto(true)}>
+            <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => { setAbierto(true); setError(''); }}>
               <i className="bi bi-plus-lg me-1" aria-hidden="true" />Agregar persona
             </button>
           )}
@@ -185,7 +185,7 @@ export default function PersonasConvenio({ convenio, puedeEditar, onCambio }) {
  
             <div className="d-flex gap-2">
               <Button type="submit" loading={guardando}>Agregar</Button>
-              <button type="button" className="btn btn-outline-secondary" onClick={() => { setAbierto(false); setErrores({}); }}>Cancelar</button>
+              <button type="button" className="btn btn-outline-secondary" onClick={() => { setAbierto(false); setErrores({}); setError(''); }}>Cancelar</button>
             </div>
           </form>
         )}
