@@ -10,7 +10,9 @@
   use Illuminate\Support\Facades\Gate;
   use App\Models\Documento;
   use App\Models\Firma;
+  use App\Models\Notificacion;
   use Illuminate\Support\Facades\Storage;
+  use Illuminate\Support\Str;
 
 
   /**
@@ -20,11 +22,33 @@
    */
   class EstadoConvenioService
   {
+      /**
+       * Pasa a revisión y la asigna sola a un revisor con alcance sobre la unidad del convenio
+       * (si no hay de la unidad, uno global). Enunciado: "Disparadores: generar un aviso cuando
+       * se asigne una revisión". Si no hay ningún revisor activo, queda sin asignar y la revisa admin.
+       */
       public function enviarARevision(User $usuario, Convenio $convenio): Convenio
       {
           Gate::forUser($usuario)->authorize('enviarARevision', $convenio);
           $this->exigirDosPartes($convenio);
-          return $this->cambiar($usuario, $convenio, 'revision', 'Enviado a revisión');
+
+          return DB::transaction(function () use ($usuario, $convenio) {
+              $convenio = $this->cambiar($usuario, $convenio, 'revision', 'Enviado a revisión');
+
+              $revisor = $this->revisorPara($convenio);
+              if ($revisor) {
+                  AsignacionRevision::create([
+                      'convenio_id' => $convenio->id,
+                      'revisor_id' => $revisor->id,
+                      'asignado_por' => $usuario->id,
+                      'asignado_en' => now(),
+                  ]);
+                  $this->avisar($revisor, $convenio, 'revision_asignada', 'Revisión asignada',
+                      'Se te asignó para revisar: aprobalo o devolvelo con observaciones.');
+              }
+
+              return $convenio;
+          });
       }
 
       public function aprobar(User $usuario, Convenio $convenio, ?string $fundamento): Convenio
@@ -111,7 +135,8 @@
               return $this->cambiar($usuario, $convenio, 'firmado', "Firmado por {$usuario->name}");
           });
       }
-      // El admin le asigna el convenio a un revisor (el revisor solo ve lo asignado)
+      // El admin le asigna el convenio a otro revisor (al enviarlo a revisión ya se asigna uno solo).
+      // Aprobar y devolver: solo el revisor asignado o admin (ConvenioPolicy::revisar).
       public function asignarRevisor(User $usuario, Convenio $convenio, int $revisorId): Convenio
       {
           Gate::forUser($usuario)->authorize('asignarRevisor', $convenio);
@@ -142,14 +167,79 @@
                   'user_id' => $usuario->id,
               ]);
 
+              $desde = $convenio->estado;
               $convenio->update([
                   'estado' => $hasta,
                   'version' => $convenio->version + 1,
               ]);
+              $convenio = $convenio->fresh();
 
-              return $convenio->fresh();
+              // Enunciado: "Disparadores: generar un aviso cuando ... cambie el estado de un instrumento".
+              // Le llega a quien cargó el convenio (si no fue quien hizo el cambio).
+              $creador = $convenio->creador;
+              if ($creador && $creador->activo && $creador->id !== $usuario->id) {
+                  $devuelto = $desde === 'revision' && $hasta === 'borrador';
+                  $this->avisar(
+                      $creador,
+                      $convenio,
+                      $hasta === 'rescindido' ? 'convenio_rescindido' : 'cambio_estado',
+                      $devuelto ? 'Devuelto con observaciones' : 'Pasó a ' . (self::ESTADOS[$hasta] ?? $hasta),
+                      $devuelto ? 'Observaciones: ' . Str::limit($fundamento, 200) : null,
+                  );
+              }
+
+              return $convenio;
           });
       }
+
+      /** Revisor activo de la unidad del convenio; si no hay, uno global (sin unidad) */
+      private function revisorPara(Convenio $convenio): ?User
+      {
+          $revisores = fn () => User::where('rol', 'revisor')->where('activo', true)->orderBy('id');
+
+          return $revisores()->where('unidad_id', $convenio->unidad_id)->first()
+              ?? $revisores()->whereNull('unidad_id')->first();
+      }
+
+      /**
+       * Guarda el aviso en notificaciones (la web lo muestra en Alertas y en la campanita).
+       * Enunciado: "Contenido mínimo del aviso: código y título del convenio, tipo, estado o fecha
+       * relevante y una acción o enlace que conduzca a la pantalla autorizada correspondiente."
+       */
+      private function avisar(User $destino, Convenio $convenio, string $tipo, string $evento, ?string $detalle = null): void
+      {
+          $cuerpo = $convenio->titulo
+              . ' · ' . (self::TIPOS[$convenio->tipo] ?? $convenio->tipo)
+              . ' · Estado: ' . (self::ESTADOS[$convenio->estado] ?? $convenio->estado)
+              . ($detalle ? ". {$detalle}" : '');
+
+          Notificacion::create([
+              'user_id' => $destino->id,
+              'convenio_id' => $convenio->id,
+              'tipo' => $tipo,
+              'titulo' => "{$convenio->codigo} · {$evento}",
+              'cuerpo' => $cuerpo,
+              'enlace' => "/convenios/{$convenio->id}",
+              'created_at' => now(),
+          ]);
+      }
+
+      private const TIPOS = [
+          'marco_colaboracion' => 'Marco de colaboración',
+          'especifico_colaboracion' => 'Específico de colaboración',
+          'marco_pasantia' => 'Marco de pasantías',
+          'especifico_pasantia' => 'Específico de pasantía',
+          'adenda' => 'Adenda',
+      ];
+
+      private const ESTADOS = [
+          'borrador' => 'Borrador',
+          'revision' => 'En revisión',
+          'aprobado' => 'Aprobado',
+          'firmado' => 'Firmado',
+          'rescindido' => 'Rescindido',
+          'archivado' => 'Archivado',
+      ];
     // Enunciado: "Antes de aprobar un convenio deben existir al menos dos partes."
       // Se controla también al enviarlo a revisión, para que el gestor lo sepa antes.
       private function exigirDosPartes(Convenio $convenio): void

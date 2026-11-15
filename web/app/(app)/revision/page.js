@@ -52,7 +52,9 @@ export default function Revision() {
     <>
       <h1 className="h4 mb-1">Revisión</h1>
       <p className="text-body-secondary mb-4">
-        {usuario.rol === 'revisor' ? 'Convenios que tenés asignados para revisar.' : 'Todos los convenios en revisión.'}
+        {usuario.rol === 'revisor'
+          ? 'Convenios en revisión de tu alcance. Aprobás o devolvés los que tenés asignados.'
+          : 'Todos los convenios en revisión.'}
       </p>
  
       {aviso && (
