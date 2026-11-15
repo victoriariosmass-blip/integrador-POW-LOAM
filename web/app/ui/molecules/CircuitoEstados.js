@@ -13,6 +13,7 @@ const FINALES = { rescindido: 'Rescindido', archivado: 'Archivado' };
 
 const ACENTO = 'var(--bs-primary)';
 const APAGADO = 'var(--bs-border-color)';
+const PUNTO_PENDIENTE = '#8E8BAE'; // borde de los pasos que faltan: 3:1 contra el blanco
 
 // estado: en qué quedó; devuelto: true si volvió de revisión a borrador
 export default function CircuitoEstados({ estado, devuelto = false }) {
@@ -38,7 +39,7 @@ export default function CircuitoEstados({ estado, devuelto = false }) {
                   style={{
                     width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
                     background: hecho ? ACENTO : 'transparent',
-                    border: `2px solid ${hecho ? ACENTO : APAGADO}`,
+                    border: `2px solid ${hecho ? ACENTO : PUNTO_PENDIENTE}`,
                     boxShadow: esActual ? '0 0 0 3px rgba(var(--bs-primary-rgb), .25)' : 'none',
                   }}
                 />
@@ -52,7 +53,7 @@ export default function CircuitoEstados({ estado, devuelto = false }) {
         })}
       </ol>
       {final && <span className={`badge rounded-pill ${estado === 'rescindido' ? 'text-bg-danger' : 'text-bg-dark'}`}>{final}</span>}
-      {devuelto && <span className="small text-warning-emphasis"><i className="bi bi-arrow-return-left me-1" />Devuelto con observaciones</span>}
+      {devuelto && <span className="small text-warning-emphasis"><i className="bi bi-arrow-return-left me-1" aria-hidden="true" />Devuelto con observaciones</span>}
     </div>
   );
 }

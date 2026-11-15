@@ -8,6 +8,21 @@ function getCookie(name) {
   return m ? decodeURIComponent(m[2]) : null;
 }
  
+// Mensajes que Laravel manda en inglés por defecto: al usuario se le muestran en castellano.
+// Los mensajes propios de la API (ya en castellano) pasan tal cual.
+function traducir(status, mensaje) {
+  if (!mensaje) return `Error ${status}`;
+  if (status === 404 && /^The route .* could not be found/.test(mensaje)) {
+    console.error('Ruta inexistente en la API:', mensaje);
+    return 'Esta acción todavía no está disponible en el servidor.';
+  }
+  if (status === 404 && /^No query results/.test(mensaje)) return 'No se encontró lo que buscabas.';
+  if (mensaje === 'This action is unauthorized.') return 'No tenés permiso para hacer esto.';
+  if (mensaje === 'Unauthenticated.') return 'La sesión venció. Volvé a iniciar sesión.';
+  if (status === 419) return 'La sesión venció. Recargá la página e intentá de nuevo.';
+  return mensaje;
+}
+
 // Pide la cookie CSRF a Laravel antes de login/POST/PUT/DELETE
 export async function csrf() {
   await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: 'include' });
@@ -55,7 +70,7 @@ export async function api(path, { method = 'GET', body, headers = {}, comoArchiv
     if (res.status >= 500) console.error(`Error ${res.status} en ${path}:`, data?.message ?? data);
     const mensaje = res.status >= 500
       ? 'Hubo un problema en el servidor. Probá de nuevo en unos minutos.'
-      : (data?.message ?? `Error ${res.status}`);
+      : traducir(res.status, data?.message);
     const error = new Error(mensaje);
     error.status = res.status;   // 0, 401, 403, 404, 409, 422, 500...
     error.errors = data?.errors; // errores de validación por campo

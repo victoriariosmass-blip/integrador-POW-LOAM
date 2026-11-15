@@ -87,8 +87,9 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, .navbar-brand, .display-6 
 }
  
 /* ---- campos ---- */
+/* borde de los campos con contraste 3:1 contra el blanco (WCAG 1.4.11): se ve dónde hay que escribir */
 .form-control, .form-select {
-  border-color: #D9D7EE;
+  border-color: #8E8BAE;
   border-radius: var(--bs-border-radius);
   padding-top: .55rem;
   padding-bottom: .55rem;
@@ -169,6 +170,20 @@ a.card:hover { box-shadow: 0 2px 4px rgba(30, 27, 58, .08), 0 10px 24px rgba(30,
   --bs-btn-hover-color: #FFFFFF; --bs-btn-hover-bg: rgba(255, 255, 255, .08); --bs-btn-hover-border-color: #57528A;
 }
 .offcanvas.app-sidebar .btn-close { filter: invert(1) grayscale(1) brightness(2); }
+/* foco sobre el fondo oscuro: Bootstrap le saca el outline a .nav-link y .btn y usa una sombra
+   índigo al 25 % que casi no se ve; el índigo tampoco se distingue (2,1:1). Se usa borde blanco (16,5:1). */
+.app-sidebar :focus-visible,
+.app-sidebar .nav-link:focus-visible,
+.app-sidebar .btn:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; box-shadow: none; }
+
+/* "Saltar al contenido": oculto hasta que llega el foco con Tab */
+.saltar-contenido {
+  position: absolute; top: .5rem; left: .5rem; z-index: 1080;
+  padding: .6rem 1rem; border-radius: var(--bs-border-radius);
+  background: #FFFFFF; color: #3730A3; font-weight: 600; box-shadow: var(--sombra-tarjeta);
+}
+/* el <main> recibe el foco al saltar: no hace falta dibujarle el borde */
+#contenido:focus { outline: none; }
  
 /* ---- pantallas de acceso (login y verificación) ---- */
 .auth-panel { background: var(--indigo-noche); color: #FFFFFF; }
@@ -266,13 +281,13 @@ a.card:hover { box-shadow: 0 2px 4px rgba(30, 27, 58, .08), 0 10px 24px rgba(30,
 .buscador-topbar { position: relative; max-width: 460px; }
 .buscador-topbar .bi-search {
   position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
-  color: #8C89A6; pointer-events: none;
+  color: #6B6889; pointer-events: none;
 }
 .buscador-topbar .form-control {
   background: #F1F0FE; border-color: transparent; border-radius: 999px;
   padding: .55rem 1.1rem .55rem 2.6rem;
 }
-.buscador-topbar .form-control::placeholder { color: #8C89A6; }
+.buscador-topbar .form-control::placeholder { color: #6B6889; } /* 4,5:1 sobre la lavanda */
 .buscador-topbar .form-control:focus {
   background: #FFFFFF; border-color: #4338CA;
   box-shadow: 0 0 0 .25rem rgba(67, 56, 202, .15);

@@ -1,5 +1,8 @@
  import Link from 'next/link';
- 
+
+// Título de la pestaña (el detalle /publico/[ref] tiene el suyo)
+export const metadata = { title: 'Convenios firmados' };
+
 // Plantilla de la vista pública: no pide iniciar sesión
 export default function PublicoLayout({ children }) {
   return (

@@ -99,7 +99,10 @@ export default function Vencimientos() {
                           {fecha(c.fecha_vencimiento)}
                           <div className="small text-body-secondary">{textoDias(c.dias)}</div>
                         </td>
-                        <td className="d-none d-sm-table-cell small">{c.dias_preaviso ? `${c.dias_preaviso} días` : '—'}</td>
+                        {/* sin dato se usan 30 días (igual que el chip "En preaviso"): se aclara para que no parezca "sin preaviso" */}
+                        <td className="d-none d-sm-table-cell small">
+                          {c.dias_preaviso != null ? `${c.dias_preaviso} días` : `${PREAVISO_SIN_DATO} días (sin dato)`}
+                        </td>
                         <td><Chip estado={e.chip}>{e.texto}</Chip></td>
                       </tr>
                     );

@@ -18,8 +18,16 @@ export const ESTADOS = {
 };
  
 // "2026-10-27" o "2026-10-27T13:19:00Z" -> "27/10/2026"
+// Las fechas solas (firma, vencimiento) se muestran tal cual; las que traen hora vienen en UTC
+// (created_at...) y se pasan a la hora de Argentina: si no, lo hecho después de las 21 h figura al día siguiente.
 export function fecha(valor) {
   if (!valor) return null;
+  if (valor.length > 10) {
+    const f = new Date(valor);
+    if (!Number.isNaN(f.getTime())) {
+      return f.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Argentina/Buenos_Aires' });
+    }
+  }
   const [a, m, d] = valor.slice(0, 10).split('-');
   return `${d}/${m}/${a}`;
 }

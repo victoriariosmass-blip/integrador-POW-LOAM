@@ -15,13 +15,26 @@ const items = [
   { href: '/admin', label: 'Administración', icon: 'bi-gear', accion: 'administrar' },
 ];
  
-export default function Sidebar() {
+// Cierra el menú del celular (offcanvas de Bootstrap). Los links de Next cambian de página
+// sin recargar, así que Bootstrap no se entera y el menú quedaba abierto tapando la pantalla.
+function cerrarMenuMovil() {
+  const menu = document.getElementById('menuMovil');
+  if (!menu?.classList.contains('show')) return;
+  import('bootstrap/dist/js/bootstrap.bundle.min.js').then((m) => {
+    const Offcanvas = m.Offcanvas ?? m.default?.Offcanvas;
+    Offcanvas?.getOrCreateInstance(menu).hide();
+  });
+}
+
+// enMenuMovil: true en la copia que va dentro del menú del celular (AppShell)
+export default function Sidebar({ enMenuMovil = false }) {
   const pathname = usePathname();
   const router = useRouter();
   const usuario = useUsuario();
   const visibles = items.filter((item) => !item.accion || puede(usuario, item.accion));
- 
+
   async function cerrarSesion() {
+    if (enMenuMovil) cerrarMenuMovil();
     await logout();
     router.replace('/login');
   }
@@ -34,7 +47,8 @@ export default function Sidebar() {
           return (
             <li className="nav-item" key={href}>
               <Link href={href} className={`nav-link d-flex align-items-center gap-2 ${activo ? 'active' : ''}`}
-                    aria-current={activo ? 'page' : undefined}>
+                    aria-current={activo ? 'page' : undefined}
+                    onClick={enMenuMovil ? cerrarMenuMovil : undefined}>
                 <i className={`bi ${icon}`} aria-hidden="true" /> {label}
               </Link>
             </li>

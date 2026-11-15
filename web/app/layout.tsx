@@ -18,8 +18,10 @@ const manrope = Manrope({
   weight: ["600", "700", "800"],
 });
  
+// Cada sección pone su título con un layout.js ("Panel · Convenios UNLPam"): así la pestaña
+// y el lector de pantalla dicen en qué página se está (WCAG 2.4.2).
 export const metadata: Metadata = {
-  title: "Convenios UNLPam",
+  title: { default: "Convenios UNLPam", template: "%s · Convenios UNLPam" },
   description: "Gestión de convenios de la Universidad Nacional de La Pampa",
 };
  

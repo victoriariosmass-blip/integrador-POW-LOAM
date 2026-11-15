@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useUsuario } from '../../lib/UsuarioContext';
 import { puede, NOMBRE_ROL } from '../../lib/permisos';
 import { listarUsuarios, crearUsuario, editarUsuario } from '../../lib/usuarios';
@@ -20,7 +20,16 @@ export default function Administracion() {
   const [aviso, setAviso] = useState('');
  
   const esAdmin = puede(usuario, 'administrar');
- 
+  const formularioRef = useRef(null);
+
+  // Al abrir el formulario (alta o "Editar" desde abajo de la lista) se lleva la vista hasta él
+  // y el foco al primer campo. Lo que scrollea es el <main>, no la ventana: por eso scrollIntoView.
+  useEffect(() => {
+    if (!formulario || !formularioRef.current) return;
+    formularioRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    formularioRef.current.querySelector('input')?.focus({ preventScroll: true });
+  }, [formulario]);
+
   useEffect(() => {
     if (esAdmin) listarUnidades().then((r) => setUnidades(r.data)).catch(() => setUnidades([]));
   }, [esAdmin]);
@@ -62,6 +71,7 @@ export default function Administracion() {
   }
  
   async function cambiarActivo(u) {
+    if (u.activo && !window.confirm(`¿Desactivar a ${u.name}? No va a poder iniciar sesión hasta que lo vuelvas a activar.`)) return;
     setAviso('');
     setError('');
     try {
@@ -89,13 +99,15 @@ export default function Administracion() {
       {aviso && <div className="alert alert-success" role="status">{aviso}</div>}
  
       {formulario && (
-        <FormUsuario
-          key={formulario.usuario?.id ?? 'nuevo'}
-          inicial={formulario.usuario ?? null}
-          unidades={unidades}
-          onGuardar={guardar}
-          onCancelar={() => setFormulario(null)}
-        />
+        <div ref={formularioRef} style={{ scrollMarginTop: '1rem' }}>
+          <FormUsuario
+            key={formulario.usuario?.id ?? 'nuevo'}
+            inicial={formulario.usuario ?? null}
+            unidades={unidades}
+            onGuardar={guardar}
+            onCancelar={() => setFormulario(null)}
+          />
+        </div>
       )}
  
       {/* Filtros */}
@@ -163,7 +175,7 @@ export default function Administracion() {
                     <td className="text-end text-nowrap">
                       <button type="button" className="btn btn-sm btn-outline-primary me-2"
                         aria-label={`Editar a ${u.name}`}
-                        onClick={() => { setAviso(''); setFormulario({ usuario: u }); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                        onClick={() => { setAviso(''); setFormulario({ usuario: u }); }}>
                         <i className="bi bi-pencil" aria-hidden="true" /> <span className="d-none d-lg-inline">Editar</span>
                       </button>
                       {u.id !== usuario.id && (

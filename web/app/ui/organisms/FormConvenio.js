@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import Field from '../molecules/Field';
 import Button from '../atoms/Button';
@@ -29,6 +29,12 @@ function AreaTexto({ id, etiqueta, valor, onCambio, error, ayuda }) {
   );
 }
  
+// Campos que tienen su lugar en el formulario (los demás errores de la API se muestran arriba)
+const CAMPOS = [
+  'titulo', 'tipo', 'objeto', 'unidad_id', 'fecha_firma', 'fecha_inicio', 'fecha_vencimiento', 'dias_preaviso',
+  'alcance', 'obligaciones', 'condiciones_rescision', 'marco_legal', 'condiciones_renovacion', 'resolucion', 'expediente',
+];
+
 export default function FormConvenio({ inicial = {}, unidades = null, edicion = false, onGuardar, cancelarHref, textoBoton }) {
   const [datos, setDatos] = useState({
     titulo: inicial.titulo ?? '',
@@ -53,7 +59,17 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
   const [errores, setErrores] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
   const [guardando, setGuardando] = useState(false);
- 
+  const formRef = useRef(null);
+
+  // Después de mostrar los errores, el foco va al primer campo marcado (así el lector de pantalla
+  // lee el error y con teclado no hay que buscarlo). Si el error es general, al aviso de arriba.
+  function enfocarError() {
+    requestAnimationFrame(() => {
+      const form = formRef.current;
+      (form?.querySelector('[aria-invalid="true"]') ?? form?.querySelector('.alert-danger'))?.focus();
+    });
+  }
+
   function cambiar(campo, valor) {
     setDatos((d) => ({ ...d, [campo]: valor }));
     setErrores((e) => ({ ...e, [campo]: undefined }));
@@ -112,19 +128,29 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
     const cuerpo = armarCuerpo();
     const e = validar(cuerpo);
     setErrores(e);
-    if (Object.keys(e).length) return;
- 
+    if (Object.keys(e).length) {
+      enfocarError();
+      return;
+    }
+
     setGuardando(true);
     try {
       await onGuardar(cuerpo);
     } catch (err) {
       if (err.status === 422 && err.errors) {
         // la API manda { campo: ['mensaje', ...] }
-        setErrores(Object.fromEntries(Object.entries(err.errors).map(([k, v]) => [k, v[0]])));
+        const porCampo = Object.fromEntries(Object.entries(err.errors).map(([k, v]) => [k, v[0]]));
+        setErrores(porCampo);
+        // los que no son de un campo del formulario (version, partes...) van arriba: si no, no se verían
+        const sueltos = Object.entries(porCampo).filter(([k]) => !CAMPOS.includes(k)).map(([, m]) => m);
+        if (sueltos.length) setErrorGeneral(sueltos.join(' '));
+        enfocarError();
       } else if (err.status === 422 && /unidad/i.test(err.message)) {
         setErrores({ unidad_id: err.message });
+        enfocarError();
       } else if (err.status !== 409) {
         setErrorGeneral(err.message || 'No se pudo guardar el convenio.');
+        enfocarError();
       }
     } finally {
       setGuardando(false);
@@ -134,8 +160,8 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
   const invalido = (campo) => (errores[campo] ? 'is-invalid' : '');
  
   return (
-    <form onSubmit={enviar} noValidate>
-      {errorGeneral && <div className="alert alert-danger" role="alert">{errorGeneral}</div>}
+    <form ref={formRef} onSubmit={enviar} noValidate>
+      {errorGeneral && <div className="alert alert-danger" role="alert" tabIndex={-1}>{errorGeneral}</div>}
  
       <div className="card mb-3">
         <div className="card-body">
