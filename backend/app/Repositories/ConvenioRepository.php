@@ -33,11 +33,14 @@
           return Convenio::with([
               'unidad:id,nombre,sigla',
               'partes',
+              'personas.persona',
+              'personas.datosPasantia',
               'documentos',
               'transiciones' => fn ($q) => $q->orderBy('created_at')->orderBy('id'),
               'transiciones.usuario:id,name,rol',
               'observaciones' => fn ($q) => $q->latest(),
               'observaciones.autor:id,name,rol',
+              'observaciones.resueltoPor:id,name,rol',
               // árbol: el marco o convenio que modifica, y los específicos/adendas que cuelgan de este
               'antecedentes' => fn ($q) => $q->select('convenios.id', 'convenios.codigo', 'convenios.titulo', 'convenios.tipo', 'convenios.estado'),
               'derivados' => fn ($q) => $q->select('convenios.id', 'convenios.codigo', 'convenios.titulo', 'convenios.tipo', 'convenios.estado'),

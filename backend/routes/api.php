@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ComentarioController;
 use App\Http\Controllers\Api\ConvenioController;
+use App\Http\Controllers\Api\DatosConvenioController;
 use App\Http\Controllers\Api\DocumentoController;
 use App\Http\Controllers\Api\EstadoConvenioController;
 use App\Http\Controllers\Api\EstadisticasController;
@@ -29,6 +30,15 @@ Route::middleware('throttle:60,1')->group(function () {
 
 
 Route::middleware('auth:sanctum')->group(function () {
+    // Partes, personas, vínculos y respuesta a observaciones (DatosConvenioController)
+    Route::get('/partes', [DatosConvenioController::class, 'buscarPartes']);
+    Route::post('/convenios/{id}/partes', [DatosConvenioController::class, 'agregarParte']);
+    Route::delete('/convenios/{id}/partes/{parte}', [DatosConvenioController::class, 'quitarParte']);
+    Route::post('/convenios/{id}/personas', [DatosConvenioController::class, 'agregarPersona']);
+    Route::delete('/convenios/{id}/personas/{vinculo}', [DatosConvenioController::class, 'quitarPersona']);
+    Route::post('/convenios/{id}/vinculos', [DatosConvenioController::class, 'agregarVinculo']);
+    Route::delete('/convenios/{id}/vinculos/{vinculo}', [DatosConvenioController::class, 'quitarVinculo']);
+    Route::post('/convenios/{id}/observaciones/{observacion}/responder', [DatosConvenioController::class, 'responderObservacion']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::get('/resumen', ResumenController::class);

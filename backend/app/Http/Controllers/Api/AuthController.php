@@ -6,11 +6,11 @@
   use App\Services\MfaService;
   use Illuminate\Http\Request;
   use Illuminate\Support\Facades\Auth;
+  use Illuminate\Support\Facades\Cache;
   use Illuminate\Support\Facades\Hash;
+  use Illuminate\Support\Str;
   use Laravel\Sanctum\PersonalAccessToken;
   use OpenApi\Attributes as OA;
-  use Illuminate\Support\Facades\Cache;
-  use Illuminate\Support\Str;
 
   class AuthController extends Controller
   {
@@ -76,6 +76,9 @@
           $usuario = User::where('email', $datos['email'])->first();
           if (! $usuario || ! Hash::check($datos['password'], $usuario->password)) {
               return response()->json(['message' => 'Email o contraseña incorrectos'], 422);
+          }
+          if (! $usuario->activo) {
+              return response()->json(['message' => 'Tu usuario está desactivado. Consultá con administración.'], 403);
           }
 
           // Segundo paso (verificación en dos pasos), igual que la web pero sin sesión:

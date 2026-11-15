@@ -51,7 +51,7 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Obtener token (app y Swagger)",
+                "summary": "App y Swagger, primer paso: email y contraseña (después /api/token/verificar)",
                 "operationId": "7f9d971a531be31da6c059ca33920634",
                 "requestBody": {
                     "required": true,
@@ -83,7 +83,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Token y usuario"
+                        "description": "Contraseña correcta: devuelve mfa_token y manda el código (queda en el log)"
                     },
                     "422": {
                         "description": "Credenciales incorrectas"
@@ -469,6 +469,434 @@
                     },
                     "404": {
                         "description": "No hay convenio con esa referencia"
+                    }
+                }
+            }
+        },
+        "/api/partes": {
+            "get": {
+                "tags": [
+                    "Partes"
+                ],
+                "summary": "Buscar instituciones ya cargadas (para no repetirlas)",
+                "operationId": "151e828e302872e3a744343ffe56a48f",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Nombre o CUIT",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hasta 20 instituciones"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/partes": {
+            "post": {
+                "tags": [
+                    "Partes"
+                ],
+                "summary": "Agregar una parte firmante con su representante",
+                "operationId": "d01c754b27e58f2df64fcb9dc567de62",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "representante_nombre"
+                                ],
+                                "properties": {
+                                    "parte_id": {
+                                        "description": "Institución existente (o mandar \"parte\" para crearla)",
+                                        "type": "integer"
+                                    },
+                                    "parte": {
+                                        "properties": {
+                                            "nombre": {
+                                                "type": "string",
+                                                "example": "Agroindustrias del Oeste S.A."
+                                            },
+                                            "tipo": {
+                                                "type": "string",
+                                                "example": "empresa"
+                                            },
+                                            "cuit": {
+                                                "type": "string",
+                                                "example": "30-12345678-9"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "representante_nombre": {
+                                        "type": "string",
+                                        "example": "María López"
+                                    },
+                                    "representante_cargo": {
+                                        "type": "string",
+                                        "example": "Gerenta general"
+                                    },
+                                    "es_firmante": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "firmo_en": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-11-10"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Parte agregada"
+                    },
+                    "403": {
+                        "description": "Sin permiso o el convenio no está en borrador"
+                    },
+                    "422": {
+                        "description": "Datos inválidos o la parte ya está en el convenio"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/partes/{parte}": {
+            "delete": {
+                "tags": [
+                    "Partes"
+                ],
+                "summary": "Quitar una parte del convenio",
+                "operationId": "78c6fcc09cd1c0721aa24e14b1127750",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "parte",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Quitada"
+                    },
+                    "403": {
+                        "description": "Sin permiso"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/personas": {
+            "post": {
+                "tags": [
+                    "Personas"
+                ],
+                "summary": "Vincular una persona (pasante, tutor, responsable...)",
+                "operationId": "2db4a88155cce7afdf1a08e31dea0962",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "rol"
+                                ],
+                                "properties": {
+                                    "persona_id": {
+                                        "description": "Persona existente (o mandar \"persona\")",
+                                        "type": "integer"
+                                    },
+                                    "persona": {
+                                        "properties": {
+                                            "nombre": {
+                                                "type": "string",
+                                                "example": "Lucía"
+                                            },
+                                            "apellido": {
+                                                "type": "string",
+                                                "example": "Gómez"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "example": "lucia.gomez@ejemplo.test"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "rol": {
+                                        "type": "string",
+                                        "example": "pasante"
+                                    },
+                                    "fecha_desde": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "fecha_hasta": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "pasantia": {
+                                        "description": "Solo para el pasante de un específico de pasantía",
+                                        "properties": {
+                                            "carrera": {
+                                                "type": "string",
+                                                "example": "Ingeniería en Sistemas"
+                                            },
+                                            "horas_semanales": {
+                                                "type": "integer",
+                                                "example": 20
+                                            },
+                                            "asignacion_estimulo": {
+                                                "type": "number",
+                                                "example": 350000
+                                            },
+                                            "seguro": {
+                                                "type": "string",
+                                                "example": "ART Ficticia S.A."
+                                            },
+                                            "obra_social": {
+                                                "type": "string"
+                                            },
+                                            "plan_trabajo": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Persona vinculada"
+                    },
+                    "403": {
+                        "description": "Sin permiso o el convenio no está en borrador"
+                    },
+                    "422": {
+                        "description": "Datos inválidos"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/personas/{vinculo}": {
+            "delete": {
+                "tags": [
+                    "Personas"
+                ],
+                "summary": "Quitar una persona del convenio",
+                "operationId": "0c03e8adb1d325b8b069f5f081c9f199",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "vinculo",
+                        "in": "path",
+                        "description": "id de convenio_persona",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Quitada"
+                    },
+                    "403": {
+                        "description": "Sin permiso"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/vinculos": {
+            "post": {
+                "tags": [
+                    "Vínculos"
+                ],
+                "summary": "Vincular con su antecedente (marco, convenio que modifica, renueva o sustituye)",
+                "operationId": "7bf414e200b6e26b2dbe64b53de40e29",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "destino_id",
+                                    "tipo"
+                                ],
+                                "properties": {
+                                    "destino_id": {
+                                        "description": "El antecedente",
+                                        "type": "integer"
+                                    },
+                                    "tipo": {
+                                        "description": "especifico_de, adenda_de, renueva_a o sustituye_a",
+                                        "type": "string",
+                                        "example": "especifico_de"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Vínculo creado"
+                    },
+                    "403": {
+                        "description": "Sin permiso"
+                    },
+                    "422": {
+                        "description": "Tipos incompatibles o vínculo repetido"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/vinculos/{vinculo}": {
+            "delete": {
+                "tags": [
+                    "Vínculos"
+                ],
+                "summary": "Quitar un vínculo",
+                "operationId": "bd9d21955191d4c747405f971c2dc935",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "vinculo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Quitado"
+                    },
+                    "403": {
+                        "description": "Sin permiso"
+                    }
+                }
+            }
+        },
+        "/api/convenios/{id}/observaciones/{observacion}/responder": {
+            "post": {
+                "tags": [
+                    "Circuito"
+                ],
+                "summary": "El gestor responde y resuelve una observación",
+                "operationId": "cb39705063e22694ef80211787227507",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "observacion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "respuesta"
+                                ],
+                                "properties": {
+                                    "respuesta": {
+                                        "type": "string",
+                                        "example": "Se corrigió la cláusula de rescisión."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Observación resuelta"
+                    },
+                    "403": {
+                        "description": "Sin permiso"
                     }
                 }
             }
@@ -1368,12 +1796,24 @@
             "description": "Convenios"
         },
         {
-            "name": "Documentos",
-            "description": "Documentos"
+            "name": "Partes",
+            "description": "Partes"
+        },
+        {
+            "name": "Personas",
+            "description": "Personas"
+        },
+        {
+            "name": "Vínculos",
+            "description": "Vínculos"
         },
         {
             "name": "Circuito",
             "description": "Circuito"
+        },
+        {
+            "name": "Documentos",
+            "description": "Documentos"
         },
         {
             "name": "Público",
