@@ -9,6 +9,8 @@ import { NavegadorPestanias } from './NavegadorPestanias';
 import PantallaDetalleConvenio from '../pantallas/PantallaDetalleConvenio';
 import PantallaFirmaConvenio from '../pantallas/PantallaFirmaConvenio';
 import PantallaSubirAnexo from '../pantallas/PantallaSubirAnexo';
+import PantallaLeerPdf from '../pantallas/PantallaLeerPdf';
+import PantallaBuscar from '../pantallas/PantallaBuscar';
 import PantallaSostenibilidad from '../pantallas/PantallaSostenibilidad';
 import PantallaLogin from '../pantallas/PantallaLogin';
 import PantallaCodigoMfa from '../pantallas/PantallaCodigoMfa';
@@ -128,6 +130,16 @@ function Pantallas() {
             name="Escanear"
             component={PantallaEscanear}
             options={{ title: 'Escanear QR' }}
+          />
+          <Pila.Screen
+            name="Buscar"
+            component={PantallaBuscar}
+            options={{ title: 'Buscar convenios' }}
+          />
+          <Pila.Screen
+            name="LeerPdf"
+            component={PantallaLeerPdf}
+            options={{ title: 'Documento' }}
           />
           <Pila.Screen
             name="SubirAnexo"

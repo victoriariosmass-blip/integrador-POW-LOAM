@@ -71,14 +71,21 @@ export async function obtenerResumen() {
 const UNIDAD_FI = { id: 7, nombre: 'Facultad de Ingeniería', sigla: 'FI' };
 const UNLPAM = { id: 1, nombre: 'Universidad Nacional de La Pampa', tipo: 'universidad', pivot: { representante_nombre: 'Rita Rectora', representante_cargo: 'Rector/a' } };
 const FICHAS_MOCK = {
-  1: { id: 1, codigo: 'MC-2024-0001', titulo: 'Marco con Cooperativa Eléctrica de General Pico', tipo: 'marco_colaboracion', estado: 'firmado', unidad: UNIDAD_FI, objeto: 'Colaboración en investigación y extensión.', fecha_firma: '2024-03-15', fecha_vencimiento: '2027-03-15', dias_preaviso: 60, contraparte: 'Cooperativa Eléctrica de General Pico' },
+  1: { id: 1, codigo: 'MC-2024-0001', titulo: 'Marco con Cooperativa Eléctrica de General Pico', tipo: 'marco_colaboracion', estado: 'firmado', unidad: UNIDAD_FI, objeto: 'Colaboración en investigación y extensión.', fecha_firma: '2024-03-15', fecha_vencimiento: '2027-03-15', dias_preaviso: 60, resolucion: '101/2024', contraparte: 'Cooperativa Eléctrica de General Pico' },
   3: { id: 3, codigo: 'MP-2025-0001', titulo: 'Marco de pasantías con Agroindustrias del Oeste', tipo: 'marco_pasantia', estado: 'aprobado', unidad: UNIDAD_FI, objeto: 'Pasantías educativas para estudiantes avanzados.', fecha_firma: null, fecha_vencimiento: null, dias_preaviso: null, contraparte: 'Agroindustrias del Oeste S.A.' },
   // vence en 20 días: sirve para probar el aviso de "próximo a vencer"
   2: { id: 2, codigo: 'EC-2025-0001', titulo: 'Específico de capacitación en energías renovables', tipo: 'especifico_colaboracion', estado: 'firmado', unidad: UNIDAD_FI, objeto: 'Cursos de capacitación para personal técnico.', fecha_firma: '2025-05-02', fecha_vencimiento: new Date(Date.now() + 20 * 864e5).toISOString().slice(0, 10), dias_preaviso: 30, contraparte: 'Cooperativa Eléctrica de General Pico' },
+  // borrador: el gestor puede subirle documentos
   12: { id: 12, codigo: 'EC-2026-0005', titulo: 'Específico de prácticas en laboratorio de suelos', tipo: 'especifico_colaboracion', estado: 'borrador', unidad: UNIDAD_FI, objeto: 'Prácticas de estudiantes en el laboratorio de la empresa.', fecha_firma: null, fecha_vencimiento: null, dias_preaviso: null, contraparte: 'Agroindustrias del Oeste S.A.' },
   9: { id: 9, codigo: 'EC-2026-0003', titulo: 'Específico de capacitación docente con Escuela Técnica N° 1', tipo: 'especifico_colaboracion', estado: 'aprobado', unidad: UNIDAD_FI, objeto: 'Cursos de actualización para docentes de la escuela.', fecha_firma: null, fecha_vencimiento: '2027-12-15', dias_preaviso: 30, contraparte: 'Escuela Técnica N° 1' },
 };
-const DOCUMENTOS_MOCK = {}; // { idConvenio: [documentos subidos en esta sesión] }
+// { idConvenio: [documentos] }: el aprobado MP-2025-0001 ya trae su PDF principal para probar "leer y firmar"
+const DOCUMENTOS_MOCK = {
+  3: [{ id: 901, categoria: 'principal', nombre_original: 'MP-2025-0001-principal.pdf', tamano_bytes: 2590, numero_version: 1,
+    sha256: '9f2c1e7a54b3d8e0f6a1c2b3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b',
+    marca: { subido_por: 'Gabriel Gestor', subido_en: '2026-10-20T12:00:00Z', convenio: 'MP-2025-0001' } }],
+};
+const FIRMAS_MOCK = {}; // { idConvenio: [firmas hechas en esta sesión] }
 const COMENTARIOS_MOCK = {
   3: [{ id: 1, contenido: 'Revisión técnica aprobada.', es_ofensivo: false, autor: { name: 'Raúl Revisor' }, created_at: '2026-10-22T13:00:00Z' }],
 };
@@ -104,12 +111,13 @@ function fichaMock(id, usuario) {
     ...datos,
     partes: [UNLPAM, { id: 2, nombre: contraparte, tipo: 'empresa', pivot: { representante_nombre: 'Responsable de la empresa', representante_cargo: 'Gerente' } }],
     documentos: DOCUMENTOS_MOCK[id] ?? [],
+    firmas: FIRMAS_MOCK[id] ?? [],
     transiciones: [
       { id: 1, estado_desde: null, estado_hasta: 'borrador', fundamento: 'Alta del instrumento', created_at: '2026-10-20T12:00:00Z', usuario: { name: 'Gabriel Gestor' } },
       ...(c.estado !== 'borrador' ? [{ id: 2, estado_desde: 'revision', estado_hasta: 'aprobado', fundamento: 'Aprobado por revisión', created_at: '2026-10-22T13:00:00Z', usuario: { name: 'Raúl Revisor' } }] : []),
       ...(c.estado === 'firmado' ? [{ id: 3, estado_desde: 'aprobado', estado_hasta: 'firmado', fundamento: 'Firmado por Rita Rectora', created_at: c.fecha_firma, usuario: { name: 'Rita Rectora' } }] : []),
     ],
-
+    // misma regla que la API: firma la autoridad si está aprobado; consulta no comenta
     permisos: {
       firmar: usuario?.rol === 'autoridad' && c.estado === 'aprobado',
       comentar: usuario?.rol !== 'consulta',
@@ -145,6 +153,32 @@ export async function listarConvenios(filtros = {}) {
   return todos;
 }
 
+
+// Buscador avanzado (GET /api/convenios con filtros). filtros: { q, tipo, estado, anio }.
+// El año se refiere a la fecha de firma. Devuelve la primera página (hasta 15).
+export async function buscarConvenios({ q = '', tipo = '', estado = '', anio = '' } = {}) {
+  if (USAR_MOCK) {
+    await esperar(400);
+    const sinTildes = (s) => (s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const texto = sinTildes(q.trim());
+    return Object.values(FICHAS_MOCK)
+      .filter((c) => !texto || sinTildes(c.titulo).includes(texto) || sinTildes(c.codigo).includes(texto))
+      .filter((c) => !tipo || c.tipo === tipo)
+      .filter((c) => !estado || c.estado === estado)
+      .filter((c) => !anio || (c.fecha_firma ?? '').startsWith(String(anio)))
+      .map(({ contraparte, ...c }) => c);
+  }
+  const params = new URLSearchParams();
+  if (q.trim()) params.set('q', q.trim());
+  if (tipo) params.set('tipo', tipo);
+  if (estado) params.set('estado', estado);
+  if (anio) {
+    params.set('firma_desde', `${anio}-01-01`);
+    params.set('firma_hasta', `${anio}-12-31`);
+  }
+  const respuesta = await api(`/convenios?${params}`);
+  return respuesta.data;
+}
 
 // Ficha completa: datos, partes, documentos e historial (GET /api/convenios/{id})
 export async function verConvenio(id) {
@@ -195,7 +229,6 @@ export async function subirDocumento(id, archivo, categoria) {
   return respuesta.data;
 }
 
-
 // Firma desde la app (POST /api/convenios/{id}/firmar)
 // datos: { firma_imagen: 'data:image/png;base64,...', latitud, longitud, biometria_ok }
 export async function firmarConvenio(id, datos) {
@@ -204,6 +237,9 @@ export async function firmarConvenio(id, datos) {
     const c = FICHAS_MOCK[id];
     c.estado = 'firmado';
     c.fecha_firma = new Date().toISOString().slice(0, 10);
+    const usuario = await usuarioGuardado();
+    FIRMAS_MOCK[id] = [{ id: Date.now(), firmado_en: new Date().toISOString(), latitud: datos.latitud ?? null, longitud: datos.longitud ?? null,
+      biometria_ok: Boolean(datos.biometria_ok), usuario: { name: usuario?.name } }];
     const i = PENDIENTES_MOCK.findIndex((p) => p.id === Number(id));
     if (i >= 0) PENDIENTES_MOCK.splice(i, 1); // ya no está pendiente
     return fichaMock(id, await usuarioGuardado());
