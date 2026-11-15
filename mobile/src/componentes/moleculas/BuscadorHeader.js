@@ -21,5 +21,5 @@ export const BuscadorHeader = () => {
 };
 
 const estilos = StyleSheet.create({
-  pildora: { borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9, minWidth: 260 },
+  pildora: { borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9, minWidth: 220 },
 });

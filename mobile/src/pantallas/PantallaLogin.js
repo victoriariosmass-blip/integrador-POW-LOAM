@@ -25,7 +25,9 @@ export default function PantallaLogin() {
     try {
       await entrar(email, password);
     } catch (e) {
-      setError(e.message || 'No se pudo iniciar sesión');
+      // Sin sesión guardada y sin internet no se puede entrar (enunciado de LOAM, Modo Off)
+      if (e.status === 0) setError('Sin conexión: necesitás internet para iniciar sesión. Si ya habías entrado antes, la app abre sola sin pedir datos.');
+      else setError(e.message || 'No se pudo iniciar sesión');
     } finally {
       setCargando(false);
     }

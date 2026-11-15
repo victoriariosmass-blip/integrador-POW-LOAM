@@ -9,10 +9,14 @@ import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { usarSesion } from '../contexto/ContextoSesion';
 import { obtenerResumen, textoEstado } from '../servicios/convenios';
 import { revisarAvisos } from '../servicios/avisos';
+import { usarConexion } from '../contexto/ContextoConexion';
+import { BannerSinConexion } from '../componentes/organismos/BannerSinConexion';
+import { AyudaPuntual } from '../componentes/moleculas/AyudaPuntual';
 
 export default function PantallaInicio({ navigation }) {
   const { factorActual, colores } = usarPreferencias();
   const { usuario } = usarSesion();
+  const { enLinea } = usarConexion();
   const [resumen, setResumen] = useState(null);
   const [error, setError] = useState('');
   const [refrescando, setRefrescando] = useState(false);
@@ -57,6 +61,13 @@ export default function PantallaInicio({ navigation }) {
       }
     >
       <Text style={[estilos.saludo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>Hola, {nombre}</Text>
+      <AyudaPuntual texto="Arriba tenés el buscador. Las cajas resumen tus convenios; los últimos 10 movimientos van del más reciente al más antiguo. Tocá uno para abrir su ficha. En Pendientes están los que esperan tu firma." />
+      {!enLinea && (
+        <>
+          <BannerSinConexion mensaje="Sin conexión • Solo podés ver los convenios pendientes de firmar" />
+          <BotonPersonalizado titulo="Ver mis pendientes" alPresionar={() => navigation.navigate('Pendientes')} />
+        </>
+      )}
       <BotonPersonalizado titulo="Escanear QR de un convenio" variante="secundario" alPresionar={() => navigation.navigate('Escanear')} />
       {avisosApagados ? (
         <TouchableOpacity onPress={() => Linking.openSettings()} accessibilityRole="button"
@@ -68,13 +79,13 @@ export default function PantallaInicio({ navigation }) {
         </TouchableOpacity>
       ) : null}
       <TarjetaSede alVerConvenios={(unidad) => navigation.navigate('ConveniosUnidad', { unidad })} />
-      {error ? (
+      {error && enLinea ? (
         <Text style={{ color: colores.error, fontSize: 15 * factorActual, marginBottom: 12 }}>{error}</Text>
       ) : null}
 
-      {!resumen && !error ? <ActivityIndicator size="large" color={colores.acento} style={{ marginTop: 24 }} /> : null}
+      {enLinea && !resumen && !error ? <ActivityIndicator size="large" color={colores.acento} style={{ marginTop: 24 }} /> : null}
 
-      {resumen ? (
+      {resumen && enLinea ? (
         <>
           <View style={estilos.grillaMetricas}>
             <TarjetaMetrica titulo="Firmados (último año)" valor={String(resumen.firmados_ultimo_anio)} />
@@ -105,7 +116,7 @@ export default function PantallaInicio({ navigation }) {
 }
 
 const estilos = StyleSheet.create({
-  contenedor: { flex: 1, paddingHorizontal: 16, paddingTop: 36 },
+  contenedor: { flex: 1, paddingHorizontal: 16, paddingTop: 16 },
   saludo: { fontWeight: 'bold', marginBottom: 16 },
   grillaMetricas: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   cabeceraSeccion: { marginVertical: 14 },

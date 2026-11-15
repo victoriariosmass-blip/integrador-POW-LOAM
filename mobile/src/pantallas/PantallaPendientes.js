@@ -6,6 +6,9 @@ import { BannerSinConexion } from '../componentes/organismos/BannerSinConexion';
 import { ElementoConvenio } from '../componentes/moleculas/ElementoConvenio';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { listarPendientes, textoEstado } from '../servicios/convenios';
+import { recordarFirma } from '../servicios/recordatorios';
+import { usarSesion } from '../contexto/ContextoSesion';
+import { AyudaPuntual } from '../componentes/moleculas/AyudaPuntual';
 
 const CLAVE_CACHE = 'pendientes_cache';
 
@@ -16,6 +19,7 @@ export default function PantallaPendientes({ navigation }) {
   const [refrescando, setRefrescando] = useState(false);
   const [sinConexion, setSinConexion] = useState(false);
   const [error, setError] = useState('');
+  const { usuario } = usarSesion();
 
   const cargar = useCallback(async () => {
     setError('');
@@ -23,6 +27,8 @@ export default function PantallaPendientes({ navigation }) {
       const datos = await listarPendientes();
       setPendientes(datos);
       setSinConexion(false);
+      // "aún tienes un convenio por firmar": solo para quien firma (autoridad)
+      recordarFirma(usuario?.rol === 'autoridad' ? datos.length : 0).catch(() => {});
       await AsyncStorage.setItem(CLAVE_CACHE, JSON.stringify(datos)); // para verlos sin conexión
     } catch (e) {
       if (e.status === 0) {
@@ -37,7 +43,7 @@ export default function PantallaPendientes({ navigation }) {
       setCargando(false);
       setRefrescando(false);
     }
-  }, []);
+  }, [usuario]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -55,6 +61,7 @@ export default function PantallaPendientes({ navigation }) {
   return (
     <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
       {sinConexion && <BannerSinConexion />}
+      <AyudaPuntual texto="Convenios aprobados que esperan la firma, del más reciente al más antiguo. Abrí uno, leé el PDF hasta el final y firmalo. Funciona también sin conexión (para verlos)." />
 
       {error ? (
         <View style={estilos.centro}>

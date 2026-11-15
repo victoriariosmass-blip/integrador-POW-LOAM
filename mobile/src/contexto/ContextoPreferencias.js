@@ -1,11 +1,19 @@
 //maneja de manera global el tamaño de la letra y el modo oscuro, el cual altera toda la app
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useEffect, useState, useContext } from 'react';
+import { leerFoto, guardarFoto } from '../servicios/perfil';
 
 const ContextoPreferencias = createContext();
 
 export const ProveedorPreferencias = ({ children }) => {
   const [esModoOscuro, setEsModoOscuro] = useState(false);
   const [tamanioLetra, setTamanioLetra] = useState('mediana'); // 'chica' | 'mediana' | 'grande'
+  const [fotoPerfil, setFotoPerfil] = useState(null); // uri de la foto guardada en el celular
+
+  useEffect(() => { leerFoto().then(setFotoPerfil); }, []);
+  const cambiarFoto = async (uri) => {
+    setFotoPerfil(uri);
+    if (uri) await guardarFoto(uri);
+  };
 
   const factoresEscala = {
     chica: 0.85,
@@ -42,6 +50,8 @@ export const ProveedorPreferencias = ({ children }) => {
         setTamanioLetra,
         factorActual,
         colores,
+        fotoPerfil,
+        cambiarFoto,
       }}
     >
       {children}

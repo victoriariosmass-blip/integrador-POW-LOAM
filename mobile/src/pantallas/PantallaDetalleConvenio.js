@@ -7,6 +7,7 @@ import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { EtiquetaEstado } from '../componentes/atomos/EtiquetaEstado';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
 import PantallaComentarios from './PantallaComentarios';
+import { AyudaPuntual } from '../componentes/moleculas/AyudaPuntual';
 import { verConvenio, textoEstado, fecha, TIPOS, ESTADOS, CATEGORIAS_DOCUMENTO } from '../servicios/convenios';
 
 const PESTANIAS = [
@@ -88,6 +89,7 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
       keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={refrescando} onRefresh={() => { setRefrescando(true); cargar(); }} tintColor={colores.acento} />}
     >
+      <AyudaPuntual texto="Acá ves todos los datos del convenio, sus firmas y sus documentos (tocá uno para ver quién lo subió y su huella SHA-256). Si te toca firmar, tocá «Leer y firmar»: primero leés el PDF hasta el final y después firmás. Deslizá hacia abajo para actualizar." />
       {/* Encabezado */}
       <View style={estilos.encabezado}>
         <Text style={[texto(20), estilos.codigo]}>{c.codigo}</Text>

@@ -8,6 +8,9 @@ import { LienzoFirma } from '../componentes/atomos/LienzoFirma';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { firmarConvenio } from '../servicios/convenios';
+import { usarConexion } from '../contexto/ContextoConexion';
+import { AyudaPuntual } from '../componentes/moleculas/AyudaPuntual';
+import { BannerSinConexion } from '../componentes/organismos/BannerSinConexion';
 
 // Pide huella o rostro. Devuelve true si se validó, false si el celular no tiene
 // biometría configurada, y tira error si la persona cancela o falla.
@@ -44,9 +47,14 @@ export default function PantallaFirmaConvenio({ route, navigation }) {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
   const [resultado, setResultado] = useState(null);
+  const { enLinea } = usarConexion();
 
   const firmar = async () => {
     setError('');
+    if (!enLinea) {
+      setError('Estás sin conexión: la firma se registra en el servidor, probá cuando vuelva internet.');
+      return;
+    }
     if (!trazo) {
       setError('Hacé tu firma con el dedo dentro del recuadro antes de confirmar.');
       return;
@@ -103,9 +111,11 @@ export default function PantallaFirmaConvenio({ route, navigation }) {
   return (
     // View y no ScrollView: si no, al firmar el scroll se "come" el trazo
     <View style={[estilos.contenedor, { flex: 1, backgroundColor: colores.fondo }]}>
+      {!enLinea && <BannerSinConexion mensaje="Sin conexión • No se puede firmar hasta que vuelva internet" />}
       <Text style={[estilos.titulo, { color: colores.textoPrincipal, fontSize: 18 * factorActual }]}>
         Firmar: {idConvenio}
       </Text>
+      <AyudaPuntual texto="Dibujá tu firma con el dedo. Al confirmar, la app te pide huella o rostro y guarda la fecha, la hora y tu ubicación junto con la firma. «Borrar» limpia el recuadro." />
       <Text style={[estilos.subtitulo, { color: colores.textoSecundario, fontSize: 13 * factorActual }]}>
         Firmá con el dedo dentro del recuadro:
       </Text>
