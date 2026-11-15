@@ -4,6 +4,7 @@ import { Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Svg, { Path } from 'react-native-svg';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
+import { BuscadorHeader } from '../componentes/moleculas/BuscadorHeader';
 
 import PantallaInicio from '../pantallas/PantallaInicio';
 import PantallaPendientes from '../pantallas/PantallaPendientes';
@@ -38,7 +39,12 @@ export const NavegadorPestanias = () => {
   return (
     <Pestanias.Navigator
       screenOptions={{
-        headerShown: false,
+        // header con el buscador (enunciado de LOAM: "El buscador debe aparecer en el header")
+        headerShown: true,
+        headerTitle: () => <BuscadorHeader />,
+        headerTitleAlign: 'center',
+        headerStyle: { backgroundColor: colores.tarjeta },
+        headerShadowVisible: false,
         tabBarActiveTintColor: colores.acento,
         tabBarInactiveTintColor: colores.textoSecundario,
         tabBarStyle: {

@@ -78,6 +78,8 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
   const c = convenio;
   const estado = textoEstado(c);
   const contrapartes = (c.partes ?? []).filter((p) => p.tipo !== 'universidad');
+  // PDF principal más nuevo: es el que se lee antes de firmar
+  const principal = [...(c.documentos ?? [])].filter((d) => d.categoria === 'principal').sort((x, y) => y.numero_version - x.numero_version)[0];
 
   return (
     <ScrollView
@@ -95,10 +97,28 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
 
       {c.permisos?.firmar && (
         <BotonPersonalizado
-          titulo="FIRMAR CONVENIO"
-          alPresionar={() => navigation.navigate('FirmaConvenio', { id: c.id, idConvenio: c.codigo })}
+          titulo="LEER Y FIRMAR CONVENIO"
+          alPresionar={() => (principal
+            // primero se lee el PDF completo; el botón Firmar aparece al final
+            ? navigation.navigate('LeerPdf', { id: c.id, codigo: c.codigo, documento: principal, puedeFirmar: true })
+            : navigation.navigate('FirmaConvenio', { id: c.id, idConvenio: c.codigo }))}
         />
       )}
+
+      {/* Convenio firmado: quién, fecha, hora y lugar (lat/long) */}
+      {(c.firmas ?? []).map((f) => (
+        <View key={f.id} style={[tarjeta, { borderColor: colores.exitoBorde, backgroundColor: colores.exitoFondo, marginBottom: 12 }]}
+          accessibilityLabel={`Firmado por ${f.usuario?.name}`}>
+          <Text style={{ color: colores.exito, fontWeight: '700', fontSize: 15 * factorActual }}>✓ Firmado por {f.usuario?.name}</Text>
+          <Text style={{ color: colores.exito, fontSize: 13 * factorActual }}>
+            {new Date(f.firmado_en).toLocaleDateString('es-AR')} a las {new Date(f.firmado_en).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+            {f.biometria_ok ? ' · con huella o rostro' : ''}
+          </Text>
+          <Text style={{ color: colores.exito, fontSize: 13 * factorActual }}>
+            {f.latitud != null ? `Lat ${Number(f.latitud).toFixed(5)}, long ${Number(f.longitud).toFixed(5)}` : 'Sin ubicación (no se dio permiso)'}
+          </Text>
+        </View>
+      ))}
 
       {/* Selector de pestañas */}
       <View style={[estilos.filaPestanias, { borderBottomColor: colores.borde }]} accessibilityRole="tablist">
@@ -177,13 +197,21 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
             <Text style={secundario(14)}>Todavía no hay documentos cargados.</Text>
           ) : (
             c.documentos.map((d) => (
-              <View key={d.id} style={estilos.filaLista}>
-                <Text style={texto(14)}>📄 {d.nombre_original}</Text>
+              <TouchableOpacity key={d.id} style={estilos.filaLista} accessibilityRole="button"
+                accessibilityHint="Abre el PDF para leerlo o compartirlo"
+                onPress={() => navigation.navigate('LeerPdf', { id: c.id, codigo: c.codigo, documento: d, puedeFirmar: false })}>
+                <Text style={[texto(14), { color: colores.acento, fontWeight: '600' }]}>📄 {d.nombre_original}</Text>
                 <Text style={secundario(12)}>
-                  {CATEGORIAS_DOCUMENTO[d.categoria] ?? d.categoria} · versión {d.numero_version}
-
+                  {CATEGORIAS_DOCUMENTO[d.categoria] ?? d.categoria} · versión {d.numero_version} · {(d.tamano_bytes / 1024 / 1024).toFixed(1)} MB
                 </Text>
-              </View>
+                {/* Marca que pone la API al subirlo: quién, cuándo y huella del archivo */}
+                {d.marca && (
+                  <Text style={secundario(12)}>
+                    Subido por {d.marca.subido_por} el {new Date(d.marca.subido_en).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
+                    {d.sha256 ? ` · SHA-256 ${d.sha256.slice(0, 12)}…` : ''}
+                  </Text>
+                )}
+              </TouchableOpacity>
             ))
           )}
         </View>
