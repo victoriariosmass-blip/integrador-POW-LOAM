@@ -85,9 +85,10 @@ export default function VerificarPage() {
       {aviso && <div className="alert alert-success py-2 small" role="status">{aviso}</div>}
  
       <form onSubmit={handleSubmit} noValidate>
-        <label className="form-label fw-semibold">Código</label>
+        {/* no es <label>: el código son 6 casillas y el grupo ya tiene su nombre (aria-label) */}
+        <p className="form-label fw-semibold mb-2" aria-hidden="true">Código</p>
         <CodeInput valor={codigo} onChange={(v) => { setCodigo(v); setError(''); }} invalido={!!error} idError="codigo-error" />
-        {error && <div id="codigo-error" className="invalid-feedback d-block">{error}</div>}
+        {error && <div id="codigo-error" className="invalid-feedback d-block" role="alert">{error}</div>}
  
         <Button type="submit" loading={cargando} className="w-100 mt-4">
           {cargando ? 'Verificando…' : 'Verificar'}

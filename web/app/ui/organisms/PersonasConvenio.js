@@ -16,6 +16,9 @@ const ROLES = {
   otro: 'Otro',
 };
  
+// campos del formulario que muestran su propio mensaje de error
+const CAMPOS_CON_MENSAJE = ['nombre', 'apellido', 'email', 'fecha_desde', 'fecha_hasta', 'carrera', 'horas_semanales', 'asignacion_estimulo', 'seguro'];
+
 const VACIO = {
   nombre: '', apellido: '', email: '', rol: 'responsable', fecha_desde: '', fecha_hasta: '',
   carrera: '', horas_semanales: '', asignacion_estimulo: '', seguro: '', plan_trabajo: '',
@@ -64,7 +67,11 @@ export default function PersonasConvenio({ convenio, puedeEditar, onCambio }) {
       onCambio();
     } catch (e) {
       if (e.errors) {
-        setErrores(Object.fromEntries(Object.entries(e.errors).map(([k, v]) => [k.replace(/^(persona|pasantia)\./, ''), v[0]])));
+        const porCampo = Object.fromEntries(Object.entries(e.errors).map(([k, v]) => [k.replace(/^(persona|pasantia)\./, ''), v[0]]));
+        setErrores(porCampo);
+        // los que no tienen un campo con mensaje (rol, plan de trabajo, pasantia...) van en el aviso rojo
+        const sueltos = Object.entries(porCampo).filter(([k]) => !CAMPOS_CON_MENSAJE.includes(k)).map(([, m]) => m);
+        if (sueltos.length) setError(sueltos.join(' '));
       } else {
         setError(e.message || 'No se pudo agregar la persona.');
       }
@@ -74,6 +81,7 @@ export default function PersonasConvenio({ convenio, puedeEditar, onCambio }) {
   }
  
   async function quitar(v) {
+    if (!window.confirm(`¿Quitar a ${v.persona?.nombre} ${v.persona?.apellido} del convenio?`)) return;
     setError('');
     try {
       await quitarPersona(convenio.id, v.id);
@@ -84,11 +92,13 @@ export default function PersonasConvenio({ convenio, puedeEditar, onCambio }) {
   }
  
   const invalido = (campo) => (errores[campo] ? 'is-invalid' : '');
-  const mensaje = (campo) => errores[campo] && <div className="invalid-feedback">{errores[campo]}</div>;
+  // el mensaje queda asociado al campo (aria-describedby) para que el lector de pantalla lo lea
+  const mensaje = (campo) => errores[campo] && <div id={`per-err-${campo}`} className="invalid-feedback">{errores[campo]}</div>;
   const campo = (id, etiqueta, props = {}) => (
     <>
       <label htmlFor={`per-${id}`} className="form-label small fw-semibold">{etiqueta}</label>
       <input id={`per-${id}`} className={`form-control ${invalido(id)}`} value={form[id]}
+        aria-invalid={errores[id] ? true : undefined} aria-describedby={errores[id] ? `per-err-${id}` : undefined}
         onChange={(e) => cambiar(id, e.target.value)} {...props} />
       {mensaje(id)}
     </>

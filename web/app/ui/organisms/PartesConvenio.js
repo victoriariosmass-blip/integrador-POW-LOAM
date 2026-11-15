@@ -16,6 +16,9 @@ const TIPOS_PARTE = {
   otro: 'Otro',
 };
  
+// campos del formulario que muestran su propio mensaje de error
+const CAMPOS_CON_MENSAJE = ['parte_id', 'nombre', 'cuit', 'representante_nombre'];
+
 const VACIO = { modo: 'existente', parte_id: '', nombre: '', tipo: 'empresa', cuit: '', representante_nombre: '', representante_cargo: '', firmo_en: '' };
  
 export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
@@ -63,7 +66,11 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
     } catch (e) {
       if (e.errors) {
         // la API manda { "parte.nombre": [...], "representante_nombre": [...] }
-        setErrores(Object.fromEntries(Object.entries(e.errors).map(([k, v]) => [k.replace('parte.', ''), v[0]])));
+        const porCampo = Object.fromEntries(Object.entries(e.errors).map(([k, v]) => [k.replace('parte.', ''), v[0]]));
+        setErrores(porCampo);
+        // los que no tienen un campo con mensaje en el formulario (tipo, parte...) van en el aviso rojo
+        const sueltos = Object.entries(porCampo).filter(([k]) => !CAMPOS_CON_MENSAJE.includes(k)).map(([, m]) => m);
+        if (sueltos.length) setError(sueltos.join(' '));
       } else {
         setError(e.message || 'No se pudo agregar la parte.');
       }
@@ -73,6 +80,7 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
   }
  
   async function quitar(parte) {
+    if (!window.confirm(`¿Quitar a ${parte.nombre} de las partes del convenio?`)) return;
     setError('');
     try {
       await quitarParte(convenio.id, parte.id);
@@ -83,7 +91,9 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
   }
  
   const invalido = (campo) => (errores[campo] ? 'is-invalid' : '');
-  const mensaje = (campo) => errores[campo] && <div className="invalid-feedback">{errores[campo]}</div>;
+  // el mensaje queda asociado al campo (aria-describedby) para que el lector de pantalla lo lea
+  const mensaje = (campo) => errores[campo] && <div id={`parte-err-${campo}`} className="invalid-feedback">{errores[campo]}</div>;
+  const aria = (campo) => (errores[campo] ? { 'aria-invalid': true, 'aria-describedby': `parte-err-${campo}` } : {});
  
   return (
     <section className="card">
@@ -145,7 +155,7 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
                 </div>
                 <div className="col-12 col-md-7">
                   <label htmlFor="parte-id" className="form-label small fw-semibold">Institución</label>
-                  <select id="parte-id" className={`form-select ${invalido('parte_id')}`} value={form.parte_id}
+                  <select id="parte-id" className={`form-select ${invalido('parte_id')}`} value={form.parte_id} {...aria('parte_id')}
                     onChange={(e) => cambiar('parte_id', e.target.value)}>
                     <option value="">Elegí…</option>
                     {opciones.map((o) => <option key={o.id} value={o.id}>{o.nombre}</option>)}
@@ -157,7 +167,7 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
               <div className="row g-2 mb-2">
                 <div className="col-12 col-md-6">
                   <label htmlFor="parte-nombre" className="form-label small fw-semibold">Nombre</label>
-                  <input id="parte-nombre" className={`form-control ${invalido('nombre')}`} value={form.nombre} maxLength={200}
+                  <input id="parte-nombre" className={`form-control ${invalido('nombre')}`} value={form.nombre} maxLength={200} {...aria('nombre')}
                     onChange={(e) => cambiar('nombre', e.target.value)} />
                   {mensaje('nombre')}
                 </div>
@@ -169,7 +179,7 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
                 </div>
                 <div className="col-6 col-md-3">
                   <label htmlFor="parte-cuit" className="form-label small fw-semibold">CUIT</label>
-                  <input id="parte-cuit" className={`form-control ${invalido('cuit')}`} value={form.cuit} maxLength={13}
+                  <input id="parte-cuit" className={`form-control ${invalido('cuit')}`} value={form.cuit} maxLength={13} {...aria('cuit')}
                     placeholder="30-12345678-9" onChange={(e) => cambiar('cuit', e.target.value)} />
                   {mensaje('cuit')}
                 </div>
@@ -179,7 +189,7 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
             <div className="row g-2 mb-3">
               <div className="col-12 col-md-5">
                 <label htmlFor="rep-nombre" className="form-label small fw-semibold">Representante</label>
-                <input id="rep-nombre" className={`form-control ${invalido('representante_nombre')}`} value={form.representante_nombre}
+                <input id="rep-nombre" className={`form-control ${invalido('representante_nombre')}`} value={form.representante_nombre} {...aria('representante_nombre')}
                   maxLength={150} onChange={(e) => cambiar('representante_nombre', e.target.value)} />
                 {mensaje('representante_nombre')}
               </div>

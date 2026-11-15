@@ -94,7 +94,6 @@ export default function Panel() {
                           </p>
                           <div className="mt-auto">
                             <CircuitoEstados
-                              compacto
                               estado={t.estado_hasta}
                               devuelto={t.estado_desde === 'revision' && t.estado_hasta === 'borrador'}
                             />

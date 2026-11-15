@@ -28,7 +28,11 @@ export default function LoginPage() {
     setErrorGeneral('');
     const e = validar();
     setErrores(e);
-    if (Object.keys(e).length > 0) return;
+    if (Object.keys(e).length > 0) {
+      // el foco va al primer campo con error, así se lee el mensaje
+      requestAnimationFrame(() => document.querySelector('form [aria-invalid="true"]')?.focus());
+      return;
+    }
  
     setCargando(true);
     try {
@@ -75,8 +79,9 @@ export default function LoginPage() {
         </Button>
       </form>
  
-      <p className="text-center mt-3 mb-0">
-        <a href="#" className="small">¿Olvidaste tu contraseña?</a>
+      {/* no hay recuperación por mail: la contraseña nueva la carga Administración */}
+      <p className="text-center small text-body-secondary mt-3 mb-0">
+        ¿Olvidaste tu contraseña? Pedile una nueva a Administración.
       </p>
        <p className="text-center mt-2 mb-0">
         <Link href="/publico" className="small">Ver los convenios firmados sin iniciar sesión</Link>

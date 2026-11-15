@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Field from '../molecules/Field';
 import Button from '../atoms/Button';
 import { NOMBRE_ROL } from '../../lib/permisos';
@@ -20,7 +20,16 @@ export default function FormUsuario({ inicial = null, unidades = [], onGuardar, 
   const [errores, setErrores] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
   const [guardando, setGuardando] = useState(false);
- 
+  const formRef = useRef(null);
+
+  // el foco va al primer campo con error (o al aviso general)
+  function enfocarError() {
+    requestAnimationFrame(() => {
+      const form = formRef.current;
+      (form?.querySelector('[aria-invalid="true"]') ?? form?.querySelector('.alert-danger'))?.focus();
+    });
+  }
+
   function cambiar(campo, valor) {
     setDatos((d) => ({ ...d, [campo]: valor }));
     setErrores((e) => ({ ...e, [campo]: undefined }));
@@ -40,7 +49,10 @@ export default function FormUsuario({ inicial = null, unidades = [], onGuardar, 
     setErrorGeneral('');
     const e = validar();
     setErrores(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) {
+      enfocarError();
+      return;
+    }
  
     const cuerpo = {
       name: datos.name.trim(),
@@ -55,20 +67,25 @@ export default function FormUsuario({ inicial = null, unidades = [], onGuardar, 
       await onGuardar(cuerpo);
     } catch (err) {
       if (err.status === 422 && err.errors) {
-        setErrores(Object.fromEntries(Object.entries(err.errors).map(([k, v]) => [k, v[0]])));
+        const porCampo = Object.fromEntries(Object.entries(err.errors).map(([k, v]) => [k, v[0]]));
+        setErrores(porCampo);
+        // errores sin campo en el formulario (rol, activo...): arriba, para que se vean
+        const sueltos = Object.entries(porCampo).filter(([k]) => !['name', 'email', 'unidad_id', 'password'].includes(k)).map(([, m]) => m);
+        if (sueltos.length) setErrorGeneral(sueltos.join(' '));
       } else {
         setErrorGeneral(err.message || 'No se pudo guardar el usuario.');
       }
+      enfocarError();
     } finally {
       setGuardando(false);
     }
   }
  
   return (
-    <form onSubmit={enviar} noValidate className="card mb-4">
+    <form ref={formRef} onSubmit={enviar} noValidate className="card mb-4">
       <div className="card-body">
         <h2 className="h6 fw-bold mb-3">{edicion ? `Editar a ${inicial.name}` : 'Nuevo usuario'}</h2>
-        {errorGeneral && <div className="alert alert-danger" role="alert">{errorGeneral}</div>}
+        {errorGeneral && <div className="alert alert-danger" role="alert" tabIndex={-1}>{errorGeneral}</div>}
  
         <div className="row">
           <div className="col-12 col-md-6">
@@ -88,12 +105,13 @@ export default function FormUsuario({ inicial = null, unidades = [], onGuardar, 
           <div className="col-12 col-md-6 mb-3">
             <label htmlFor="unidad" className="form-label fw-semibold">Unidad</label>
             <select id="unidad" className={`form-select ${errores.unidad_id ? 'is-invalid' : ''}`} value={datos.unidad_id}
-              aria-describedby="unidad-ayuda" onChange={(e) => cambiar('unidad_id', e.target.value)}>
+              aria-invalid={!!errores.unidad_id || undefined}
+              aria-describedby={errores.unidad_id ? 'unidad-msg' : 'unidad-ayuda'} onChange={(e) => cambiar('unidad_id', e.target.value)}>
               <option value="">Todas (alcance global)</option>
               {unidades.map((u) => <option key={u.id} value={u.id}>{u.nombre}</option>)}
             </select>
             {errores.unidad_id
-              ? <div className="invalid-feedback">{errores.unidad_id}</div>
+              ? <div id="unidad-msg" className="invalid-feedback">{errores.unidad_id}</div>
               : <div id="unidad-ayuda" className="form-text">Con una unidad, el usuario solo ve los convenios de esa unidad.</div>}
           </div>
           <div className="col-12 col-md-6">

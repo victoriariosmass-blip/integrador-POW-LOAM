@@ -50,9 +50,11 @@ function Convenios() {
   const [listo, setListo] = useState(false); // ya se leyeron los filtros de la dirección
  
 
-  // Si se llega desde el panel (ej. /convenios?estado=borrador,revision), arranca SOLO con esos filtros.
-  // Next guarda la pantalla abierta en memoria al cambiar de página, así que esto se repite
-  // cada vez que cambia la dirección y REEMPLAZA los filtros anteriores (no los suma).
+  // Los filtros viven en la dirección (/convenios?estado=...&q=...&page=2): la pantalla los lee de ahí.
+  // - Si se llega desde el panel o desde el buscador de arriba, arranca SOLO con esos filtros
+  //   (los reemplaza, no los suma).
+  // - Al cambiar un filtro se cambia la dirección (irA), así al recargar o volver atrás desde
+  //   una ficha quedan los mismos filtros, y buscar desde la topbar siempre se aplica.
   const direccion = searchParams.toString();
   useEffect(() => {
     const params = new URLSearchParams(direccion);
@@ -60,10 +62,20 @@ function Convenios() {
     Object.keys(SIN_FILTROS).forEach((clave) => {
       if (params.get(clave)) desdeUrl[clave] = params.get(clave);
     });
-    setFiltros({ ...SIN_FILTROS, ...desdeUrl, page: 1 });
+    setFiltros({ ...SIN_FILTROS, ...desdeUrl, page: Number(params.get('page')) || 1 });
     setTexto(desdeUrl.q ?? '');
     setListo(true);
   }, [direccion]);
+
+  function irA(nuevos) {
+    const params = new URLSearchParams();
+    Object.keys(SIN_FILTROS).forEach((clave) => {
+      if (nuevos[clave]) params.set(clave, nuevos[clave]);
+    });
+    if (nuevos.page > 1) params.set('page', nuevos.page);
+    const query = params.toString();
+    router.replace(query ? `/convenios?${query}` : '/convenios', { scroll: false });
+  }
  
   // La lista de unidades solo hace falta para los usuarios globales (los demás ven solo la suya)
   const esGlobal = usuario.unidad_id === null;
@@ -85,17 +97,17 @@ function Convenios() {
   }, [filtros, listo]);
  
   function cambiar(campo, valor) {
-    setFiltros((f) => ({ ...f, [campo]: valor, page: 1 }));
+    irA({ ...filtros, [campo]: valor, page: 1 });
   }
- 
+
   function buscar(ev) {
     ev.preventDefault();
     cambiar('q', texto.trim());
   }
- 
+
   function limpiarFiltros() {
     setTexto('');
-    setFiltros({ ...SIN_FILTROS, page: 1 });
+    irA({ ...SIN_FILTROS, page: 1 });
   }
  
   // Exporta TODOS los resultados del filtro actual (no solo la página que se ve).
@@ -124,7 +136,7 @@ function Convenios() {
     <>
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <h1 className="h3 mb-0">Convenios</h1>
-        <div className="d-flex gap-2">
+        <div className="d-flex flex-wrap gap-2">
           <button type="button" className="btn btn-outline-secondary text-nowrap" onClick={exportar}
                   disabled={exportando || cargando || !resultado?.meta?.total}>
             {exportando
@@ -245,7 +257,9 @@ function Convenios() {
               </thead>
               <tbody>
                 {convenios.map((c) => (
-                  <tr key={c.id} role="button" onClick={() => router.push(`/convenios/${c.id}`)}>
+                  // toda la fila se puede clickear con el mouse; con teclado se entra por el link del código
+                  // (sin role="button": así el lector de pantalla la sigue leyendo como fila de la tabla)
+                  <tr key={c.id} onClick={() => router.push(`/convenios/${c.id}`)}>
                     <td className="text-nowrap">
                       <Link href={`/convenios/${c.id}`} className="link-dark fw-semibold" onClick={(e) => e.stopPropagation()}>
                         {c.codigo}
@@ -270,10 +284,10 @@ function Convenios() {
               <span className="small text-body-secondary">{meta.total} convenios</span>
               <div className="btn-group">
                 <button className="btn btn-outline-secondary btn-sm" disabled={meta.current_page <= 1}
-                        onClick={() => setFiltros((f) => ({ ...f, page: f.page - 1 }))}>Anterior</button>
+                        onClick={() => irA({ ...filtros, page: filtros.page - 1 })}>Anterior</button>
                 <span className="btn btn-outline-secondary btn-sm disabled">{meta.current_page} de {meta.last_page}</span>
                 <button className="btn btn-outline-secondary btn-sm" disabled={meta.current_page >= meta.last_page}
-                        onClick={() => setFiltros((f) => ({ ...f, page: f.page + 1 }))}>Siguiente</button>
+                        onClick={() => irA({ ...filtros, page: filtros.page + 1 })}>Siguiente</button>
               </div>
             </nav>
           )}

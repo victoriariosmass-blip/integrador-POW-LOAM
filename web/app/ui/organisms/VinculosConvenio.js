@@ -67,6 +67,7 @@ export default function VinculosConvenio({ convenio, puedeEditar, onCambio }) {
   }
  
   async function quitar(c) {
+    if (!window.confirm(`¿Quitar el vínculo con ${c.codigo}?`)) return;
     setError('');
     try {
       await quitarVinculo(convenio.id, c.pivot.id);

@@ -6,7 +6,8 @@ export default function AuthLayout({ icono = 'bi-mortarboard', titulo, subtitulo
       <section className="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-center auth-panel p-5">
         <div style={{ maxWidth: 420 }} className="w-100">
           <img src="/logo-unlpam.png" alt="Universidad Nacional de La Pampa" height={150} className="d-block mb-5" />
-          <h1 className="h3 fw-bold">Gestión de Convenios</h1>
+          {/* no es h1: este panel se oculta en el celular y el h1 tiene que estar siempre (es el de la tarjeta) */}
+          <p className="h3 fw-bold">Gestión de Convenios</p>
           <p className="text-body-secondary mb-0">
             Sistema para registrar, revisar y dar seguimiento a los convenios de la Universidad Nacional de La Pampa.
           </p>
@@ -23,7 +24,7 @@ export default function AuthLayout({ icono = 'bi-mortarboard', titulo, subtitulo
             >
               <i className={`bi ${icono} fs-4 text-secondary`} />
             </div>
-            <h2 className="h4 fw-bold mb-1">{titulo}</h2>
+            <h1 className="h4 fw-bold mb-1">{titulo}</h1>
             <p className="text-body-secondary small mb-4">{subtitulo}</p>
             {children}
           </div>
