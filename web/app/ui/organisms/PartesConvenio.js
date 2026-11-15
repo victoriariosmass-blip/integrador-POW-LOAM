@@ -48,6 +48,10 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
   async function guardar(ev) {
     ev.preventDefault();
     setError('');
+    if (form.modo === 'existente' && !form.parte_id) {
+      setErrores({ parte_id: 'Elegí una institución de la lista o cargá una nueva.' });
+      return;
+    }
     const cuerpo = {
       representante_nombre: form.representante_nombre.trim(),
       representante_cargo: form.representante_cargo.trim() || null,
@@ -67,6 +71,9 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
       if (e.errors) {
         // la API manda { "parte.nombre": [...], "representante_nombre": [...] }
         const porCampo = Object.fromEntries(Object.entries(e.errors).map(([k, v]) => [k.replace('parte.', ''), v[0]]));
+        // "parte" y "parte_id" son el mismo reclamo (falta la institución): queda el de parte_id,
+        // que tiene el mensaje en castellano (el de "parte" es el genérico de Laravel, en inglés)
+        if (porCampo.parte_id) delete porCampo.parte;
         setErrores(porCampo);
         // los que no tienen un campo con mensaje en el formulario (tipo, parte...) van en el aviso rojo
         const sueltos = Object.entries(porCampo).filter(([k]) => !CAMPOS_CON_MENSAJE.includes(k)).map(([, m]) => m);
@@ -101,7 +108,7 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
         <div className="d-flex align-items-center justify-content-between mb-3">
           <h2 className="h6 fw-bold mb-0">Partes y representantes</h2>
           {puedeEditar && !abierto && (
-            <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => setAbierto(true)}>
+            <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => { setAbierto(true); setError(''); }}>
               <i className="bi bi-plus-lg me-1" aria-hidden="true" />Agregar parte
             </button>
           )}
@@ -207,7 +214,7 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
  
             <div className="d-flex gap-2">
               <Button type="submit" loading={guardando}>Agregar</Button>
-              <button type="button" className="btn btn-outline-secondary" onClick={() => { setAbierto(false); setErrores({}); }}>Cancelar</button>
+              <button type="button" className="btn btn-outline-secondary" onClick={() => { setAbierto(false); setErrores({}); setError(''); }}>Cancelar</button>
             </div>
           </form>
         )}

@@ -18,11 +18,14 @@ export const ESTADOS = {
 };
  
 // "2026-10-27" o "2026-10-27T13:19:00Z" -> "27/10/2026"
-// Las fechas solas (firma, vencimiento) se muestran tal cual; las que traen hora vienen en UTC
-// (created_at...) y se pasan a la hora de Argentina: si no, lo hecho después de las 21 h figura al día siguiente.
+// - Fechas solas (firma, vencimiento...): la API las manda como "2026-11-01" o "2026-11-01T00:00:00.000000Z"
+//   (medianoche UTC). Se muestran tal cual: si se pasaran a la hora de Argentina quedarían un día antes.
+// - Fechas con hora (created_at...): vienen en UTC y se pasan a la hora de Argentina; si no, lo hecho
+//   después de las 21 h figura al día siguiente.
+const SOLO_FECHA = /^\d{4}-\d{2}-\d{2}(T00:00:00(\.0+)?(Z|[+-]00:?00)?)?$/;
 export function fecha(valor) {
   if (!valor) return null;
-  if (valor.length > 10) {
+  if (!SOLO_FECHA.test(valor)) {
     const f = new Date(valor);
     if (!Number.isNaN(f.getTime())) {
       return f.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Argentina/Buenos_Aires' });
