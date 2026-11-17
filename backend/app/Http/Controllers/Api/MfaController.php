@@ -46,12 +46,18 @@
           return response()->json(['usuario' => $usuario]);
       }
 
-      #[OA\Post(path: '/api/mfa/reenviar', summary: 'Reenviar el código (simulado: queda en el log)', tags: ['Auth'],
+      #[OA\Post(path: '/api/mfa/reenviar', summary: 'Reenviar el código (mail y log)', tags: ['Auth'],
           requestBody: new OA\RequestBody(required: false, content: new OA\JsonContent(properties: [
               new OA\Property(property: 'canal', type: 'string', enum: ['mail', 'sms'], example: 'sms'),
           ])),
           responses: [
-              new OA\Response(response: 200, description: 'Código reenviado'),
+              new OA\Response(response: 200, description: 'Código reenviado',
+                  content: new OA\JsonContent(properties: [
+                      new OA\Property(property: 'enviado', type: 'boolean', example: true),
+                      new OA\Property(property: 'canal', type: 'string', example: 'mail'),
+                      new OA\Property(property: 'codigo_demo', type: 'string', example: '123456', nullable: true,
+                          description: 'Solo en modo demo (MFA_MOSTRAR_CODIGO=true). Si no, no viene.'),
+                  ])),
               new OA\Response(response: 401, description: 'No hay un inicio de sesión pendiente'),
               new OA\Response(response: 429, description: 'Hay que esperar 30 segundos entre envíos'),
           ])]
@@ -65,9 +71,9 @@
           }
 
           $canal = $datos['canal'] ?? 'mail';
-          $this->mfa->enviarCodigo($usuario, $canal);
+          $codigo = $this->mfa->enviarCodigo($usuario, $canal);
 
-          return response()->json(['enviado' => true, 'canal' => $canal]);
+          return response()->json(['enviado' => true, 'canal' => $canal] + $this->mfa->datosDemo($codigo)); // modo demo: + codigo_demo
       }
 
       private function pendiente(Request $request): User

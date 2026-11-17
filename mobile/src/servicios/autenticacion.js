@@ -19,8 +19,11 @@ function esperar(ms) {
 //    (queda en storage/logs/laravel.log) y devuelve un mfa_token que identifica este intento.
 // 2) POST /api/token/verificar con el mfa_token y el código -> recién ahí da el token de verdad.
 // Con datos de prueba el código es siempre 123456 (igual que en la web).
+// Modo demo (MFA_MOSTRAR_CODIGO=true en la API): la respuesta trae "codigo_demo" y la pantalla del
+// código lo muestra en un cartel (con datos de prueba también, con 123456).
+const CODIGO_MOCK = '123456';
 
-// Paso 1. Devuelve { requiereMfa: true, mfaToken, canal, email },
+// Paso 1. Devuelve { requiereMfa: true, mfaToken, canal, email, codigoDemo },
 // o el usuario directo si la API todavía no pide código (por compatibilidad).
 export async function iniciarSesion(email, password) {
   const correo = email.trim().toLowerCase();
@@ -32,7 +35,7 @@ export async function iniciarSesion(email, password) {
       error.status = 422;
       throw error;
     }
-    return { requiereMfa: true, mfaToken: `mock|${correo}`, canal: 'mail', email: correo };
+    return { requiereMfa: true, mfaToken: `mock|${correo}`, canal: 'mail', email: correo, codigoDemo: CODIGO_MOCK };
   }
 
   const datos = await api('/token', {
@@ -40,7 +43,7 @@ export async function iniciarSesion(email, password) {
     body: { email: correo, password, dispositivo: 'app' },
   });
   if (datos.requiere_mfa) {
-    return { requiereMfa: true, mfaToken: datos.mfa_token, canal: datos.canal, email: correo };
+    return { requiereMfa: true, mfaToken: datos.mfa_token, canal: datos.canal, email: correo, codigoDemo: datos.codigo_demo ?? null };
   }
   await guardarToken(datos.token);
   return datos.usuario;
@@ -50,7 +53,7 @@ export async function iniciarSesion(email, password) {
 export async function verificarCodigo(mfaToken, codigo) {
   if (USAR_MOCK) {
     await esperar(500);
-    if (codigo !== '123456') {
+    if (codigo !== CODIGO_MOCK) {
       const error = new Error('El código no es correcto o venció');
       error.status = 422;
       throw error;
@@ -65,13 +68,15 @@ export async function verificarCodigo(mfaToken, codigo) {
   return datos.usuario;
 }
 
-// "Reenviar código" (la API pide 30 segundos entre envíos)
+// "Reenviar código" (la API pide 30 segundos entre envíos).
+// Devuelve { enviado, canal, codigoDemo } (codigoDemo solo en modo demo; si no, null).
 export async function reenviarCodigo(mfaToken, canal = 'mail') {
   if (USAR_MOCK) {
     await esperar(400);
-    return { enviado: true, canal };
+    return { enviado: true, canal, codigoDemo: CODIGO_MOCK };
   }
-  return api('/token/reenviar', { method: 'POST', body: { mfa_token: mfaToken, canal } });
+  const datos = await api('/token/reenviar', { method: 'POST', body: { mfa_token: mfaToken, canal } });
+  return { ...datos, codigoDemo: datos.codigo_demo ?? null };
 }
 
 // Al abrir la app: si hay token guardado, trae el usuario (GET /api/user)

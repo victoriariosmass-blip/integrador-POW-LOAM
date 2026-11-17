@@ -37,6 +37,12 @@ export default function LoginPage() {
     setCargando(true);
     try {
       const res = await login(email, password);
+      // Modo demo (MFA_MOSTRAR_CODIGO=true en la API): el código viene en la respuesta y /verificar lo
+      // muestra en un cartel. Si no viene, se borra el de un ingreso anterior.
+      try {
+        if (res.codigo_demo) sessionStorage.setItem('mfa_codigo_demo', res.codigo_demo);
+        else sessionStorage.removeItem('mfa_codigo_demo');
+      } catch { /* sin sessionStorage: no hay cartel, el código sigue llegando por mail */ }
       router.push(res.requiere_mfa ? '/verificar' : '/panel');
     } catch (err) {
       setErrorGeneral(err.message || 'No se pudo iniciar sesión');

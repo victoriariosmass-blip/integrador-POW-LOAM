@@ -23,7 +23,7 @@
               required: ['mfa_token', 'codigo'],
               properties: [
                   new OA\Property(property: 'mfa_token', type: 'string', description: 'El que devolvió POST /api/token'),
-                  new OA\Property(property: 'codigo', type: 'string', example: '123456', description: 'Está en storage/logs/laravel.log'),
+                  new OA\Property(property: 'codigo', type: 'string', example: '123456', description: 'Llega por mail (Mailtrap), está en storage/logs/laravel.log y en modo demo vuelve como codigo_demo'),
               ])),
           responses: [
               new OA\Response(response: 200, description: 'Token y usuario'),
@@ -68,7 +68,13 @@
                   new OA\Property(property: 'canal', type: 'string', example: 'mail', description: 'mail o sms'),
               ])),
           responses: [
-              new OA\Response(response: 200, description: 'Código reenviado'),
+              new OA\Response(response: 200, description: 'Código reenviado',
+                  content: new OA\JsonContent(properties: [
+                      new OA\Property(property: 'enviado', type: 'boolean', example: true),
+                      new OA\Property(property: 'canal', type: 'string', example: 'mail'),
+                      new OA\Property(property: 'codigo_demo', type: 'string', example: '123456', nullable: true,
+                          description: 'Solo en modo demo (MFA_MOSTRAR_CODIGO=true). Si no, no viene.'),
+                  ])),
               new OA\Response(response: 401, description: 'El ingreso venció'),
               new OA\Response(response: 429, description: 'Hay que esperar 30 segundos entre envíos'),
           ])]
@@ -86,9 +92,9 @@
           }
 
           $canal = $datos['canal'] ?? 'mail';
-          $this->mfa->enviarCodigo($usuario, $canal);
+          $codigo = $this->mfa->enviarCodigo($usuario, $canal);
 
-          return response()->json(['enviado' => true, 'canal' => $canal]);
+          return response()->json(['enviado' => true, 'canal' => $canal] + $this->mfa->datosDemo($codigo)); // modo demo: + codigo_demo
       }
 
       // Busca el intento de ingreso; si venció (10 min) o no existe, hay que volver a empezar

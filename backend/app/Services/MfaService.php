@@ -5,11 +5,15 @@
   use App\Models\User;
   use Illuminate\Support\Facades\Hash;
   use Illuminate\Support\Facades\Log;
+  use Illuminate\Support\Facades\Mail;
 
   /**
-   * Verificación en dos pasos SIMULADA (aceptada por la cátedra):
-   * el código se genera y se guarda con hash como si se mandara por mail o SMS,
-   * pero en lugar de enviarse se escribe en storage/logs/laravel.log.
+   * Verificación en dos pasos (aceptada por la cátedra): el código se guarda con hash y
+   * - se escribe en storage/logs/laravel.log (como siempre);
+   * - se manda por mail al usuario. Con MAIL_MAILER=smtp y Mailtrap llega a la bandeja de prueba
+   *   de Mailtrap (sugerido por el profe); con MAIL_MAILER=log el mail también queda en el log;
+   * - en modo demo (MFA_MOSTRAR_CODIGO=true) vuelve en la respuesta como "codigo_demo" (ver datosDemo).
+   * El "SMS" no se manda: queda en el log.
    */
   class MfaService
   {
@@ -19,7 +23,8 @@
       // 'mail' (lo que manda la web) se guarda como 'email' (lo que acepta la tabla)
       private const CANALES = ['mail' => 'email', 'email' => 'email', 'sms' => 'sms'];
 
-      public function enviarCodigo(User $usuario, string $canal = 'mail'): void
+      // Genera el código, lo guarda, lo manda y lo devuelve (para el modo demo)
+      public function enviarCodigo(User $usuario, string $canal = 'mail'): string
       {
           // Los códigos anteriores sin usar dejan de servir
           CodigoMfa::where('user_id', $usuario->id)->whereNull('usado_en')
@@ -36,6 +41,24 @@
 
           // Simulación del envío
           Log::info("[MFA simulado] Código para {$usuario->email} por {$canal}: {$codigo}");
+
+          // Mail (Mailtrap). Si falla (mal configurado, sin internet), el login sigue igual.
+          try {
+              Mail::raw(
+                  "Tu código de verificación es {$codigo}.\n\nVence en " . self::MINUTOS_VALIDEZ . " minutos.",
+                  fn ($mensaje) => $mensaje->to($usuario->email)->subject('Tu código de verificación - Convenios UNLPam'),
+              );
+          } catch (\Throwable $e) {
+              Log::warning("[MFA] No se pudo mandar el mail a {$usuario->email}: {$e->getMessage()}");
+          }
+
+          return $codigo;
+      }
+
+      // Lo que se suma a la respuesta en modo demo: ['codigo_demo' => '123456'] o nada
+      public function datosDemo(string $codigo): array
+      {
+          return config('mfa.mostrar_codigo') ? ['codigo_demo' => $codigo] : [];
       }
 
       public function puedeReenviar(User $usuario): bool
