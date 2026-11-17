@@ -1,5 +1,6 @@
 // Segundo paso del ingreso: el código de verificación de 6 números.
-// El código es simulado: la API lo escribe en storage/logs/laravel.log (con datos de prueba es 123456).
+// La API lo manda por mail (Mailtrap) y lo escribe en storage/logs/laravel.log (con datos de prueba es 123456).
+// En modo demo (MFA_MOSTRAR_CODIGO=true) también viene en la respuesta y se muestra en un cartel.
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ActivityIndicator,
@@ -18,6 +19,7 @@ export default function PantallaCodigoMfa() {
   const [aviso, setAviso] = useState('');
   const [cargando, setCargando] = useState(false);
   const [espera, setEspera] = useState(ESPERA_REENVIO);
+  const [codigoDemo, setCodigoDemo] = useState(pendienteMfa?.codigoDemo ?? null); // modo demo
 
   // cuenta regresiva para poder pedir otro código
   useEffect(() => {
@@ -52,7 +54,8 @@ export default function PantallaCodigoMfa() {
   const reenviar = async () => {
     setError('');
     try {
-      await pedirOtroCodigo('mail');
+      const r = await pedirOtroCodigo('mail');
+      if (r?.codigoDemo) setCodigoDemo(r.codigoDemo); // el cartel muestra el código nuevo
       setAviso('Te mandamos un código nuevo.');
       setEspera(ESPERA_REENVIO);
     } catch (e) {
@@ -82,6 +85,19 @@ export default function PantallaCodigoMfa() {
         <Text style={{ color: colores.textoSecundario, fontSize: 14 * factorActual, marginBottom: 12 }} accessibilityLiveRegion="polite">
           {aviso}
         </Text>
+      ) : null}
+
+      {codigoDemo ? (
+        <View
+          style={[estilos.caja, { backgroundColor: colores.tarjeta, borderColor: colores.acento }]}
+          accessibilityLiveRegion="polite"
+        >
+          <Text style={{ color: colores.textoPrincipal, fontSize: 14 * factorActual }}>
+            Modo demo: tu código es{' '}
+            <Text style={{ color: colores.acento, fontWeight: 'bold' }}>{codigoDemo}</Text>
+            {' '}(en un sistema real llega por mail).
+          </Text>
+        </View>
       ) : null}
 
       <Text style={[estilos.etiqueta, { color: colores.textoPrincipal, fontSize: 15 * factorActual }]}>Código</Text>

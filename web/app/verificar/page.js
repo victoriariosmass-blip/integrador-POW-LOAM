@@ -1,6 +1,6 @@
 'use client';
  
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthLayout from '../ui/templates/AuthLayout';
@@ -13,9 +13,30 @@ const CANALES = [
   { valor: 'sms', etiqueta: 'SMS', icono: 'bi-chat-dots' },
 ];
 const ESPERA_REENVIO = 30; // segundos
- 
+
+// Modo demo: el código que mandó la API (codigo_demo) queda en sessionStorage (lo guarda el login).
+// Se lee con useSyncExternalStore: en el servidor no hay sessionStorage (no hay cartel) y en el
+// navegador se vuelve a leer cada vez que cambia (evento 'mfa-codigo-demo', al reenviar o verificar).
+const CLAVE_DEMO = 'mfa_codigo_demo';
+const EVENTO_DEMO = 'mfa-codigo-demo';
+function leerCodigoDemo() {
+  try { return sessionStorage.getItem(CLAVE_DEMO); } catch { return null; }
+}
+function cambiarCodigoDemo(codigo) {
+  try {
+    if (codigo) sessionStorage.setItem(CLAVE_DEMO, codigo);
+    else sessionStorage.removeItem(CLAVE_DEMO);
+  } catch { /* sin sessionStorage: no hay cartel */ }
+  window.dispatchEvent(new Event(EVENTO_DEMO));
+}
+function escucharCodigoDemo(avisar) {
+  window.addEventListener(EVENTO_DEMO, avisar);
+  return () => window.removeEventListener(EVENTO_DEMO, avisar);
+}
+
 export default function VerificarPage() {
   const router = useRouter();
+  const codigoDemo = useSyncExternalStore(escucharCodigoDemo, leerCodigoDemo, () => null);
   const [canal, setCanal] = useState('mail');
   const [codigo, setCodigo] = useState('');
   const [error, setError] = useState('');
@@ -41,6 +62,7 @@ export default function VerificarPage() {
     setCargando(true);
     try {
       await verificarCodigo(codigo);
+      cambiarCodigoDemo(null); // ya entró: el código no queda guardado
       router.push('/panel');
     } catch (err) {
       if (err.status === 401) {
@@ -57,7 +79,8 @@ export default function VerificarPage() {
   async function reenviar() {
     setError('');
     try {
-      await reenviarCodigo(canal);
+      const r = await reenviarCodigo(canal);
+      if (r?.codigo_demo) cambiarCodigoDemo(r.codigo_demo); // el cartel muestra el código nuevo
       setAviso(canal === 'sms' ? 'Te enviamos un código nuevo por SMS.' : 'Te enviamos un código nuevo por mail.');
       setSegundos(ESPERA_REENVIO);
     } catch (err) {
@@ -85,6 +108,12 @@ export default function VerificarPage() {
       {aviso && <div className="alert alert-success py-2 small" role="status">{aviso}</div>}
  
       <form onSubmit={handleSubmit} noValidate>
+        {codigoDemo && (
+          <div className="alert alert-primary py-2 small" role="status">
+            <i className="bi bi-info-circle me-2" aria-hidden="true" />
+            Modo demo: tu código es <strong>{codigoDemo}</strong> (en un sistema real llega por mail).
+          </div>
+        )}
         {/* no es <label>: el código son 6 casillas y el grupo ya tiene su nombre (aria-label) */}
         <p className="form-label fw-semibold mb-2" aria-hidden="true">Código</p>
         <CodeInput valor={codigo} onChange={(v) => { setCodigo(v); setError(''); }} invalido={!!error} idError="codigo-error" />

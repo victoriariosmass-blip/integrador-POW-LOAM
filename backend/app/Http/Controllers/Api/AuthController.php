@@ -23,10 +23,16 @@
                   new OA\Property(property: 'password', type: 'string', example: 'password'),
               ])),
           responses: [
-              new OA\Response(response: 200, description: 'Contraseña correcta: pide el código (requiere_mfa)'),
+              new OA\Response(response: 200, description: 'Contraseña correcta: pide el código (requiere_mfa)',
+                  content: new OA\JsonContent(properties: [
+                      new OA\Property(property: 'requiere_mfa', type: 'boolean', example: true),
+                      new OA\Property(property: 'canal', type: 'string', example: 'mail'),
+                      new OA\Property(property: 'codigo_demo', type: 'string', example: '123456', nullable: true,
+                          description: 'Solo en modo demo (MFA_MOSTRAR_CODIGO=true). Si no, no viene.'),
+                  ])),
               new OA\Response(response: 422, description: 'Credenciales incorrectas'),
           ])]
-          
+
       public function login(Request $request)
       {
           $datos = $request->validate([
@@ -44,12 +50,13 @@
           // Segundo paso: código de verificación (simulado, ver MfaService)
           $request->session()->put('mfa_user_id', $usuario->id);
           $request->session()->forget('mfa_intentos');
-          app(MfaService::class)->enviarCodigo($usuario, 'mail');
+          $mfa = app(MfaService::class);
+          $codigo = $mfa->enviarCodigo($usuario, 'mail');
 
           return response()->json([
               'requiere_mfa' => true,
               'canal' => 'mail',
-          ]);
+          ] + $mfa->datosDemo($codigo)); // modo demo: + codigo_demo
       }
 
       // Login por token: lo usa la app y sirve para probar en Swagger
@@ -62,7 +69,14 @@
                   new OA\Property(property: 'dispositivo', type: 'string', example: 'swagger'),
               ])),
           responses: [
-              new OA\Response(response: 200, description: 'Contraseña correcta: devuelve mfa_token y manda el código (queda en el log)'),
+              new OA\Response(response: 200, description: 'Contraseña correcta: devuelve mfa_token y manda el código (mail y log)',
+                  content: new OA\JsonContent(properties: [
+                      new OA\Property(property: 'requiere_mfa', type: 'boolean', example: true),
+                      new OA\Property(property: 'mfa_token', type: 'string'),
+                      new OA\Property(property: 'canal', type: 'string', example: 'mail'),
+                      new OA\Property(property: 'codigo_demo', type: 'string', example: '123456', nullable: true,
+                          description: 'Solo en modo demo (MFA_MOSTRAR_CODIGO=true). Si no, no viene.'),
+                  ])),
               new OA\Response(response: 422, description: 'Credenciales incorrectas'),
           ])]
       public function token(Request $request)
@@ -90,13 +104,14 @@
               'intentos' => 0,
               'vence' => now()->addMinutes(10),
           ], now()->addMinutes(10));
-          app(MfaService::class)->enviarCodigo($usuario, 'mail');
+          $mfa = app(MfaService::class);
+          $codigo = $mfa->enviarCodigo($usuario, 'mail');
 
           return response()->json([
               'requiere_mfa' => true,
               'mfa_token' => $mfaToken,
               'canal' => 'mail',
-          ]);
+          ] + $mfa->datosDemo($codigo)); // modo demo: + codigo_demo
       }
 
       #[OA\Post(path: '/api/logout', summary: 'Cerrar sesión', tags: ['Auth'],

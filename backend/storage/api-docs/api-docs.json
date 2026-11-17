@@ -38,7 +38,30 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Contraseña correcta: pide el código (requiere_mfa)"
+                        "description": "Contraseña correcta: pide el código (requiere_mfa)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requiere_mfa": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "canal": {
+                                            "type": "string",
+                                            "example": "mail"
+                                        },
+                                        "codigo_demo": {
+                                            "description": "Solo en modo demo (MFA_MOSTRAR_CODIGO=true). Si no, no viene.",
+                                            "type": "string",
+                                            "example": "123456",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "Credenciales incorrectas"
@@ -83,7 +106,33 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Contraseña correcta: devuelve mfa_token y manda el código (queda en el log)"
+                        "description": "Contraseña correcta: devuelve mfa_token y manda el código (mail y log)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "requiere_mfa": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "mfa_token": {
+                                            "type": "string"
+                                        },
+                                        "canal": {
+                                            "type": "string",
+                                            "example": "mail"
+                                        },
+                                        "codigo_demo": {
+                                            "description": "Solo en modo demo (MFA_MOSTRAR_CODIGO=true). Si no, no viene.",
+                                            "type": "string",
+                                            "example": "123456",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "Credenciales incorrectas"
@@ -1355,7 +1404,7 @@
                                         "type": "string"
                                     },
                                     "codigo": {
-                                        "description": "Está en storage/logs/laravel.log",
+                                        "description": "Llega por mail (Mailtrap), está en storage/logs/laravel.log y en modo demo vuelve como codigo_demo",
                                         "type": "string",
                                         "example": "123456"
                                     }
@@ -1410,7 +1459,30 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Código reenviado"
+                        "description": "Código reenviado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "enviado": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "canal": {
+                                            "type": "string",
+                                            "example": "mail"
+                                        },
+                                        "codigo_demo": {
+                                            "description": "Solo en modo demo (MFA_MOSTRAR_CODIGO=true). Si no, no viene.",
+                                            "type": "string",
+                                            "example": "123456",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "El ingreso venció"
@@ -1465,7 +1537,7 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Reenviar el código (simulado: queda en el log)",
+                "summary": "Reenviar el código (mail y log)",
                 "operationId": "f3c89e850dbc37667aa4074bd0175b3b",
                 "requestBody": {
                     "required": false,
@@ -1489,7 +1561,30 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Código reenviado"
+                        "description": "Código reenviado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "enviado": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "canal": {
+                                            "type": "string",
+                                            "example": "mail"
+                                        },
+                                        "codigo_demo": {
+                                            "description": "Solo en modo demo (MFA_MOSTRAR_CODIGO=true). Si no, no viene.",
+                                            "type": "string",
+                                            "example": "123456",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "No hay un inicio de sesión pendiente"
