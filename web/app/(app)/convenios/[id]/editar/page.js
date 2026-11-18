@@ -47,7 +47,7 @@ export default function EditarConvenio() {
   }
  
   if (error) {
-    const texto = error.status === 403 ? 'No tenés permiso para ver este convenio.'
+    const texto = error.status === 403 ? 'No tiene permiso para ver este convenio.'
       : error.status === 404 ? 'El convenio no existe.' : (error.message || 'No se pudo cargar el convenio.');
     return (
       <div className="text-center py-5">
@@ -86,7 +86,7 @@ export default function EditarConvenio() {
  
       {conflicto && (
         <div ref={avisoRef} className="alert alert-warning d-flex flex-wrap align-items-center gap-2" role="alert">
-          <span className="me-auto">El convenio cambió mientras lo editabas. Recargalo para ver los cambios (lo que escribiste se pierde).</span>
+          <span className="me-auto">El convenio cambió mientras usted lo editaba. Recárguelo para ver los cambios (lo que escribió se perderá).</span>
           <button type="button" className="btn btn-sm btn-warning" onClick={recargar}>Recargar</button>
         </div>
       )}

@@ -13,8 +13,7 @@ import { AyudaPuntual } from '../componentes/moleculas/AyudaPuntual';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
 import { usarConexion } from '../contexto/ContextoConexion';
 import { leerIdentidad, guardarEnIdentidad } from '../servicios/perfil';
-
-const fechaHora = (iso) => new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
+import { fechaHora } from '../servicios/convenios';
 
 export default function PantallaIdentidad() {
   const { colores, factorActual } = usarPreferencias();
@@ -45,7 +44,7 @@ export default function PantallaIdentidad() {
     setIdentidad(await guardarEnIdentidad('firma', { png: `data:image/png;base64,${png}` }));
     lienzo.current.limpiar();
     setTrazo(false);
-    setMensaje('Tu firma quedó registrada en la app.');
+    setMensaje('Su firma quedó registrada en la app.');
   };
 
   // Rostro o huella: el celular verifica a la persona y la app registra que quedó reconocida
@@ -53,31 +52,31 @@ export default function PantallaIdentidad() {
     setMensaje('');
     const inscripto = await LocalAuthentication.isEnrolledAsync();
     if (!tipos.includes(tipo) || !inscripto) {
-      setMensaje(`Este celular no tiene ${nombre} configurado. Configuralo en los ajustes del teléfono y volvé a intentar.`);
+      setMensaje(`Este celular no tiene ${nombre} configurado. Configúrelo en los ajustes del teléfono y vuelva a intentarlo.`);
       return;
     }
-    const r = await LocalAuthentication.authenticateAsync({ promptMessage: `Registrá tu ${nombre}`, cancelLabel: 'Cancelar' });
+    const r = await LocalAuthentication.authenticateAsync({ promptMessage: `Registre su ${nombre}`, cancelLabel: 'Cancelar' });
     if (!r.success) {
-      setMensaje(`No se pudo verificar tu ${nombre}.`);
+      setMensaje(`No se pudo verificar su ${nombre}.`);
       return;
     }
     setIdentidad(await guardarEnIdentidad(campo, { metodo: nombre }));
-    setMensaje(`Tu ${nombre} quedó registrado.`);
+    setMensaje(`Se registró su ${nombre}.`);
   };
 
   return (
     <ScrollView style={{ backgroundColor: colores.fondo }} contentContainerStyle={estilos.contenedor} scrollEnabled={!dibujando}>
       {!enLinea && <BannerSinConexion mensaje="Sin conexión • El registro de identidad no está disponible" />}
-      <AyudaPuntual texto="Registrá tu firma, tu rostro y tu huella una sola vez. Después, al firmar un convenio, la app te pide la huella o el rostro y la firma a mano. Ver el manual en Perfil > Ayuda." />
+      <AyudaPuntual texto="Registre su firma, su rostro y su huella una sola vez. Después, al firmar un convenio, la app le solicita la huella o el rostro y la firma a mano. Consulte el manual en Perfil > Ayuda." />
 
       <View style={tarjeta}>
         <Text style={texto(16, { fontWeight: '700', marginBottom: 4 })}>Mi firma</Text>
         {listo('firma')}
         {identidad.firma?.png && (
           <Image source={{ uri: identidad.firma.png }} style={[estilos.firmaGuardada, { borderColor: colores.borde }]} resizeMode="contain"
-            accessibilityLabel="Tu firma registrada" />
+            accessibilityLabel="Su firma registrada" />
         )}
-        <Text style={secundario(13)}>{identidad.firma ? 'Para cambiarla, firmá de nuevo en el cuadro:' : 'Firmá dentro del cuadro:'}</Text>
+        <Text style={secundario(13)}>{identidad.firma ? 'Para cambiarla, firme de nuevo en el cuadro:' : 'Firme dentro del cuadro:'}</Text>
         <View onTouchStart={() => setDibujando(true)} onTouchEnd={() => setDibujando(false)} onTouchCancel={() => setDibujando(false)}>
           <LienzoFirma ref={lienzo} alCambiarTrazo={setTrazo} />
         </View>

@@ -37,7 +37,7 @@ export default function Revision() {
     setError('');
     try {
       await accionConvenio(c.id, accion, datos);
-      setAviso(accion === 'aprobar' ? `${c.codigo} quedó aprobado y pasa a la firma.` : `${c.codigo} volvió a borrador con tus observaciones.`);
+      setAviso(accion === 'aprobar' ? `${c.codigo} quedó aprobado y pasa a la firma.` : `${c.codigo} volvió a borrador con sus observaciones.`);
       setDevolviendo(null);
       setObservaciones('');
       cargar();
@@ -53,7 +53,7 @@ export default function Revision() {
       <h1 className="h4 mb-1">Revisión</h1>
       <p className="text-body-secondary mb-4">
         {usuario.rol === 'revisor'
-          ? 'Convenios en revisión de tu alcance. Aprobás o devolvés los que tenés asignados.'
+          ? 'Convenios en revisión de su alcance. Puede aprobar o devolver los que tiene asignados.'
           : 'Todos los convenios en revisión.'}
       </p>
  

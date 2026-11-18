@@ -18,7 +18,7 @@ export async function api(ruta, { method = 'GET', body } = {}) {
       body: body ? (esFormulario ? body : JSON.stringify(body)) : undefined,
     });
   } catch {
-    const error = new Error('No se pudo conectar con el servidor. Revisá tu conexión.');
+    const error = new Error('No se pudo conectar con el servidor. Revise su conexión.');
     error.status = 0; // 0 = sin conexión
     throw error;
   }

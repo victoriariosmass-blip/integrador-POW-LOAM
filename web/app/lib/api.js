@@ -17,9 +17,9 @@ function traducir(status, mensaje) {
     return 'Esta acción todavía no está disponible en el servidor.';
   }
   if (status === 404 && /^No query results/.test(mensaje)) return 'No se encontró lo que buscabas.';
-  if (mensaje === 'This action is unauthorized.') return 'No tenés permiso para hacer esto.';
-  if (mensaje === 'Unauthenticated.') return 'La sesión venció. Volvé a iniciar sesión.';
-  if (status === 419) return 'La sesión venció. Recargá la página e intentá de nuevo.';
+  if (mensaje === 'This action is unauthorized.') return 'No tiene permiso para realizar esta acción.';
+  if (mensaje === 'Unauthenticated.') return 'La sesión venció. Vuelva a iniciar sesión.';
+  if (status === 419) return 'La sesión venció. Recargue la página e intente nuevamente.';
   return mensaje;
 }
 
@@ -56,7 +56,7 @@ export async function api(path, { method = 'GET', body, headers = {}, comoArchiv
     }
     // la API no responde (apagada, sin conexión...): el detalle queda en la consola
     console.error('No se pudo conectar con la API:', e);
-    const error = new Error('No se pudo conectar con el servidor. Probá de nuevo en unos minutos.');
+    const error = new Error('No se pudo conectar con el servidor. Intente nuevamente en unos minutos.');
     error.status = 0;
     throw error;
   }
@@ -69,7 +69,7 @@ export async function api(path, { method = 'GET', body, headers = {}, comoArchiv
     // errores del servidor (500...): al usuario un mensaje común, el detalle a la consola
     if (res.status >= 500) console.error(`Error ${res.status} en ${path}:`, data?.message ?? data);
     const mensaje = res.status >= 500
-      ? 'Hubo un problema en el servidor. Probá de nuevo en unos minutos.'
+      ? 'Hubo un problema en el servidor. Intente nuevamente en unos minutos.'
       : traducir(res.status, data?.message);
     const error = new Error(mensaje);
     error.status = res.status;   // 0, 401, 403, 404, 409, 422, 500...

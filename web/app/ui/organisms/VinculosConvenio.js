@@ -49,7 +49,7 @@ export default function VinculosConvenio({ convenio, puedeEditar, onCambio }) {
     ev.preventDefault();
     setError('');
     if (!destino) {
-      setError('Elegí el convenio antecedente.');
+      setError('Seleccione el convenio antecedente.');
       return;
     }
     setGuardando(true);
@@ -139,7 +139,7 @@ export default function VinculosConvenio({ convenio, puedeEditar, onCambio }) {
               onChange={(e) => setBusqueda(e.target.value)} />
             <select id="vin-destino" aria-label="Convenio antecedente" className="form-select mb-3" value={destino}
               onChange={(e) => setDestino(e.target.value)}>
-              <option value="">Elegí el convenio…</option>
+              <option value="">Seleccione el convenio…</option>
               {resultados.map((c) => <option key={c.id} value={c.id}>{c.codigo} · {c.titulo}</option>)}
             </select>
             <div className="d-flex gap-2">

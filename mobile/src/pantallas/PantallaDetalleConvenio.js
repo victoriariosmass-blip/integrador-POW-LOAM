@@ -8,7 +8,7 @@ import { EtiquetaEstado } from '../componentes/atomos/EtiquetaEstado';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
 import PantallaComentarios from './PantallaComentarios';
 import { AyudaPuntual } from '../componentes/moleculas/AyudaPuntual';
-import { verConvenio, textoEstado, fecha, TIPOS, ESTADOS, CATEGORIAS_DOCUMENTO } from '../servicios/convenios';
+import { verConvenio, textoEstado, fecha, fechaHora, TIPOS, ESTADOS, CATEGORIAS_DOCUMENTO } from '../servicios/convenios';
 
 const PESTANIAS = [
   { clave: 'datos', titulo: 'DATOS' },
@@ -37,7 +37,7 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
     try {
       setConvenio(await verConvenio(id));
     } catch (e) {
-      if (e.status === 403) setError('No tenés permiso para ver este convenio.');
+      if (e.status === 403) setError('No tiene permiso para ver este convenio.');
       else if (e.status === 404) setError('El convenio no existe.');
       else setError(e.message || 'No se pudo cargar el convenio.');
     } finally {
@@ -89,7 +89,7 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
       keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={refrescando} onRefresh={() => { setRefrescando(true); cargar(); }} tintColor={colores.acento} />}
     >
-      <AyudaPuntual texto="Acá ves todos los datos del convenio, sus firmas y sus documentos (tocá uno para ver quién lo subió y su huella SHA-256). Si te toca firmar, tocá «Leer y firmar»: primero leés el PDF hasta el final y después firmás. Deslizá hacia abajo para actualizar." />
+      <AyudaPuntual texto="Aquí se muestran todos los datos del convenio, sus firmas y sus documentos (seleccione uno para ver quién lo subió y su huella SHA-256). Si le corresponde firmar, presione «Leer y firmar»: primero debe leer el PDF hasta el final y después firmar. Deslice hacia abajo para actualizar." />
       {/* Encabezado */}
       <View style={estilos.encabezado}>
         <Text style={[texto(20), estilos.codigo]}>{c.codigo}</Text>
@@ -113,11 +113,11 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
           accessibilityLabel={`Firmado por ${f.usuario?.name}`}>
           <Text style={{ color: colores.exito, fontWeight: '700', fontSize: 15 * factorActual }}>✓ Firmado por {f.usuario?.name}</Text>
           <Text style={{ color: colores.exito, fontSize: 13 * factorActual }}>
-            {new Date(f.firmado_en).toLocaleDateString('es-AR')} a las {new Date(f.firmado_en).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+            {fechaHora(f.firmado_en)}
             {f.biometria_ok ? ' · con huella o rostro' : ''}
           </Text>
           <Text style={{ color: colores.exito, fontSize: 13 * factorActual }}>
-            {f.latitud != null ? `Lat ${Number(f.latitud).toFixed(5)}, long ${Number(f.longitud).toFixed(5)}` : 'Sin ubicación (no se dio permiso)'}
+            {f.latitud != null ? `Lat. ${Number(f.latitud).toFixed(5)}, long. ${Number(f.longitud).toFixed(5)}` : 'Sin ubicación (no se otorgó el permiso)'}
           </Text>
         </View>
       ))}
@@ -209,7 +209,7 @@ export default function PantallaDetalleConvenio({ route, navigation }) {
                 {/* Marca que pone la API al subirlo: quién, cuándo y huella del archivo */}
                 {d.marca && (
                   <Text style={secundario(12)}>
-                    Subido por {d.marca.subido_por} el {new Date(d.marca.subido_en).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
+                    Subido por {d.marca.subido_por} el {fechaHora(d.marca.subido_en)}
                     {d.sha256 ? ` · SHA-256 ${d.sha256.slice(0, 12)}…` : ''}
                   </Text>
                 )}

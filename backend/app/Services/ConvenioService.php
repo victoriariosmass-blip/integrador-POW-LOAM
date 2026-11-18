@@ -30,7 +30,7 @@
           // Un gestor carga en su unidad; un usuario global tiene que elegirla
           $datos['unidad_id'] = $usuario->unidad_id ?? ($datos['unidad_id'] ?? null);
           if (! $datos['unidad_id']) {
-              abort(422, 'Indicá la unidad del convenio');
+              abort(422, 'Indique la unidad del convenio');
           }
 
           $datos['estado'] = 'borrador';
@@ -59,7 +59,7 @@
           Gate::forUser($usuario)->authorize('update', $convenio);
 
           if ((int) $datos['version'] !== $convenio->version) {
-              abort(409, 'El convenio cambió mientras lo editabas. Recargalo para ver los cambios.');
+              abort(409, 'El convenio cambió mientras usted lo editaba. Recárguelo para ver los cambios.');
           }
 
           unset($datos['version']);

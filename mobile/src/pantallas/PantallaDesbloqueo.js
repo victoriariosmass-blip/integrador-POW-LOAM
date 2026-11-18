@@ -33,7 +33,7 @@ export default function PantallaDesbloqueo() {
 
   const probarPin = async () => {
     if (!pin) {
-      setError('Ingresá tu PIN.');
+      setError('Ingrese su PIN.');
       return;
     }
     if (await pinCorrecto(pin)) {
@@ -47,7 +47,7 @@ export default function PantallaDesbloqueo() {
       await salir(); // vuelve al login
       return;
     }
-    setError(`PIN incorrecto. Te quedan ${MAX_INTENTOS - nuevos} intentos.`);
+    setError(`PIN incorrecto. Le quedan ${MAX_INTENTOS - nuevos} intentos.`);
   };
 
   return (
@@ -57,7 +57,7 @@ export default function PantallaDesbloqueo() {
     >
       <Text style={[estilos.titulo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>🔒 App bloqueada</Text>
       <Text style={{ color: colores.textoSecundario, fontSize: 15 * factorActual, marginBottom: 24 }}>
-        {usuario?.name}, identificate para seguir.
+        {usuario?.name}, identifíquese para continuar.
       </Text>
 
       {hayBiometria && (

@@ -90,7 +90,7 @@
               ])),
           responses: [
               new OA\Response(response: 201, description: 'Creado en borrador'),
-              new OA\Response(response: 403, description: 'Tu rol no puede cargar convenios'),
+              new OA\Response(response: 403, description: 'Su rol no puede cargar convenios'),
               new OA\Response(response: 422, description: 'Datos inválidos'),
           ])]
       public function store(StoreConvenioRequest $request)

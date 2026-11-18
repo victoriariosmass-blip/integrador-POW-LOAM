@@ -27,7 +27,7 @@ export default function DocumentosConvenio({ convenio, onSubido }) {
   async function subir(ev) {
     ev.preventDefault();
     setError('');
-    if (!archivo) return setError('Elegí un archivo PDF.');
+    if (!archivo) return setError('Seleccione un archivo PDF.');
     if (!archivo.name.toLowerCase().endsWith('.pdf')) return setError('El archivo tiene que ser un PDF.');
     if (archivo.size > MAXIMO_MB * 1024 * 1024) return setError(`El PDF no puede pesar más de ${MAXIMO_MB} MB.`);
  

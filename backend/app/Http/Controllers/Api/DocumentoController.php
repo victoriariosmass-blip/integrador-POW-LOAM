@@ -35,7 +35,7 @@
           ], [
               'archivo.mimes' => 'El archivo tiene que ser un PDF.',
               'archivo.max' => 'El PDF no puede pesar más de 20 MB.',
-              'categoria.in' => 'Elegí una categoría válida.',
+              'categoria.in' => 'Seleccione una categoría válida.',
           ]);
           $convenio = $this->convenios->ver($request->user(), $id);
           $documento = $this->documentos->subir($request->user(), $convenio, $datos['archivo'], $datos['categoria']);

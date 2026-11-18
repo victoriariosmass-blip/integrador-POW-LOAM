@@ -17,7 +17,7 @@ import ObservacionesConvenio from '../../../ui/organisms/ObservacionesConvenio';
 const MENSAJES = {
   'enviar-revision': 'El convenio se envió a revisión.',
   aprobar: 'El convenio quedó aprobado.',
-  devolver: 'El convenio volvió a borrador con tus observaciones.',
+  devolver: 'El convenio volvió a borrador con sus observaciones.',
   rescindir: 'El convenio quedó rescindido.',
   archivar: 'El convenio quedó archivado.',
 };
@@ -90,7 +90,7 @@ export default function FichaConvenio() {
   }
  
   if (error) {
-    const texto = error.status === 403 ? 'No tenés permiso para ver este convenio.'
+    const texto = error.status === 403 ? 'No tiene permiso para ver este convenio.'
       : error.status === 404 ? 'El convenio no existe.' : (error.message || 'No se pudo cargar el convenio.');
     return (
       <div className="text-center py-5">

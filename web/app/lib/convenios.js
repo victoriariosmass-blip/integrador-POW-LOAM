@@ -120,7 +120,7 @@ try {
     if (e.status !== 0) throw e;
     // Sin conexión: queda guardado y se manda solo cuando vuelva (ver AvisoConexion)
     await guardarPendiente({ convenioId: id, contenido });
-    return { data: { id: `pendiente-${Date.now()}`, contenido, pendiente: true, autor: { name: 'Vos' }, created_at: new Date().toISOString() } };
+    return { data: { id: `pendiente-${Date.now()}`, contenido, pendiente: true, autor: { name: 'Usted' }, created_at: new Date().toISOString() } };
   }
 }
  

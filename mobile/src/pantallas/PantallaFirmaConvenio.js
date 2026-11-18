@@ -7,7 +7,7 @@ import * as Location from 'expo-location';
 import { LienzoFirma } from '../componentes/atomos/LienzoFirma';
 import { BotonPersonalizado } from '../componentes/atomos/BotonPersonalizado';
 import { usarPreferencias } from '../contexto/ContextoPreferencias';
-import { firmarConvenio } from '../servicios/convenios';
+import { firmarConvenio, fechaHora } from '../servicios/convenios';
 import { usarConexion } from '../contexto/ContextoConexion';
 import { AyudaPuntual } from '../componentes/moleculas/AyudaPuntual';
 import { BannerSinConexion } from '../componentes/organismos/BannerSinConexion';
@@ -20,10 +20,10 @@ async function validarBiometria() {
   if (!tieneRegistrada) return false;
 
   const resultado = await LocalAuthentication.authenticateAsync({
-    promptMessage: 'Confirmá tu identidad para firmar',
+    promptMessage: 'Confirme su identidad para firmar',
     cancelLabel: 'Cancelar',
   });
-  if (!resultado.success) throw new Error('No se pudo validar tu identidad. La firma no se registró.');
+  if (!resultado.success) throw new Error('No se pudo validar su identidad. La firma no se registró.');
   return true;
 }
 
@@ -52,11 +52,11 @@ export default function PantallaFirmaConvenio({ route, navigation }) {
   const firmar = async () => {
     setError('');
     if (!enLinea) {
-      setError('Estás sin conexión: la firma se registra en el servidor, probá cuando vuelva internet.');
+      setError('Está sin conexión: la firma se registra en el servidor. Intente nuevamente cuando se restablezca la conexión.');
       return;
     }
     if (!trazo) {
-      setError('Hacé tu firma con el dedo dentro del recuadro antes de confirmar.');
+      setError('Realice su firma con el dedo dentro del recuadro antes de confirmar.');
       return;
     }
 
@@ -75,12 +75,12 @@ export default function PantallaFirmaConvenio({ route, navigation }) {
 
       setResultado({
         codigo: convenio.codigo,
-        fechaHora: new Date().toLocaleString('es-AR'),
+        fechaHora: fechaHora(new Date()),
         ubicacion,
         biometriaOk,
       });
     } catch (e) {
-      if (e.status === 403) setError('No podés firmar este convenio. Puede que ya esté firmado o no te corresponda.');
+      if (e.status === 403) setError('No puede firmar este convenio. Es posible que ya esté firmado o que no le corresponda.');
       else setError(e.message || 'No se pudo registrar la firma.');
     } finally {
       setEnviando(false);
@@ -111,19 +111,19 @@ export default function PantallaFirmaConvenio({ route, navigation }) {
   return (
     // View y no ScrollView: si no, al firmar el scroll se "come" el trazo
     <View style={[estilos.contenedor, { flex: 1, backgroundColor: colores.fondo }]}>
-      {!enLinea && <BannerSinConexion mensaje="Sin conexión • No se puede firmar hasta que vuelva internet" />}
+      {!enLinea && <BannerSinConexion mensaje="Sin conexión • No se puede firmar hasta que se restablezca la conexión" />}
       <Text style={[estilos.titulo, { color: colores.textoPrincipal, fontSize: 18 * factorActual }]}>
         Firmar: {idConvenio}
       </Text>
-      <AyudaPuntual texto="Dibujá tu firma con el dedo. Al confirmar, la app te pide huella o rostro y guarda la fecha, la hora y tu ubicación junto con la firma. «Borrar» limpia el recuadro." />
+      <AyudaPuntual texto="Dibuje su firma con el dedo. Al confirmar, la app le solicita huella o rostro y guarda la fecha, la hora y su ubicación junto con la firma. «Borrar» limpia el recuadro." />
       <Text style={[estilos.subtitulo, { color: colores.textoSecundario, fontSize: 13 * factorActual }]}>
-        Firmá con el dedo dentro del recuadro:
+        Firme con el dedo dentro del recuadro:
       </Text>
 
       <LienzoFirma ref={lienzoRef} alCambiarTrazo={(t) => { setTrazo(t); setError(''); }} />
 
       <Text style={[estilos.nota, { color: colores.textoSecundario, fontSize: 12 * factorActual }]}>
-        Al confirmar se registran la fecha, la hora y tu ubicación, y se pide tu huella o rostro.
+        Al confirmar se registran la fecha, la hora y su ubicación, y se solicita su huella o rostro.
       </Text>
 
       {error ? (

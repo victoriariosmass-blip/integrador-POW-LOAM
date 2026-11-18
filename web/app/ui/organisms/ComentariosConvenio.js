@@ -78,7 +78,7 @@ export default function ComentariosConvenio({ convenioId, puedeComentar }) {
             <Button type="submit" loading={enviando} disabled={!texto.trim()}>Comentar</Button>
           </form>
         ) : (
-          <p className="small text-body-secondary mb-0">Tu rol puede leer los comentarios pero no escribir.</p>
+          <p className="small text-body-secondary mb-0">Su rol puede leer los comentarios, pero no escribirlos.</p>
         )}
       </div>
     </section>

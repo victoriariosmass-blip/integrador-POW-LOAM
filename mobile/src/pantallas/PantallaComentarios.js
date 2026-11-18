@@ -84,7 +84,7 @@ export default function PantallaComentarios({ id, puedeComentar }) {
         <View style={estilos.filaEntrada}>
           <TextInput
             style={[estilos.input, { backgroundColor: colores.tarjeta, borderColor: colores.borde, color: colores.textoPrincipal, fontSize: 14 * factorActual }]}
-            placeholder="Escribí un comentario..."
+            placeholder="Escriba un comentario..."
             placeholderTextColor={colores.textoSecundario}
             value={nuevoTexto}
             onChangeText={setNuevoTexto}
@@ -95,7 +95,7 @@ export default function PantallaComentarios({ id, puedeComentar }) {
           <BotonPersonalizado titulo={enviando ? 'Enviando…' : 'Enviar'} alPresionar={enviar} deshabilitado={enviando || !nuevoTexto.trim() || !enLinea} />
         </View>
       ) : (
-        <Text style={{ color: colores.textoSecundario, marginTop: 10 }}>Tu rol puede leer los comentarios pero no escribir.</Text>
+        <Text style={{ color: colores.textoSecundario, marginTop: 10 }}>Su rol puede leer los comentarios, pero no escribirlos.</Text>
       )}
     </View>
   );

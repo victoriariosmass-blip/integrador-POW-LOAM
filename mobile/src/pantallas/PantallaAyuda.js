@@ -10,29 +10,29 @@ const SECCIONES = [
   {
     titulo: '1. Registrar mi identidad',
     pasos: [
-      'Entrá a Perfil > Registrar mi identidad.',
-      'Mi firma: firmá con el dedo dentro del cuadro y tocá "Guardar mi firma".',
-      'Reconocimiento facial: tocá "Registrar mi rostro" y mirá el celular.',
-      'Huella digital: tocá "Registrar mi huella" y apoyá el dedo en el lector.',
-      'Cada uno queda con un ✓ y la fecha en que lo registraste. Necesitás conexión.',
+      'Ingrese a Perfil > Registrar mi identidad.',
+      'Mi firma: firme con el dedo dentro del cuadro y presione "Guardar mi firma".',
+      'Reconocimiento facial: presione "Registrar mi rostro" y mire el celular.',
+      'Huella digital: presione "Registrar mi huella" y apoye el dedo en el lector.',
+      'Cada uno queda con un ✓ y la fecha en que lo registró. Se requiere conexión.',
     ],
   },
   {
     titulo: '2. Firmar un convenio',
     pasos: [
-      'En Pendientes están los convenios que esperan tu firma (los más nuevos primero).',
-      'Abrí el convenio y tocá "Leer y firmar convenio".',
-      'Leé el PDF completo. Podés acercar y alejar con los dedos o con + y −, y compartirlo por WhatsApp o mail.',
+      'En Pendientes están los convenios que esperan su firma (los más nuevos primero).',
+      'Abra el convenio y presione "Leer y firmar convenio".',
+      'Lea el PDF completo. Puede acercar y alejar con los dedos o con + y −, y compartirlo por WhatsApp o mail.',
       'Al llegar al final aparece "Firmar convenio".',
-      'Confirmá con tu huella o tu rostro, firmá a mano en el cuadro y tocá "Firmar".',
+      'Confirme con su huella o su rostro, firme a mano en el cuadro y presione "Firmar".',
       'La app guarda la fecha, la hora y el lugar (latitud y longitud). En la ficha queda "Firmado por…" con esos datos.',
     ],
   },
   {
     titulo: '3. Sin conexión',
     pasos: [
-      'Si estás sin internet podés seguir usando la app con tu sesión, pero solo ver los convenios pendientes de firma.',
-      'El buscador, los comentarios, la firma y el registro de identidad avisan que estás sin conexión.',
+      'Sin conexión a internet puede seguir usando la app con su sesión, pero solo para ver los convenios pendientes de firma.',
+      'El buscador, los comentarios, la firma y el registro de identidad avisan cuando no hay conexión.',
     ],
   },
 ];
@@ -43,7 +43,7 @@ export default function PantallaAyuda({ navigation }) {
     <ScrollView style={{ backgroundColor: colores.fondo }} contentContainerStyle={estilos.contenedor}>
       <Text style={{ color: colores.textoPrincipal, fontSize: 22 * factorActual, fontWeight: '800', marginBottom: 4 }}>Manual de uso</Text>
       <Text style={{ color: colores.textoSecundario, fontSize: 14 * factorActual, marginBottom: 16 }}>
-        Cómo registrar tu identidad y firmar un convenio desde la app.
+        Cómo registrar su identidad y firmar un convenio desde la app.
       </Text>
       {SECCIONES.map((s) => (
         <View key={s.titulo} style={[estilos.tarjeta, { backgroundColor: colores.tarjeta, borderColor: colores.borde }]}>

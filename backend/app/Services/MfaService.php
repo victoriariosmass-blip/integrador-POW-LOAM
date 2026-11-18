@@ -45,8 +45,8 @@
           // Mail (Mailtrap). Si falla (mal configurado, sin internet), el login sigue igual.
           try {
               Mail::raw(
-                  "Tu código de verificación es {$codigo}.\n\nVence en " . self::MINUTOS_VALIDEZ . " minutos.",
-                  fn ($mensaje) => $mensaje->to($usuario->email)->subject('Tu código de verificación - Convenios UNLPam'),
+                  "Su código de verificación es {$codigo}.\n\nVence en " . self::MINUTOS_VALIDEZ . " minutos.",
+                  fn ($mensaje) => $mensaje->to($usuario->email)->subject('Su código de verificación - Convenios UNLPam'),
               );
           } catch (\Throwable $e) {
               Log::warning("[MFA] No se pudo mandar el mail a {$usuario->email}: {$e->getMessage()}");

@@ -60,11 +60,11 @@ export default function PantallaInicio({ navigation }) {
         />
       }
     >
-      <Text style={[estilos.saludo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>Hola, {nombre}</Text>
-      <AyudaPuntual texto="Arriba tenés el buscador. Las cajas resumen tus convenios; los últimos 10 movimientos van del más reciente al más antiguo. Tocá uno para abrir su ficha. En Pendientes están los que esperan tu firma." />
+      <Text style={[estilos.saludo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>Bienvenido/a, {nombre}</Text>
+      <AyudaPuntual texto="Arriba tiene el buscador. Las cajas resumen sus convenios; los últimos 10 movimientos van del más reciente al más antiguo. Seleccione uno para abrir su ficha. En Pendientes están los que esperan su firma." />
       {!enLinea && (
         <>
-          <BannerSinConexion mensaje="Sin conexión • Solo podés ver los convenios pendientes de firmar" />
+          <BannerSinConexion mensaje="Sin conexión • Solo puede ver los convenios pendientes de firma" />
           <BotonPersonalizado titulo="Ver mis pendientes" alPresionar={() => navigation.navigate('Pendientes')} />
         </>
       )}
@@ -73,7 +73,7 @@ export default function PantallaInicio({ navigation }) {
         <TouchableOpacity onPress={() => Linking.openSettings()} accessibilityRole="button"
           style={{ borderWidth: 1, borderColor: colores.borde, borderRadius: 10, padding: 12, marginVertical: 8 }}>
           <Text style={{ color: colores.textoPrincipal, fontSize: 14 * factorActual }}>
-            Las notificaciones están desactivadas, así que no te van a llegar los avisos de vencimientos.{' '}
+            Las notificaciones están desactivadas, por lo que no recibirá los avisos de vencimientos.{' '}
             <Text style={{ color: colores.acento, fontWeight: '600' }}>Activarlas</Text>
           </Text>
         </TouchableOpacity>

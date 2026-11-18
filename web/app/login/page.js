@@ -17,9 +17,9 @@ export default function LoginPage() {
  
   function validar() {
     const e = {};
-    if (!email) e.email = 'Ingresá tu email';
+    if (!email) e.email = 'Ingrese su email';
     else if (!/^\S+@\S+\.\S+$/.test(email)) e.email = 'El email no es válido';
-    if (!password) e.password = 'Ingresá tu contraseña';
+    if (!password) e.password = 'Ingrese su contraseña';
     return e;
   }
  
@@ -52,7 +52,7 @@ export default function LoginPage() {
   }
  
   return (
-    <AuthLayout titulo="Iniciar sesión" subtitulo="Ingresá con tu cuenta institucional.">
+    <AuthLayout titulo="Iniciar sesión" subtitulo="Ingrese con su cuenta institucional.">
       {errorGeneral && (
         <div className="alert alert-danger" role="alert">
           {errorGeneral}
@@ -87,7 +87,7 @@ export default function LoginPage() {
  
       {/* no hay recuperación por mail: la contraseña nueva la carga Administración */}
       <p className="text-center small text-body-secondary mt-3 mb-0">
-        ¿Olvidaste tu contraseña? Pedile una nueva a Administración.
+        ¿Olvidó su contraseña? Solicite una nueva a Administración.
       </p>
        <p className="text-center mt-2 mb-0">
         <Link href="/publico" className="small">Ver los convenios firmados sin iniciar sesión</Link>

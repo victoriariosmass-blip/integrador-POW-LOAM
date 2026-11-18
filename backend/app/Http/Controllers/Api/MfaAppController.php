@@ -36,7 +36,7 @@
               'mfa_token' => ['required', 'string'],
               'codigo' => ['required', 'digits:6'],
           ], [
-              'codigo.required' => 'Ingresá el código.',
+              'codigo.required' => 'Ingrese el código.',
               'codigo.digits' => 'El código tiene 6 números.',
           ]);
 
@@ -46,7 +46,7 @@
               $pendiente['intentos']++;
               if ($pendiente['intentos'] >= self::MAX_INTENTOS) {
                   Cache::forget($clave);
-                  abort(401, 'Demasiados intentos. Volvé a iniciar sesión.');
+                  abort(401, 'Demasiados intentos. Vuelva a iniciar sesión.');
               }
               Cache::put($clave, $pendiente, $pendiente['vence']);
               return response()->json(['message' => 'El código no es correcto o venció'], 422);
@@ -88,7 +88,7 @@
           [, , $usuario] = $this->pendiente($datos['mfa_token']);
 
           if (! $this->mfa->puedeReenviar($usuario)) {
-              return response()->json(['message' => 'Esperá unos segundos antes de pedir otro código'], 429);
+              return response()->json(['message' => 'Espere unos segundos antes de solicitar otro código'], 429);
           }
 
           $canal = $datos['canal'] ?? 'mail';
@@ -104,7 +104,7 @@
           $pendiente = Cache::get($clave);
           $usuario = $pendiente ? User::find($pendiente['user_id']) : null;
           if (! $usuario) {
-              abort(401, 'El ingreso venció. Volvé a iniciar sesión.');
+              abort(401, 'El ingreso venció. Vuelva a iniciar sesión.');
           }
           return [$clave, $pendiente, $usuario];
       }

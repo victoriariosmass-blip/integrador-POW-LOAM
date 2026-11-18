@@ -30,7 +30,7 @@ export default function PantallaConveniosUnidad({ route, navigation }) {
       keyExtractor={(c) => String(c.id)}
       ListEmptyComponent={
         <Text style={[estilos.mensaje, { color: colores.textoSecundario, fontSize: 15 * factorActual }]}>
-          No tenés convenios visibles de {unidad.nombre}.
+          No tiene convenios visibles de {unidad.nombre}.
         </Text>
       }
       renderItem={({ item }) => (

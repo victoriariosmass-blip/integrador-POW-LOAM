@@ -91,7 +91,7 @@ export default function PantallaLeerPdf({ route, navigation }) {
             <BotonPersonalizado titulo="FIRMAR CONVENIO" alPresionar={() => navigation.replace('FirmaConvenio', { id, idConvenio: codigo })} />
           ) : (
             <Text style={{ color: colores.textoSecundario, textAlign: 'center', fontSize: 13 * factorActual }} accessibilityLiveRegion="polite">
-              Leé el documento hasta el final para poder firmarlo.
+              Lea el documento hasta el final para poder firmarlo.
             </Text>
           )}
         </View>

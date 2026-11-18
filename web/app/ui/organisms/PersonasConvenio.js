@@ -148,7 +148,7 @@ export default function PersonasConvenio({ convenio, puedeEditar, onCambio }) {
  
         {abierto && (
           <form onSubmit={guardar} className="border-top mt-3 pt-3" noValidate>
-            <p className="small text-body-secondary">Usá datos ficticios: no se cargan documentos ni datos sensibles.</p>
+            <p className="small text-body-secondary">Use datos ficticios: no se cargan documentos ni datos sensibles.</p>
             <div className="row g-2 mb-2">
               <div className="col-6 col-md-4">{campo('nombre', 'Nombre', { maxLength: 100 })}</div>
               <div className="col-6 col-md-4">{campo('apellido', 'Apellido', { maxLength: 100 })}</div>

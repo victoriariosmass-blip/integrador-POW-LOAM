@@ -32,8 +32,8 @@ export async function recordarFirma(cantidadPendientes) {
     return;
   }
   await programar(ID_FIRMA, {
-    title: 'Aún tienes un convenio por firmar',
-    body: cantidadPendientes === 1 ? 'Hay 1 convenio esperando tu firma.' : `Hay ${cantidadPendientes} convenios esperando tu firma.`,
+    title: cantidadPendientes === 1 ? 'Tiene un convenio pendiente de firma' : 'Tiene convenios pendientes de firma',
+    body: cantidadPendientes === 1 ? 'Hay 1 convenio esperando su firma.' : `Hay ${cantidadPendientes} convenios esperando su firma.`,
     data: { pantalla: 'Pendientes' },
   }, HORAS_RECORDATORIO_FIRMA);
 }
@@ -43,7 +43,7 @@ export async function recordarFirma(cantidadPendientes) {
 export async function avisarNovedadesSiNoEntra() {
   await programar(ID_NOVEDADES, {
     title: 'Hay novedades',
-    body: 'Entrá a la app para ver los cambios en tus convenios.',
+    body: 'Ingrese a la app para ver los cambios en sus convenios.',
     data: { pantalla: 'Inicio' },
   }, HORAS_SIN_ENTRAR);
 }

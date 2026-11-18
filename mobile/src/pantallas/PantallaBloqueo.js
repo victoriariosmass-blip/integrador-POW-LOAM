@@ -43,7 +43,7 @@ export default function PantallaBloqueo({ navigation }) {
     setMostrarForm(false);
     setPin('');
     setRepetido('');
-    Alert.alert('Bloqueo activado', 'La próxima vez que abras la app te va a pedir huella, rostro o el PIN.', [
+    Alert.alert('Bloqueo activado', 'La próxima vez que abra la app se le solicitará huella, rostro o el PIN.', [
       { text: 'Aceptar', onPress: () => navigation.goBack() },
     ]);
   };
@@ -66,7 +66,7 @@ export default function PantallaBloqueo({ navigation }) {
       <Text style={{ color: colores.textoSecundario, fontSize: 14 * factorActual, marginBottom: 20 }}>
         {hayBiometria
           ? 'Se usa la huella o el rostro del celular; el PIN sirve si no se reconoce.'
-          : 'Este celular no tiene huella ni rostro configurado: se va a pedir el PIN.'}
+          : 'Este celular no tiene huella ni rostro configurado: se solicitará el PIN.'}
         {' '}También se bloquea si la app queda más de 1 minuto en segundo plano.
       </Text>
 
@@ -75,7 +75,7 @@ export default function PantallaBloqueo({ navigation }) {
           <Text style={[estilos.etiqueta, { color: colores.textoPrincipal, fontSize: 15 * factorActual }]}>Nuevo PIN (4 a 6 números)</Text>
           <TextInput style={estiloCampo} value={pin} onChangeText={(t) => { setPin(t.replace(/\D/g, '')); setError(''); }}
             keyboardType="number-pad" secureTextEntry maxLength={6} accessibilityLabel="Nuevo PIN" />
-          <Text style={[estilos.etiqueta, { color: colores.textoPrincipal, fontSize: 15 * factorActual }]}>Repetí el PIN</Text>
+          <Text style={[estilos.etiqueta, { color: colores.textoPrincipal, fontSize: 15 * factorActual }]}>Repita el PIN</Text>
           <TextInput style={estiloCampo} value={repetido} onChangeText={(t) => { setRepetido(t.replace(/\D/g, '')); setError(''); }}
             keyboardType="number-pad" secureTextEntry maxLength={6} accessibilityLabel="Repetir PIN" />
           {error ? <Text style={{ color: colores.error, fontSize: 14 * factorActual, marginBottom: 8 }} accessibilityRole="alert">{error}</Text> : null}

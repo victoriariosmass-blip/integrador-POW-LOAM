@@ -61,7 +61,7 @@ export default function PantallaPendientes({ navigation }) {
   return (
     <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
       {sinConexion && <BannerSinConexion />}
-      <AyudaPuntual texto="Convenios aprobados que esperan la firma, del más reciente al más antiguo. Abrí uno, leé el PDF hasta el final y firmalo. Funciona también sin conexión (para verlos)." />
+      <AyudaPuntual texto="Convenios aprobados que esperan la firma, del más reciente al más antiguo. Abra uno, lea el PDF hasta el final y fírmelo. También funciona sin conexión (solo para verlos)." />
 
       {error ? (
         <View style={estilos.centro}>
@@ -88,7 +88,7 @@ export default function PantallaPendientes({ navigation }) {
           }
           ListEmptyComponent={
             <Text style={[estilos.vacio, { color: colores.textoSecundario, fontSize: 15 * factorActual }]}>
-              No tenés convenios pendientes de firma.
+              No tiene convenios pendientes de firma.
             </Text>
           }
           renderItem={({ item }) => (
