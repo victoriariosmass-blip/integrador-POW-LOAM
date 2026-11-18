@@ -25,7 +25,7 @@ export default function NuevoConvenio() {
     return (
       <div className="text-center py-5">
         <i className="bi bi-lock fs-1 text-secondary" aria-hidden="true" />
-        <p className="mt-2">Tu rol no puede cargar convenios.</p>
+        <p className="mt-2">Su rol no puede cargar convenios.</p>
         <Link href="/convenios" className="btn btn-outline-secondary">Volver al listado</Link>
       </div>
     );
@@ -42,7 +42,7 @@ export default function NuevoConvenio() {
         <Link href="/convenios" className="small"><i className="bi bi-arrow-left me-1" aria-hidden="true" />Convenios</Link>
       </nav>
       <h1 className="h4 mb-1">Nuevo convenio</h1>
-      <p className="text-body-secondary mb-4">Se guarda como borrador. Después podés completarlo y enviarlo a revisión.</p>
+      <p className="text-body-secondary mb-4">Se guarda como borrador. Después puede completarlo y enviarlo a revisión.</p>
  
       {errorUnidades && <div className="alert alert-danger" role="alert">{errorUnidades}</div>}
       {esGlobal && !unidades && !errorUnidades ? (

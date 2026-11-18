@@ -163,7 +163,7 @@ export default function Administracion() {
               <tbody>
                 {usuarios.map((u) => (
                   <tr key={u.id} className={u.activo ? '' : 'text-body-secondary'}>
-                    <td>{u.name}{u.id === usuario.id && <span className="badge text-bg-light ms-2">Vos</span>}</td>
+                    <td>{u.name}{u.id === usuario.id && <span className="badge text-bg-light ms-2">Usted</span>}</td>
                     <td className="d-none d-md-table-cell">{u.email}</td>
                     <td>{NOMBRE_ROL[u.rol] ?? u.rol}</td>
                     <td className="d-none d-md-table-cell">{u.unidad?.sigla ?? 'Global'}</td>

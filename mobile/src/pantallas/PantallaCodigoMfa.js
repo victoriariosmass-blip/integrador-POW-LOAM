@@ -56,7 +56,7 @@ export default function PantallaCodigoMfa() {
     try {
       const r = await pedirOtroCodigo('mail');
       if (r?.codigoDemo) setCodigoDemo(r.codigoDemo); // el cartel muestra el código nuevo
-      setAviso('Te mandamos un código nuevo.');
+      setAviso('Le enviamos un código nuevo.');
       setEspera(ESPERA_REENVIO);
     } catch (e) {
       if (e.status === 401) cancelarCodigo(e.message);
@@ -70,10 +70,10 @@ export default function PantallaCodigoMfa() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Text style={[estilos.titulo, { color: colores.textoPrincipal, fontSize: 24 * factorActual }]}>
-        Verificá tu identidad
+        Verifique su identidad
       </Text>
       <Text style={[estilos.subtitulo, { color: colores.textoSecundario, fontSize: 15 * factorActual }]}>
-        Te mandamos un código de 6 números a {pendienteMfa?.email}. Vence en 10 minutos.
+        Le enviamos un código de 6 números a {pendienteMfa?.email}. Vence en 10 minutos.
       </Text>
 
       {error ? (
@@ -93,7 +93,7 @@ export default function PantallaCodigoMfa() {
           accessibilityLiveRegion="polite"
         >
           <Text style={{ color: colores.textoPrincipal, fontSize: 14 * factorActual }}>
-            Modo demo: tu código es{' '}
+            Modo demo: su código es{' '}
             <Text style={{ color: colores.acento, fontWeight: 'bold' }}>{codigoDemo}</Text>
             {' '}(en un sistema real llega por mail).
           </Text>

@@ -42,8 +42,8 @@ export default function Panel() {
  
   return (
     <>
-      <h1 className="h4 mb-1">Hola, {usuario.name.split(' ')[0]}</h1>
-      <p className="text-body-secondary mb-4">Resumen de los convenios que podés ver.</p>
+      <h1 className="h4 mb-1">Bienvenido/a, {usuario.name.split(' ')[0]}</h1>
+      <p className="text-body-secondary mb-4">Resumen de los convenios que puede ver.</p>
  
       {error && <div className="alert alert-danger" role="alert">{error}</div>}
  

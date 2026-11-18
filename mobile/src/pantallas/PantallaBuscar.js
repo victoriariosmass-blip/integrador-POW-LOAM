@@ -53,8 +53,8 @@ export default function PantallaBuscar({ navigation }) {
 
   return (
     <ScrollView style={{ backgroundColor: colores.fondo }} contentContainerStyle={estilos.contenedor} keyboardShouldPersistTaps="handled">
-      {!enLinea && <BannerSinConexion mensaje="Sin conexión • El buscador no está disponible. Podés ver tus pendientes." />}
-      <AyudaPuntual texto="Escribí parte del código o del título y, si querés, elegí año de firma, tipo o estado. Tocá ▸ en un resultado para ver su convenio padre, sus hijos, la resolución y los documentos; tocá el código para abrir la ficha." />
+      {!enLinea && <BannerSinConexion mensaje="Sin conexión • El buscador no está disponible. Puede ver sus pendientes." />}
+      <AyudaPuntual texto="Escriba parte del código o del título y, si lo desea, seleccione año de firma, tipo o estado. Presione ▸ en un resultado para ver su convenio padre, sus hijos, la resolución y los documentos; presione el código para abrir la ficha." />
       <TextInput
         style={[estilos.campo, { backgroundColor: colores.tarjeta, borderColor: colores.borde, color: colores.textoPrincipal, fontSize: 16 * factorActual }]}
         placeholder="Código o título (ej: MC-2024, pasantía…)" placeholderTextColor={colores.textoSecundario}
@@ -72,7 +72,7 @@ export default function PantallaBuscar({ navigation }) {
       {resultados?.length === 0 && <Text style={{ color: colores.textoSecundario, marginTop: 12 }}>No hay convenios con esos filtros.</Text>}
       {resultados?.length > 0 && (
         <Text style={{ color: colores.textoSecundario, fontSize: 12 * factorActual, marginVertical: 8 }}>
-          {resultados.length} resultado{resultados.length > 1 ? 's' : ''} · tocá ▸ para ver padre, hijos, resolución y documentos
+          {resultados.length} resultado{resultados.length > 1 ? 's' : ''} · presione ▸ para ver padre, hijos, resolución y documentos
         </Text>
       )}
       {resultados?.map((c) => <ArbolConvenio key={c.id} convenio={c} navigation={navigation} />)}

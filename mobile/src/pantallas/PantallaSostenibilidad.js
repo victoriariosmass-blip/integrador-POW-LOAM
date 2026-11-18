@@ -64,7 +64,7 @@ export default function PantallaSostenibilidad() {
             </TouchableOpacity>
           </View>
           <Text style={[secundario(12), { marginBottom: 12 }]}>
-            {cantidad === reales ? `Son los ${reales} convenios que podés ver hoy.` : `Simulación (hoy podés ver ${reales}).`}
+            {cantidad === reales ? `Son los ${reales} convenios que puede ver hoy.` : `Simulación (hoy puede ver ${reales}).`}
             {cantidad !== reales ? ' ' : ''}
             {cantidad !== reales && (
               <Text onPress={() => setCantidad(reales)} style={{ color: colores.acento, fontWeight: '600' }}>Volver al valor real</Text>

@@ -100,10 +100,10 @@
           // Que el admin no se deje afuera a sí mismo
           if ($usuario->id === $request->user()->id) {
               if (($datos['activo'] ?? true) === false) {
-                  abort(422, 'No podés desactivar tu propio usuario.');
+                  abort(422, 'No puede desactivar su propio usuario.');
               }
               if (isset($datos['rol']) && $datos['rol'] !== 'admin') {
-                  abort(422, 'No podés quitarte el rol de administración.');
+                  abort(422, 'No puede quitarse el rol de administración.');
               }
           }
 
@@ -133,7 +133,7 @@
               'email.required' => 'El email es obligatorio.',
               'email.email' => 'El email no es válido.',
               'email.unique' => 'Ya hay un usuario con ese email.',
-              'rol.in' => 'Elegí un rol válido.',
+              'rol.in' => 'Seleccione un rol válido.',
               'unidad_id.exists' => 'La unidad no existe.',
               'password.required' => 'La contraseña es obligatoria.',
               'password.min' => 'La contraseña tiene que tener al menos 8 caracteres.',

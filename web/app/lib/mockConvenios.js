@@ -78,7 +78,7 @@ export function listarMock(usuario, { estado, tipo, q, unidad_id, firma_desde, f
 export function verMock(usuario, id) {
   const c = convenios.find((x) => x.id === Number(id));
   if (!c) throw error(404, 'El convenio no existe');
-  if (!puedeVer(usuario, c)) throw error(403, 'No tenés permiso para ver este convenio');
+  if (!puedeVer(usuario, c)) throw error(403, 'No tiene permiso para ver este convenio');
   return {
     data: {
       ...conPermisos(usuario, c),
@@ -98,7 +98,7 @@ export function accionMock(usuario, id, accion, datos = {}) {
   const c = convenios.find((x) => x.id === Number(id));
   const p = permisos(usuario, c);
   const permitido = { 'enviar-revision': p.enviar_revision, aprobar: p.revisar, devolver: p.revisar, rescindir: p.rescindir, archivar: p.archivar }[accion];
-  if (!permitido) throw error(403, 'No tenés permiso para hacer esto con este convenio.');
+  if (!permitido) throw error(403, 'No tiene permiso para hacer esto con este convenio.');
   const hasta = DESTINO[accion];
   historial[c.id] = [...(historial[c.id] ?? []), {
     id: Date.now(), estado_desde: c.estado, estado_hasta: hasta,
@@ -134,7 +134,7 @@ function validar(datos, alta) {
   const errors = {};
   if (alta || 'titulo' in datos) if (!datos.titulo?.trim()) errors.titulo = ['El título es obligatorio.'];
   if (alta || 'objeto' in datos) if (!datos.objeto?.trim()) errors.objeto = ['El objeto es obligatorio.'];
-  if (alta && !datos.tipo) errors.tipo = ['Elegí el tipo de convenio.'];
+  if (alta && !datos.tipo) errors.tipo = ['Seleccione el tipo de convenio.'];
   const desde = alta ? datos.fecha_firma : datos.fecha_inicio;
   if (datos.fecha_vencimiento && desde && datos.fecha_vencimiento <= desde) {
     errors.fecha_vencimiento = [alta ? 'El vencimiento tiene que ser posterior a la firma.' : 'El vencimiento tiene que ser posterior al inicio.'];
@@ -169,10 +169,10 @@ export function unidadesMock() {
 }
  
 export function crearMock(usuario, datos) {
-  if (!['admin', 'gestor'].includes(usuario.rol)) throw error(403, 'Tu rol no puede cargar convenios');
+  if (!['admin', 'gestor'].includes(usuario.rol)) throw error(403, 'Su rol no puede cargar convenios');
   validar(datos, true);
   const unidadId = usuario.unidad_id ?? Number(datos.unidad_id || 0);
-  if (!unidadId) throw errorValidacion({ unidad_id: ['Indicá la unidad del convenio'] });
+  if (!unidadId) throw errorValidacion({ unidad_id: ['Indique la unidad del convenio'] });
   const unidad = UNIDADES.find((u) => u.id === unidadId) ?? { id: unidadId, nombre: 'Unidad', sigla: '' };
   const base = `${PREFIJOS[datos.tipo]}-${new Date().getFullYear()}-`;
   const numero = convenios.filter((c) => c.codigo.startsWith(base)).length + 1;
@@ -191,8 +191,8 @@ export function crearMock(usuario, datos) {
 export function editarMock(usuario, id, datos) {
   const c = convenios.find((x) => x.id === Number(id));
   if (!c) throw error(404, 'El convenio no existe');
-  if (!permisos(usuario, c).editar) throw error(403, 'No tenés permiso para editar este convenio.');
-  if (Number(datos.version) !== c.version) throw error(409, 'El convenio cambió mientras lo editabas. Recargalo para ver los cambios.');
+  if (!permisos(usuario, c).editar) throw error(403, 'No tiene permiso para editar este convenio.');
+  if (Number(datos.version) !== c.version) throw error(409, 'El convenio cambió mientras usted lo editaba. Recárguelo para ver los cambios.');
   validar(datos, false);
   const cambios = { ...datos };
   delete cambios.version;
@@ -281,7 +281,7 @@ export function comentariosMock(usuario, id) {
  
 export function comentarMock(usuario, id, contenido) {
   const { data: c } = verMock(usuario, id);
-  if (!c.permisos.comentar) throw error(403, 'No tenés permiso para hacer esto con este convenio.');
+  if (!c.permisos.comentar) throw error(403, 'No tiene permiso para hacer esto con este convenio.');
   const palabras = contenido.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-z]+/);
   const ofensivo = palabras.some((p) => OFENSIVAS.includes(p));
   const nuevo = {
@@ -297,7 +297,7 @@ const archivos = {}; // id del documento -> el File (para "descargarlo")
  
 export function subirDocumentoMock(usuario, id, archivo, categoria) {
   const { data: c } = verMock(usuario, id);
-  if (!c.permisos.editar) throw error(403, 'No tenés permiso para hacer esto con este convenio.');
+  if (!c.permisos.editar) throw error(403, 'No tiene permiso para hacer esto con este convenio.');
   if (!archivo.name.toLowerCase().endsWith('.pdf')) {
     const e = error(422, 'El archivo tiene que ser un PDF.');
     e.errors = { archivo: ['El archivo tiene que ser un PDF.'] };

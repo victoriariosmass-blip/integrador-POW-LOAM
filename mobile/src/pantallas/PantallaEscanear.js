@@ -50,7 +50,7 @@ export default function PantallaEscanear({ navigation }) {
       const mensaje = e.status === 404
         ? 'Este código QR no corresponde a ningún convenio.'
         : e.status === 403
-          ? 'No tenés permiso para ver este convenio.'
+          ? 'No tiene permiso para ver este convenio.'
           : e.message || 'No se pudo leer el código.';
       Alert.alert('No se pudo abrir el convenio', mensaje, [
         { text: 'Escanear otro', onPress: () => setEscaneado(false) },
@@ -72,7 +72,7 @@ export default function PantallaEscanear({ navigation }) {
       {buscando ? (
         <ActivityIndicator size="large" color="#FFF" style={{ marginTop: 20 }} />
       ) : (
-        <Text style={estilos.instruccion}>Apuntá al código QR del convenio (está en su ficha de la web)</Text>
+        <Text style={estilos.instruccion}>Apunte al código QR del convenio (está en su ficha de la web)</Text>
       )}
     </View>
   );

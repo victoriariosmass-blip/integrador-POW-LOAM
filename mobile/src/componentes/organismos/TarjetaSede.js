@@ -8,10 +8,10 @@ import { usarPreferencias } from '../../contexto/ContextoPreferencias';
 import { detectarSede, listarUnidades, guardarSede, leerSede, olvidarSede } from '../../servicios/sedes';
 
 const MENSAJES = {
-  sin_permiso: 'La app no tiene permiso de ubicación (si lo negaste antes, Android ya no vuelve a preguntar). Podés darlo en los permisos de la app o elegir la sede a mano.',
-  gps_apagado: 'La ubicación del celular está apagada. Activala desde la barra de arriba del celular, o elegí la sede a mano.',
-  sin_senal: 'No se pudo leer la ubicación (adentro de un edificio puede tardar). Probá de nuevo o elegí la sede a mano.',
-  lejos: 'No estás cerca de ninguna sede de la UNLPam. Podés elegirla a mano.',
+  sin_permiso: 'La app no tiene permiso de ubicación (si lo denegó antes, Android no vuelve a preguntar). Puede otorgarlo en los permisos de la app o seleccionar la sede manualmente.',
+  gps_apagado: 'La ubicación del celular está desactivada. Actívela desde la barra superior del celular o seleccione la sede manualmente.',
+  sin_senal: 'No se pudo leer la ubicación (dentro de un edificio puede demorar). Intente nuevamente o seleccione la sede manualmente.',
+  lejos: 'No se encuentra cerca de ninguna sede de la UNLPam. Puede seleccionarla manualmente.',
 };
 
 export const TarjetaSede = ({ alVerConvenios }) => {
@@ -45,7 +45,7 @@ export const TarjetaSede = ({ alVerConvenios }) => {
       setUnidades(await listarUnidades());
     } catch (e) {
       console.warn('[sede] no se pudo detectar:', e);
-      setMensaje('No se pudo obtener la ubicación. Podés elegir la sede a mano.');
+      setMensaje('No se pudo obtener la ubicación. Puede seleccionar la sede manualmente.');
       setUnidades(await listarUnidades().catch(() => []));
     } finally {
       setBuscando(false);
@@ -66,16 +66,16 @@ export const TarjetaSede = ({ alVerConvenios }) => {
         </>
       ) : (
         <>
-          <Text style={[texto(16), estilos.titulo]}>¿En qué sede estás?</Text>
+          <Text style={[texto(16), estilos.titulo]}>¿En qué sede se encuentra?</Text>
           <Text style={{ color: colores.textoSecundario, fontSize: 13 * factorActual, marginBottom: 8 }}>
-            Se mira tu ubicación una sola vez, solo cuando tocás el botón.
+            Su ubicación se consulta una sola vez, solo cuando presiona el botón.
           </Text>
           {buscando ? (
             <ActivityIndicator color={colores.acento} style={{ marginVertical: 12 }} />
           ) : (
             <>
               <BotonPersonalizado titulo="Detectar mi sede" alPresionar={detectar} />
-              <BotonPersonalizado titulo="Elegir a mano" variante="secundario"
+              <BotonPersonalizado titulo="Seleccionar manualmente" variante="secundario"
                 alPresionar={async () => setUnidades(await listarUnidades().catch(() => []))} />
             </>
           )}

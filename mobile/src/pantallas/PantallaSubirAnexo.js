@@ -50,7 +50,7 @@ export default function PantallaSubirAnexo({ route, navigation }) {
       setSubido(documento);
       setArchivo(null);
     } catch (e) {
-      if (e.status === 403) setError('No tenés permiso para subir documentos a este convenio (solo se puede mientras está en borrador).');
+      if (e.status === 403) setError('No tiene permiso para subir documentos a este convenio (solo se puede mientras está en borrador).');
       else if (e.status === 413) setError('El archivo es demasiado grande para el servidor.');
       else if (e.status === 422) setError(e.errores?.archivo?.[0] ?? e.errores?.categoria?.[0] ?? e.message);
       else setError(e.message || 'No se pudo subir el documento.');

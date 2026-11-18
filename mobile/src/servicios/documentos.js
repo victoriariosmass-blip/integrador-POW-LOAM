@@ -20,7 +20,7 @@ export async function descargarPdf(convenioId, documento, codigo) {
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/pdf' },
   });
   if (r.status !== 200) {
-    const error = new Error(r.status === 403 ? 'No tenés permiso para ver este documento.' : 'No se pudo descargar el PDF.');
+    const error = new Error(r.status === 403 ? 'No tiene permiso para ver este documento.' : 'No se pudo descargar el PDF.');
     error.status = r.status;
     throw error;
   }

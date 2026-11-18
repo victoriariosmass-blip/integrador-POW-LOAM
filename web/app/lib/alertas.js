@@ -63,7 +63,7 @@ export async function calcularAlertas(usuario) {
   for (const c of enRevision) {
     alertas.push({
       id: `revision-${c.id}`, nivel: 'info', convenio: c, dias: null,
-      titulo: 'Espera revisión', detalle: 'Aprobalo o devolvelo con observaciones desde Revisión.',
+      titulo: 'Espera revisión', detalle: 'Apruébelo o devuélvalo con observaciones desde Revisión.',
     });
   }
  

@@ -273,11 +273,43 @@ export async function comentar(id, contenido) {
   return respuesta.data;
 }
 
+// Fechas para mostrar: siempre dd/mm/yyyy (y con hora, dd/mm/yyyy HH:mm, 24 h, hora de Argentina).
+// Mismas reglas que la web (web/app/lib/formato.js):
+// - Fechas solas (firma, vencimiento...): la API las manda como "2026-11-01" o "2026-11-01T00:00:00.000000Z"
+//   (medianoche UTC). Se muestran tal cual: si se pasaran a la hora de Argentina quedarían un día antes.
+// - Fechas con hora (created_at, firmado_en...): vienen en UTC y se pasan a la hora de Argentina; si no,
+//   lo hecho después de las 21 h figura al día siguiente.
+// Se arma a mano (sin toLocaleString) para que salga igual en cualquier celular.
+const SOLO_FECHA = /^\d{4}-\d{2}-\d{2}(T00:00:00(\.0+)?(Z|[+-]00:?00)?)?$/;
+const HUSO_ARGENTINA = -3; // Argentina no tiene horario de verano: UTC-3 todo el año
+const dos = (n) => String(n).padStart(2, '0');
+
+// Fecha y hora de Argentina de un valor con hora, o null si no se puede leer
+function enArgentina(valor) {
+  const f = new Date(valor);
+  if (Number.isNaN(f.getTime())) return null;
+  return new Date(f.getTime() + HUSO_ARGENTINA * 3600 * 1000); // se leen con getUTC*
+}
+
 // "2026-10-27" o "2026-10-27T13:00:00Z" -> "27/10/2026"
 export function fecha(valor) {
   if (!valor) return null;
-  const [a, m, d] = String(valor).slice(0, 10).split('-');
+  const texto = String(valor);
+  if (!SOLO_FECHA.test(texto)) {
+    const f = enArgentina(texto);
+    if (f) return `${dos(f.getUTCDate())}/${dos(f.getUTCMonth() + 1)}/${f.getUTCFullYear()}`;
+  }
+  const [a, m, d] = texto.slice(0, 10).split('-');
   return `${d}/${m}/${a}`;
+}
+
+// "2026-11-15T17:42:10.000000Z" -> "15/11/2026 14:42" (hora de Argentina, 24 h, sin segundos)
+export function fechaHora(valor) {
+  if (!valor) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(valor))) return fecha(valor); // sin hora: solo la fecha
+  const f = enArgentina(valor instanceof Date ? valor.toISOString() : String(valor));
+  if (!f) return fecha(valor);
+  return `${dos(f.getUTCDate())}/${dos(f.getUTCMonth() + 1)}/${f.getUTCFullYear()} ${dos(f.getUTCHours())}:${dos(f.getUTCMinutes())}`;
 }
 
 export const TIPOS = {

@@ -29,7 +29,7 @@ export default function Alertas() {
   return (
     <>
       <h1 className="h4 mb-1">Alertas</h1>
-      <p className="text-body-secondary mb-4">Lo que necesita atención en los convenios que podés ver.</p>
+      <p className="text-body-secondary mb-4">Lo que necesita atención en los convenios que puede ver.</p>
  
       {error && <div className="alert alert-danger" role="alert">{error}</div>}
  

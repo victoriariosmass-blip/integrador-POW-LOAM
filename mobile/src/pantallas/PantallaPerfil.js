@@ -43,7 +43,7 @@ export default function PantallaPerfil({ navigation }) {
       ? await ImagePicker.requestCameraPermissionsAsync()
       : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permiso.granted) {
-      setAvisoFoto(desdeCamara ? 'Necesitamos permiso para usar la cámara.' : 'Necesitamos permiso para ver tus fotos.');
+      setAvisoFoto(desdeCamara ? 'Necesitamos permiso para usar la cámara.' : 'Necesitamos permiso para ver sus fotos.');
       return;
     }
     const opciones = { mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6 };

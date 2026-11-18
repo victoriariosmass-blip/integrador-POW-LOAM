@@ -44,7 +44,7 @@ export default function AccionesConvenio({ convenio, onAccion, cargando }) {
       {p.archivar && <Button variant="secondary" loading={cargando} onClick={() => onAccion('archivar').catch(() => {})}>Archivar</Button>}
       {p.firmar && (
         <p className="alert alert-info mb-0 w-100">
-          <i className="bi bi-phone me-2" aria-hidden="true" />Este convenio espera tu firma. Se firma desde la app.
+          <i className="bi bi-phone me-2" aria-hidden="true" />Este convenio espera su firma. Se firma desde la app.
         </p>
       )}
     </div>

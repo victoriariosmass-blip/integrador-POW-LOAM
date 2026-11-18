@@ -44,7 +44,7 @@
                       'asignado_en' => now(),
                   ]);
                   $this->avisar($revisor, $convenio, 'revision_asignada', 'Revisión asignada',
-                      'Se te asignó para revisar: aprobalo o devolvelo con observaciones.');
+                      'Se le asignó para revisar: apruébelo o devuélvalo con observaciones.');
               }
 
               return $convenio;

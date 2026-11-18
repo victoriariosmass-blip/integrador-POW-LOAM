@@ -63,7 +63,7 @@ export async function verificarCodigo(codigo) {
   if (USAR_MOCK) {
     await esperar(600);
     const pendiente = leer(CLAVE_PENDIENTE);
-    if (!pendiente) throw errorCon(401, 'La sesión venció. Volvé a iniciar sesión.');
+    if (!pendiente) throw errorCon(401, 'La sesión venció. Vuelva a iniciar sesión.');
     if (codigo !== CODIGO_MOCK) throw errorCon(422, 'El código no es correcto');
     borrar(CLAVE_PENDIENTE);
     guardar(CLAVE_USUARIO, pendiente);

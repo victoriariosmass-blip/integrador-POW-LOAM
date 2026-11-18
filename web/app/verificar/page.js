@@ -55,7 +55,7 @@ export default function VerificarPage() {
     ev.preventDefault();
     setAviso('');
     if (codigo.length !== 6) {
-      setError('Ingresá los 6 dígitos del código');
+      setError('Ingrese los 6 dígitos del código');
       return;
     }
     setError('');
@@ -81,7 +81,7 @@ export default function VerificarPage() {
     try {
       const r = await reenviarCodigo(canal);
       if (r?.codigo_demo) cambiarCodigoDemo(r.codigo_demo); // el cartel muestra el código nuevo
-      setAviso(canal === 'sms' ? 'Te enviamos un código nuevo por SMS.' : 'Te enviamos un código nuevo por mail.');
+      setAviso(canal === 'sms' ? 'Le enviamos un código nuevo por SMS.' : 'Le enviamos un código nuevo por mail.');
       setSegundos(ESPERA_REENVIO);
     } catch (err) {
       setError(err.message || 'No se pudo reenviar el código');
@@ -89,9 +89,9 @@ export default function VerificarPage() {
   }
  
   return (
-    <AuthLayout icono="bi-shield-lock" titulo="Verificación" subtitulo="Por seguridad, ingresá el código de 6 dígitos que te enviamos.">
+    <AuthLayout icono="bi-shield-lock" titulo="Verificación" subtitulo="Por seguridad, ingrese el código de 6 dígitos que le enviamos.">
       <fieldset className="mb-3">
-        <legend className="form-label fw-semibold fs-6">¿Cómo querés recibir el código?</legend>
+        <legend className="form-label fw-semibold fs-6">¿Cómo desea recibir el código?</legend>
         <div className="btn-group w-100" role="group">
           {CANALES.map((c) => (
             <Fragment key={c.valor}>
@@ -111,7 +111,7 @@ export default function VerificarPage() {
         {codigoDemo && (
           <div className="alert alert-primary py-2 small" role="status">
             <i className="bi bi-info-circle me-2" aria-hidden="true" />
-            Modo demo: tu código es <strong>{codigoDemo}</strong> (en un sistema real llega por mail).
+            Modo demo: su código es <strong>{codigoDemo}</strong> (en un sistema real llega por mail).
           </div>
         )}
         {/* no es <label>: el código son 6 casillas y el grupo ya tiene su nombre (aria-label) */}

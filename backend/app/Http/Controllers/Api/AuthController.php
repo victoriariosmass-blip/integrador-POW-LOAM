@@ -92,7 +92,7 @@
               return response()->json(['message' => 'Email o contraseña incorrectos'], 422);
           }
           if (! $usuario->activo) {
-              return response()->json(['message' => 'Tu usuario está desactivado. Consultá con administración.'], 403);
+              return response()->json(['message' => 'Su usuario está desactivado. Consulte con Administración.'], 403);
           }
 
           // Segundo paso (verificación en dos pasos), igual que la web pero sin sesión:

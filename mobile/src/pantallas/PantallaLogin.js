@@ -17,7 +17,7 @@ export default function PantallaLogin() {
 
   const ingresar = async () => {
     if (!email.trim() || !password) {
-      setError('Completá el email y la contraseña');
+      setError('Complete el email y la contraseña');
       return;
     }
     setError('');
@@ -26,7 +26,7 @@ export default function PantallaLogin() {
       await entrar(email, password);
     } catch (e) {
       // Sin sesión guardada y sin internet no se puede entrar (enunciado de LOAM, Modo Off)
-      if (e.status === 0) setError('Sin conexión: necesitás internet para iniciar sesión. Si ya habías entrado antes, la app abre sola sin pedir datos.');
+      if (e.status === 0) setError('Sin conexión: se requiere conexión a internet para iniciar sesión. Si ya ingresó antes, la app se abre sin solicitar los datos.');
       else setError(e.message || 'No se pudo iniciar sesión');
     } finally {
       setCargando(false);
@@ -43,7 +43,7 @@ export default function PantallaLogin() {
         Gestión de Convenios
       </Text>
       <Text style={[estilos.subtitulo, { color: colores.textoSecundario, fontSize: 15 * factorActual }]}>
-        Ingresá con tu cuenta institucional.
+        Ingrese con su cuenta institucional.
       </Text>
 
       {error || avisoLogin ? (

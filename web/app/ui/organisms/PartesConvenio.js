@@ -49,7 +49,7 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
     ev.preventDefault();
     setError('');
     if (form.modo === 'existente' && !form.parte_id) {
-      setErrores({ parte_id: 'Elegí una institución de la lista o cargá una nueva.' });
+      setErrores({ parte_id: 'Seleccione una institución de la lista o cargue una nueva.' });
       return;
     }
     const cuerpo = {
@@ -164,7 +164,7 @@ export default function PartesConvenio({ convenio, puedeEditar, onCambio }) {
                   <label htmlFor="parte-id" className="form-label small fw-semibold">Institución</label>
                   <select id="parte-id" className={`form-select ${invalido('parte_id')}`} value={form.parte_id} {...aria('parte_id')}
                     onChange={(e) => cambiar('parte_id', e.target.value)}>
-                    <option value="">Elegí…</option>
+                    <option value="">Seleccione…</option>
                     {opciones.map((o) => <option key={o.id} value={o.id}>{o.nombre}</option>)}
                   </select>
                   {mensaje('parte_id')}

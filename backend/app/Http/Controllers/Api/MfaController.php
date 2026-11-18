@@ -34,7 +34,7 @@
               $intentos = $request->session()->increment('mfa_intentos');
               if ($intentos >= self::MAX_INTENTOS) {
                   $request->session()->forget(['mfa_user_id', 'mfa_intentos']);
-                  abort(401, 'Demasiados intentos. Volvé a iniciar sesión.');
+                  abort(401, 'Demasiados intentos. Vuelva a iniciar sesión.');
               }
               return response()->json(['message' => 'El código no es correcto o venció'], 422);
           }
@@ -67,7 +67,7 @@
           $usuario = $this->pendiente($request);
 
           if (! $this->mfa->puedeReenviar($usuario)) {
-              return response()->json(['message' => 'Esperá unos segundos antes de pedir otro código'], 429);
+              return response()->json(['message' => 'Espere unos segundos antes de solicitar otro código'], 429);
           }
 
           $canal = $datos['canal'] ?? 'mail';
@@ -81,7 +81,7 @@
           $id = $request->session()->get('mfa_user_id');
           $usuario = $id ? User::find($id) : null;
           if (! $usuario) {
-              abort(401, 'La sesión venció. Volvé a iniciar sesión.');
+              abort(401, 'La sesión venció. Vuelva a iniciar sesión.');
           }
           return $usuario;
       }

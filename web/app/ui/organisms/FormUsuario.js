@@ -117,7 +117,7 @@ export default function FormUsuario({ inicial = null, unidades = [], onGuardar, 
           <div className="col-12 col-md-6">
             <Field label={edicion ? 'Nueva contraseña' : 'Contraseña'} type="password" required={!edicion}
               value={datos.password} error={errores.password} autoComplete="new-password"
-              hint={edicion ? 'Dejala vacía para no cambiarla.' : 'Mínimo 8 caracteres.'}
+              hint={edicion ? 'Déjela vacía para no cambiarla.' : 'Mínimo 8 caracteres.'}
               onChange={(e) => cambiar('password', e.target.value)} />
           </div>
         </div>

@@ -107,8 +107,8 @@ export async function editarUsuario(id, datos) {
     await esperar(400);
     const yo = await exigirAdmin();
     validarMock(datos, id);
-    if (id === yo.id && datos.activo === false) throw errorCon(422, 'No podés desactivar tu propio usuario.');
-    if (id === yo.id && datos.rol && datos.rol !== 'admin') throw errorCon(422, 'No podés quitarte el rol de administración.');
+    if (id === yo.id && datos.activo === false) throw errorCon(422, 'No puede desactivar su propio usuario.');
+    if (id === yo.id && datos.rol && datos.rol !== 'admin') throw errorCon(422, 'No puede quitarse el rol de administración.');
     const { password, ...resto } = datos;
     usuariosMock = usuariosMock.map((u) => (u.id === id
       ? { ...u, ...resto, unidad_id: 'unidad_id' in resto ? (resto.unidad_id ? Number(resto.unidad_id) : null) : u.unidad_id }

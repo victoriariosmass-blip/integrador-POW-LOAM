@@ -106,12 +106,12 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
   function validar(cuerpo) {
     const e = {};
     if (!cuerpo.titulo) e.titulo = 'El título es obligatorio.';
-    if (!cuerpo.tipo) e.tipo = 'Elegí el tipo de convenio.';
+    if (!cuerpo.tipo) e.tipo = 'Seleccione el tipo de convenio.';
     if (!cuerpo.objeto) e.objeto = 'El objeto es obligatorio.';
-    if (unidades && !edicion && !cuerpo.unidad_id) e.unidad_id = 'Elegí la unidad del convenio.';
+    if (unidades && !edicion && !cuerpo.unidad_id) e.unidad_id = 'Seleccione la unidad del convenio.';
     const desde = edicion ? cuerpo.fecha_inicio : cuerpo.fecha_firma;
     if (cuerpo.fecha_vencimiento && !desde) {
-      e[edicion ? 'fecha_inicio' : 'fecha_firma'] = edicion ? 'Para cargar el vencimiento, indicá la fecha de inicio.' : 'Para cargar el vencimiento, indicá la fecha de firma.';
+      e[edicion ? 'fecha_inicio' : 'fecha_firma'] = edicion ? 'Para cargar el vencimiento, indique la fecha de inicio.' : 'Para cargar el vencimiento, indique la fecha de firma.';
     }
     if (cuerpo.fecha_vencimiento && desde && cuerpo.fecha_vencimiento <= desde) {
       e.fecha_vencimiento = edicion ? 'Tiene que ser posterior a la fecha de inicio.' : 'Tiene que ser posterior a la fecha de firma.';
@@ -176,7 +176,7 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
               <select id="tipo" className={`form-select ${invalido('tipo')}`} value={datos.tipo} required
                 aria-invalid={!!errores.tipo || undefined} aria-describedby={errores.tipo ? 'tipo-msg' : undefined}
                 onChange={(e) => cambiar('tipo', e.target.value)}>
-                <option value="">Elegí un tipo…</option>
+                <option value="">Seleccione un tipo…</option>
                 {Object.entries(TIPOS).map(([valor, nombre]) => <option key={valor} value={valor}>{nombre}</option>)}
               </select>
               {errores.tipo && <div id="tipo-msg" className="invalid-feedback">{errores.tipo}</div>}
@@ -188,7 +188,7 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
                 <select id="unidad" className={`form-select ${invalido('unidad_id')}`} value={datos.unidad_id} required
                   aria-invalid={!!errores.unidad_id || undefined} aria-describedby={errores.unidad_id ? 'unidad-msg' : undefined}
                   onChange={(e) => cambiar('unidad_id', e.target.value)}>
-                  <option value="">Elegí la unidad…</option>
+                  <option value="">Seleccione la unidad…</option>
                   {unidades.map((u) => <option key={u.id} value={u.id}>{u.nombre}</option>)}
                 </select>
                 {errores.unidad_id && <div id="unidad-msg" className="invalid-feedback">{errores.unidad_id}</div>}
@@ -222,7 +222,7 @@ export default function FormConvenio({ inicial = {}, unidades = null, edicion = 
             </div>
             <div className="col-12 col-md-4">
               <Field label="Vencimiento" type="date" value={datos.fecha_vencimiento} error={errores.fecha_vencimiento}
-                hint="Dejalo vacío si no vence." onChange={(e) => cambiar('fecha_vencimiento', e.target.value)} />
+                hint="Déjelo vacío si no vence." onChange={(e) => cambiar('fecha_vencimiento', e.target.value)} />
             </div>
             <div className="col-12 col-md-4">
               <Field label="Preaviso (días)" type="number" min={0} value={datos.dias_preaviso} error={errores.dias_preaviso}

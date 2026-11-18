@@ -235,7 +235,7 @@ function Convenios() {
         <div className="text-center py-5 text-body-secondary">
           <i className="bi bi-folder2 fs-1" aria-hidden="true" />
           <p className="mt-2 mb-0">
-            {usuario.rol === 'revisor' ? 'No tenés convenios asignados para revisar.' : 'No hay convenios que coincidan con la búsqueda.'}
+            {usuario.rol === 'revisor' ? 'No tiene convenios asignados para revisar.' : 'No hay convenios que coincidan con la búsqueda.'}
           </p>
         </div>
       )}

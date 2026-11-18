@@ -107,7 +107,7 @@ export async function revisarAvisos(usuario) {
       const antes = typeof guardado === 'string' ? { estado: guardado } : guardado;
       if (antes === undefined) {
         if (usuario?.rol === 'revisor' && c.estado === 'revision') {
-          pendientes.push([c, 'Revisión asignada', 'Se te asignó para revisar.']);
+          pendientes.push([c, 'Revisión asignada', 'Se le asignó para revisar.']);
         } else {
           pendientes.push([c, 'Nuevo convenio registrado', `Estado: ${ESTADOS[c.estado] ?? c.estado}.`]);
         }
