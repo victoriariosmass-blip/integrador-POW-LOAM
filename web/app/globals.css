@@ -159,6 +159,19 @@ a.card:hover { box-shadow: 0 2px 4px rgba(30, 27, 58, .08), 0 10px 24px rgba(30,
  
 /* ---- barra superior ---- */
 .app-topbar { background: #FFFFFF; }
+
+/* marca de la barra superior (Topbar): logo a color, línea divisoria y nombre en dos líneas */
+.marca-topbar { display: flex; align-items: center; gap: .75rem; text-decoration: none; color: #1E1B3A; }
+.marca-logo { height: 40px; width: auto; display: block; }
+.marca-separador { width: 1px; height: 30px; background: #E3E2F0; }
+.marca-textos { display: flex; flex-direction: column; line-height: 1.15; }
+.marca-titulo { font-family: var(--font-manrope, 'Manrope'), sans-serif; font-weight: 700; font-size: 1.05rem; color: #1E1B3A; }
+.marca-subtitulo { font-size: .75rem; color: #5E5B78; }
+.marca-topbar:focus-visible { outline: 3px solid #4338CA; outline-offset: 4px; border-radius: .5rem; }
+/* en el celular: menú, logo y "Convenios" (sin línea ni subtítulo, para que no se pise con la campanita) */
+@media (max-width: 575.98px) {
+  .marca-separador, .marca-subtitulo { display: none; }
+}
  
 /* ---- menú lateral oscuro (AppShell + Sidebar) ---- */
 .app-sidebar { background: var(--indigo-noche); color: #FFFFFF; flex-shrink: 0; }
