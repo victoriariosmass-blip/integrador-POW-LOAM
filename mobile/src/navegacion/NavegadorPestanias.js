@@ -47,8 +47,9 @@ export const NavegadorPestanias = () => {
         headerShown: true,
         headerTitle: () => <BuscadorHeader />,
         headerTitleAlign: 'center',
-        headerStyle: { backgroundColor: colores.tarjeta },
-        headerShadowVisible: false,
+        // mismo color que la pantalla (claro #F6F6FB, oscuro #12101F): sin bloque blanco atrás del buscador
+        headerStyle: { backgroundColor: colores.fondo },
+        headerShadowVisible: false, // sin línea divisoria
         // miniatura de la foto de perfil arriba a la derecha (lleva al perfil)
         headerRight: () => (
           <TouchableOpacity onPress={() => navigation.navigate('Perfil')} style={{ marginRight: 14 }}
