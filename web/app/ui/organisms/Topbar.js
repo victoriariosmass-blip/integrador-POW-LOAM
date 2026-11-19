@@ -33,7 +33,16 @@ export default function Topbar() {
           data-bs-toggle="offcanvas" data-bs-target="#menuMovil" aria-controls="menuMovil" aria-label="Abrir menú">
           <i className="bi bi-list" aria-hidden="true" />
         </button>
-        <span className="navbar-brand fw-bold mb-0">Convenios UNLPam</span>
+        {/* Marca institucional: logo a color, línea y nombre en dos líneas; lleva al panel.
+            El logo va con alt="" porque el nombre ya está escrito al lado (no se lee dos veces). */}
+        <Link href="/panel" className="marca-topbar" aria-label="Convenios UNLPam, ir al panel">
+          <img src="/logo-unlpam.png" alt="" height={40} className="marca-logo" />
+          <span className="marca-separador" aria-hidden="true" />
+          <span className="marca-textos">
+            <span className="marca-titulo">Convenios</span>
+            <span className="marca-subtitulo">Universidad Nacional de La Pampa</span>
+          </span>
+        </Link>
       </div>
  
       <form role="search" onSubmit={buscar} className="buscador-topbar d-none d-lg-block flex-grow-1 mx-4">
